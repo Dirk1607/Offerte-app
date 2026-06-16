@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TNL — Gesprek & Offerte</title>
+<style>
+:root {
+  --navy: #1B3A6B;
+  --navy-light: #2a4f8a;
+  --orange: #E8812A;
+  --orange-light: #f5a05a;
+  --blue: #4A7CB5;
+  --light: #F4F7FB;
+  --border: #D0DCF0;
+  --green: #2E7D52;
+  --green-light: #e8f7ef;
+  --red: #C0392B;
+  --red-light: #fdecea;
+  --amber: #d97706;
+  --amber-light: #fff8e8;
+  --text: #1a1a2e;
+  --muted: #6b7a99;
+  --white: #ffffff;
+  --card-shadow: 0 2px 16px rgba(27,58,107,0.09);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--light); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+header {
+  background: var(--navy);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+  box-shadow: 0 2px 12px rgba(27,58,107,0.25);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-badge {
+  width: 36px; height: 36px; background: var(--orange);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; color: white; font-size: 14px; letter-spacing: -0.5px;
+}
+.logo h1 { color: white; font-size: 17px; font-weight: 700; }
+.logo p { color: rgba(255,255,255,0.5); font-size: 11px; }
+
+/* STEPPER */
+.stepper {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,0.07);
+  border-radius: 8px; padding: 4px;
+}
+.step-btn {
+  padding: 6px 14px; border: none; background: none;
+  color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 600;
+  cursor: pointer; border-radius: 6px; transition: all 0.2s;
+  display: flex; align-items: center; gap-:6px; white-space: nowrap;
+}
+.step-btn.active { background: var(--orange); color: white; }
+.step-btn:hover:not(.active) { color: white; background: rgba(255,255,255,0.1); }
+
+/* MAIN */
+main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+/* SECTION CARDS */
+.section-card {
+  background: white; border-radius: 16px;
+  box-shadow: var(--card-shadow);
+  padding: 28px 32px; margin-bottom: 20px;
+}
+.section-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+}
+.section-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.icon-navy { background: #e8eef8; }
+.icon-orange { background: #fef0e4; }
+.icon-green { background: var(--green-light); }
+.section-header h2 { font-size: 18px; font-weight: 700; color: var(--navy); }
+.section-header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* PANELS */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* STEP 1 — SCORES */
+.scores-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 20px;
+}
+@media(max-width:700px){ .scores-grid { grid-template-columns: 1fr; } }
+
+.score-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--light); border-radius: 10px; padding: 10px 14px;
+  border: 1.5px solid var(--border); transition: border-color 0.2s;
+}
+.score-row:hover { border-color: var(--blue); }
+.score-label { font-size: 13px; font-weight: 600; color: var(--navy); }
+.score-sub { font-size: 11px; color: var(--muted); }
+.score-controls { display: flex; gap: 4px; align-items: center; }
+.score-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  cursor: pointer; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.score-minus { background: #f0f0f8; color: var(--navy); }
+.score-minus:hover { background: var(--navy); color: white; }
+.score-plus { background: var(--orange); color: white; }
+.score-plus:hover { background: var(--orange-light); }
+.score-val {
+  width: 36px; text-align: center; font-size: 16px; font-weight: 800;
+  color: var(--navy);
+}
+.zone-dot {
+  width: 10px; height: 10px; border-radius: 50%; margin-left: 6px; flex-shrink: 0;
+}
+.z1 { background: #e53935; }
+.z2 { background: #FB8C00; }
+.z3 { background: #1B3A6B; }
+.z4 { background: #2E7D52; }
+
+.divider-label {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 8px 0 4px; grid-column: 1/-1;
+  border-top: 1px solid var(--border); margin-top: 4px;
+}
+
+/* PRIORITY SUMMARY */
+.priority-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.priority-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+}
+.chip-red { background: var(--red-light); color: var(--red); }
+.chip-amber { background: var(--amber-light); color: var(--amber); }
+.chip-navy { background: #e8eef8; color: var(--navy); }
+.chip-green { background: var(--green-light); color: var(--green); }
+
+/* STEP 2 — GESPREK */
+.gesprek-intro {
+  background: linear-gradient(135deg, #e8eef8 0%, #f4f7fb 100%);
+  border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+  border-left: 4px solid var(--navy);
+}
+.gesprek-intro p { font-size: 13px; color: var(--navy); line-height: 1.6; }
+
+.domein-card {
+  border: 1.5px solid var(--border); border-radius: 12px;
+  margin-bottom: 14px; overflow: hidden;
+}
+.domein-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; cursor: pointer; user-select: none;
+  transition: background 0.15s;
+}
+.domein-header:hover { background: var(--light); }
+.domein-title { display: flex; align-items: center; gap: 10px; }
+.domein-name { font-size: 15px; font-weight: 700; color: var(--navy); }
+.zone-badge {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+}
+.badge-r { background: var(--red-light); color: var(--red); }
+.badge-o { background: var(--amber-light); color: var(--amber); }
+.badge-b { background: #e8eef8; color: var(--navy); }
+.badge-g { background: var(--green-light); color: var(--green); }
+.domein-score-badge {
+  font-size: 20px; font-weight: 900; color: var(--navy); min-width: 40px; text-align: right;
+}
+.chevron { color: var(--muted); transition: transform 0.2s; font-size: 18px; }
+.domein-card.open .chevron { transform: rotate(180deg); }
+
+.domein-body { display: none; padding: 0 18px 18px; }
+.domein-card.open .domein-body { display: block; }
+
+.info-block {
+  background: var(--light); border-radius: 8px; padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.info-block-label {
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px;
+}
+.info-block p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+.gesprek-vragen { margin-top: 14px; }
+.gesprek-vragen h4 { font-size: 12px; font-weight: 700; color: var(--navy); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+.vraag-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text);
+}
+.vraag-item:last-child { border-bottom: none; }
+.vraag-bullet { color: var(--orange); font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+
+.notes-field {
+  width: 100%; margin-top: 12px; border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: inherit;
+  resize: vertical; min-height: 64px; outline: none; transition: border-color 0.2s;
+}
+.notes-field:focus { border-color: var(--blue); }
+
+/* STEP 3 — AANBOD */
+.aanbod-intro {
+  background: linear-gradient(135deg, #fef0e4 0%, #fff8f5 100%);
+  border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+  border-left: 4px solid var(--orange);
+}
+
+.module-card {
+  border: 1.5px solid var(--border); border-radius: 12px;
+  margin-bottom: 12px; overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.module-card.selected {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(232,129,42,0.12);
+}
+.module-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; gap: 12px;
+}
+.module-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+.module-check {
+  width: 20px; height: 20px; accent-color: var(--orange); cursor: pointer; flex-shrink: 0;
+}
+.module-info { flex: 1; }
+.module-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+.module-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.module-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.niveau-select {
+  border: 1.5px solid var(--border); border-radius: 7px; padding: 6px 10px;
+  font-size: 12px; font-weight: 600; cursor: pointer; outline: none;
+  background: white; color: var(--navy); transition: border-color 0.2s;
+}
+.niveau-select:focus { border-color: var(--blue); }
+
+.price-tag {
+  font-size: 17px; font-weight: 800; color: var(--navy);
+  min-width: 80px; text-align: right;
+}
+.price-sub { font-size: 10px; color: var(--muted); font-weight: 400; display: block; text-align: right; }
+
+.module-desc {
+  padding: 0 18px 14px 50px;
+  font-size: 12px; color: var(--muted); line-height: 1.6;
+  border-top: 1px solid var(--border);
+}
+.module-desc.hidden { display: none; }
+
+/* NIVEAU PILLS */
+.niveau-pills { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.niveau-pill {
+  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  border: 1.5px solid var(--border); cursor: pointer; transition: all 0.15s;
+  background: white; color: var(--muted);
+}
+.niveau-pill.active { background: var(--navy); color: white; border-color: var(--navy); }
+
+/* TOTAAL BAR */
+.totaal-bar {
+  background: var(--navy); color: white; border-radius: 12px;
+  padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+  margin-top: 20px; flex-wrap: wrap; gap: 10px;
+}
+.totaal-bar .label { font-size: 14px; font-weight: 600; opacity: 0.8; }
+.totaal-bar .amount { font-size: 28px; font-weight: 900; }
+.totaal-bar .days { font-size: 12px; opacity: 0.6; }
+
+/* STEP 4 — OFFERTE */
+.offerte-form {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 20px;
+}
+@media(max-width:600px){ .offerte-form { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: 1/-1; }
+.form-group label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.form-group input, .form-group textarea, .form-group select {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
+  font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s;
+  background: white;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+  border-color: var(--blue);
+}
+
+/* OFFERTE PREVIEW */
+.offerte-preview {
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 32px 36px; background: white; margin-top: 20px;
+  font-size: 13px; line-height: 1.7;
+}
+.offerte-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.offerte-logo { font-size: 20px; font-weight: 900; color: var(--navy); }
+.offerte-logo span { color: var(--orange); }
+.offerte-meta { text-align: right; font-size: 12px; color: var(--muted); }
+.offerte-titel { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+.offerte-subtitle { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+.offerte-section { margin-bottom: 20px; }
+.offerte-section h3 { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.offerte-table { width: 100%; border-collapse: collapse; }
+.offerte-table th { background: var(--light); padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.offerte-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.offerte-table tr:last-child td { border-bottom: none; }
+.offerte-totaal { background: var(--navy); color: white; border-radius: 8px; padding: 14px 20px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center; }
+.offerte-totaal .t-label { font-size: 13px; opacity: 0.8; }
+.offerte-totaal .t-amount { font-size: 22px; font-weight: 900; }
+.offerte-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+
+/* BUTTONS */
+.btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--orange); color: white; }
+.btn-primary:hover { background: #d4741f; }
+.btn-navy { background: var(--navy); color: white; }
+.btn-navy:hover { background: var(--navy-light); }
+.btn-ghost { background: white; color: var(--navy); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--navy); }
+.btn-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 10px; }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 40px; color: var(--muted); }
+.empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* PRINT */
+@media print {
+  header, .stepper, .btn-bar, .no-print { display: none !important; }
+  body { background: white; }
+  .section-card { box-shadow: none; border: 1px solid #ddd; }
+  .offerte-preview { border: none; padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-badge">TNL</div>
+    <div>
+      <h1>Gesprek & Offerte Tool</h1>
+      <p>The Next Level — na de Quick Scan</p>
+    </div>
+  </div>
+  <div class="stepper">
+    <button class="step-btn active" onclick="goPanel(0)">① Scores</button>
+    <button class="step-btn" onclick="goPanel(1)">② Gesprek</button>
+    <button class="step-btn" onclick="goPanel(2)">③ Aanbod</button>
+    <button class="step-btn" onclick="goPanel(3)">④ Offerte</button>
+  </div>
+</header>
+
+<main>
+
+<!-- PANEL 0: SCORES -->
+<div class="panel active" id="panel-0">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📧</div>
+      <div>
+        <h2>Importeer vanuit notificatiemail</h2>
+        <p>Plak de volledige mail die je van de Quick Scan ontvangen hebt — alle gegevens en scores worden automatisch ingelezen</p>
+      </div>
+    </div>
+    <textarea id="mail-import-tekst" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;min-height:110px;resize:vertical;outline:none;transition:border-color 0.2s" placeholder="Plak hier de inhoud van de notificatiemail van de Quick Scan...&#10;&#10;Formaat dat herkend wordt:&#10;Naam: Jan Peeters&#10;Bedrijf: Peeters NV&#10;E-mail: jan@peeters.be&#10;Strategie: 2.5/4 (Aandachtspunt)&#10;Operations: 1.8/4 (Kritische groeipijn)&#10;..." onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:8px">
+      <div id="import-status" style="font-size:12px;color:var(--muted)">Nog niets geïmporteerd</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="clearImport()">✕ Wissen</button>
+        <button class="btn btn-primary" onclick="importeerMail()">📥 Importeer gegevens</button>
+      </div>
+    </div>
+    <div id="import-resultaat" style="display:none;margin-top:12px;background:var(--green-light);border:1px solid #a7f3d0;border-radius:10px;padding:12px 16px;font-size:13px;color:var(--green)"></div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon icon-navy">📊</div>
+      <div>
+        <h2>Quick Scan scores</h2>
+        <p>Geïmporteerd via mail of manueel aanpasbaar (1 = laag, 4 = sterk)</p>
+      </div>
+    </div>
+
+    <div class="scores-grid" id="scores-grid">
+      <div class="divider-label">🚇 De 11 metrolijnen</div>
+    </div>
+
+    <div class="btn-bar">
+      <div id="priority-bar" class="priority-bar"></div>
+      <button class="btn btn-primary" onclick="goPanel(1)">Naar gespreksgids →</button>
+    </div>
+  </div>
+
+  <!-- Klantgegevens preview na import -->
+  <div class="section-card" id="klant-kaart" style="display:none">
+    <div class="section-header">
+      <div class="section-icon icon-green">👤</div>
+      <div>
+        <h2>Geïmporteerde klantgegevens</h2>
+        <p>Automatisch ingelezen vanuit de notificatiemail</p>
+      </div>
+    </div>
+    <div id="klant-details" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+  </div>
+</div>
+
+<!-- PANEL 1: GESPREK -->
+<div class="panel" id="panel-1">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon icon-navy">💬</div>
+      <div>
+        <h2>Gespreksgids</h2>
+        <p>Gefilterd op prioriteiten — klik een domein open voor gespreksinhoud</p>
+      </div>
+    </div>
+    <div class="gesprek-intro">
+      <p><strong>Hoe gebruik je dit?</strong> De domeinen zijn gesorteerd van laagste naar hoogste score. Open elk prioritair domein, lees de indruk voor aan de klant en stel de verdiepingsvragen. Noteer inzichten onderaan elk domein — die komen automatisch in de offerte.</p>
+    </div>
+    <div id="gesprek-domeinen"></div>
+    <div class="btn-bar">
+      <button class="btn btn-ghost" onclick="goPanel(0)">← Scores</button>
+      <button class="btn btn-primary" onclick="goPanel(2)">Naar aanbod →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 2: AANBOD -->
+<div class="panel" id="panel-2">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon icon-orange">💼</div>
+      <div>
+        <h2>Modules selecteren & prijzen bepalen</h2>
+        <p>Vink aan wat je aanbiedt — kies het niveau per module</p>
+      </div>
+    </div>
+    <div class="aanbod-intro">
+      <p><strong>Werkwijze:</strong> Elke module staat voor één metrostation dat je aanpakt. Selecteer de modules die relevant zijn op basis van het gesprek. Kies het intensiteitsniveau. De prijs past automatisch aan.</p>
+    </div>
+    <div id="modules-lijst"></div>
+    <div id="totaal-bar" class="totaal-bar" style="display:none">
+      <div>
+        <div class="label">Totaal geselecteerde modules</div>
+        <div class="days" id="totaal-days"></div>
+      </div>
+      <div class="amount" id="totaal-prijs">€0</div>
+    </div>
+    <div class="btn-bar">
+      <button class="btn btn-ghost" onclick="goPanel(1)">← Gesprek</button>
+      <button class="btn btn-primary" onclick="goPanel(3)">Naar offerte →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 3: OFFERTE -->
+<div class="panel" id="panel-3">
+  <div class="section-card no-print">
+    <div class="section-header">
+      <div class="section-icon icon-green">📄</div>
+      <div>
+        <h2>Offerte opmaken</h2>
+        <p>Vul de klantgegevens aan — de offerte wordt automatisch gegenereerd</p>
+      </div>
+    </div>
+    <div class="offerte-form">
+      <div class="form-group">
+        <label>Naam klant / zaakvoerder</label>
+        <input id="f-naam" type="text" placeholder="Bv. Jan Peeters" oninput="renderOfferte()">
+      </div>
+      <div class="form-group">
+        <label>Bedrijfsnaam</label>
+        <input id="f-bedrijf" type="text" placeholder="Bv. Peeters NV" oninput="renderOfferte()">
+      </div>
+      <div class="form-group">
+        <label>Consultant</label>
+        <input id="f-consultant" type="text" placeholder="Bv. Dirk Vander Eyken" oninput="renderOfferte()">
+      </div>
+      <div class="form-group">
+        <label>Datum</label>
+        <input id="f-datum" type="date" oninput="renderOfferte()">
+      </div>
+      <div class="form-group full">
+        <label>Openingszin / context (optioneel)</label>
+        <textarea id="f-context" rows="2" placeholder="Bv. Na ons gesprek van vandaag..." oninput="renderOfferte()"></textarea>
+      </div>
+    </div>
+    <div class="btn-bar">
+      <button class="btn btn-ghost" onclick="goPanel(2)">← Aanbod</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="window.print()">🖨 Afdrukken</button>
+        <button class="btn btn-navy" onclick="copyOfferte()">📋 Kopieer tekst</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="offerte-preview" id="offerte-preview">
+    <div style="text-align:center;color:var(--muted);padding:40px">Vul klantgegevens in om de offerte te genereren.</div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const DOMEINEN = [
+  { code:'STR', naam:'Strategie', lijn:'metrolijn', icon:'🗺️',
+    vragen:['Heeft het managementteam een gedeeld beeld van waar het bedrijf naartoe wil?','Worden strategische prioriteiten omgezet in concrete jaarplannen?','Hoe worden beslissingen genomen — op gevoel of vanuit een kader?'],
+    module:'Strategisch kader & prioriteitenplan', dagen:{S:1.5,M:4,I:8}, prijs:{S:2200,M:4500,I:8500}
+  },
+  { code:'PROD', naam:'Product / R&D', lijn:'metrolijn', icon:'🔬',
+    vragen:['Is er een productroadmap die de komende 12 maanden richting geeft?','Hoe worden nieuwe ideeën geëvalueerd en geprioriteerd?','Hoe sterk is de samenwerking tussen productontwikkeling en sales?'],
+    module:'Product roadmap & innovatiestructuur', dagen:{S:2,M:4,I:7}, prijs:{S:2500,M:4500,I:8000}
+  },
+  { code:'MKT', naam:'Marketing', lijn:'metrolijn', icon:'📣',
+    vragen:['Is er een heldere positionering die iedereen in het bedrijf kent?','Via welke kanalen bereiken jullie nieuwe klanten?','Hoe consistent is de communicatie naar buiten toe?'],
+    module:'Marketingstrategie & positionering', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:3500,I:7000}
+  },
+  { code:'SAL', naam:'Sales', lijn:'metrolijn', icon:'📈',
+    vragen:['Is er een actieve salespipeline die opgevolgd wordt?','Hoe verloopt de prospectie — structureel of via toeval?','Welk deel van de omzet komt van terugkerende klanten?'],
+    module:'Salesstructuur & pipelinebeheer', dagen:{S:2,M:4,I:7}, prijs:{S:2500,M:4500,I:8000}
+  },
+  { code:'OPS', naam:'Operations', lijn:'metrolijn', icon:'⚙️',
+    vragen:['Hoeveel tijd wordt er besteed aan het herhalen van hetzelfde werk?','Zijn verantwoordelijkheden in de uitvoering helder?','Wat zijn de drie grootste operationele knelpunten vandaag?'],
+    module:'Operationele structuur & procesverbetering', dagen:{S:2,M:5,I:10}, prijs:{S:2800,M:5500,I:10000}
+  },
+  { code:'AFS', naam:'After Sales', lijn:'metrolijn', icon:'🤝',
+    vragen:['Hoe wordt klanttevredenheid gemeten na een project of levering?','Is er een systematische opvolging van bestaande klanten?','Hoe worden klachten behandeld — reactief of proactief?'],
+    module:'After sales & klantbehoud systeem', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:3500,I:6500}
+  },
+  { code:'HR', naam:'HR', lijn:'metrolijn', icon:'👥',
+    vragen:['Is er een onboardingproces voor nieuwe medewerkers?','Worden functieverwachtingen en rollen formeel vastgelegd?','Wat is het verlooppercentage — en weten jullie waarom mensen vertrekken?'],
+    module:'HR-structuur & medewerkerscyclus', dagen:{S:2,M:4,I:8}, prijs:{S:2500,M:4500,I:8500}
+  },
+  { code:'FIN', naam:'Finance', lijn:'metrolijn', icon:'💰',
+    vragen:['Is er een maandelijkse financiële rapportering beschikbaar?','Zijn marges per klant, product of project gekend?','Hoe wordt cash actief bewaakt en gestuurd?'],
+    module:'Financieel dashboard & margerapportering', dagen:{S:1.5,M:3,I:6}, prijs:{S:2200,M:4000,I:7500}
+  },
+  { code:'IT', naam:'IT & Digitalisering', lijn:'metrolijn', icon:'💻',
+    vragen:['Zijn de kernsystemen geïntegreerd of werkt iedereen met eigen Excel?','Hoe lang duurt het om een klantrapport of managementoverzicht te maken?','Zijn er cyberveiligheidsrisico\'s die vandaag onbeheerd zijn?'],
+    module:'IT-audit & digitaliseringsplan', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:3500,I:7000}
+  },
+  { code:'QUA', naam:'Kwaliteit', lijn:'metrolijn', icon:'✅',
+    vragen:['Hoe hoog zijn de herkwaliteitskosten — worden die gemeten?','Is er een systematisch klachtenregister?','Worden oorzaken van fouten structureel aangepakt?'],
+    module:'Kwaliteitsbeheersing & verbetercyclus', dagen:{S:1.5,M:3,I:6}, prijs:{S:1800,M:3500,I:6500}
+  },
+  { code:'SAF', naam:'Veiligheid', lijn:'metrolijn', icon:'🦺',
+    vragen:['Worden veiligheidsincidenten systematisch geregistreerd en geanalyseerd?','Is er een risicoanalyse aanwezig en up-to-date?','Hoe sterk is de veiligheidscultuur in de dagelijkse praktijk?'],
+    module:'Veiligheidsstructuur & risicobeheersing', dagen:{S:1.5,M:3,I:5}, prijs:{S:1800,M:3500,I:6000}
+  },
+  // Versnellers
+  { code:'PM', naam:'Project Management', lijn:'versneller', icon:'📋',
+    vragen:['Worden projecten gestart met een duidelijk doel, eigenaar en tijdlijn?','Hoe vaak worden deadlines en budgetten gehaald?','Is er een overzicht van alle lopende initiatieven?'],
+    module:'Projectraamwerk & portfoliobeheer', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:3800,I:7000}
+  },
+  { code:'PROC', naam:'Proces Management', lijn:'versneller', icon:'🔄',
+    vragen:['Zijn de kritische processen gedocumenteerd en gekend door iedereen?','Hoe worden nieuwe medewerkers ingewerkt in de werking?','Worden processen periodiek geëvalueerd en verbeterd?'],
+    module:'Procesinventaris & standaardisatie', dagen:{S:2,M:4,I:7}, prijs:{S:2500,M:4500,I:8000}
+  },
+  { code:'LEAD', naam:'Leiderschap', lijn:'versneller', icon:'🎯',
+    vragen:['Slagen leidinggevenden erin om mensen mee te krijgen zonder constant te duwen?','Hoe comfortabel zijn teamleiders in het geven van moeilijke feedback?','Worden beslissingen op het juiste niveau genomen?'],
+    module:'Leiderschapsontwikkeling & coachingtraject', dagen:{S:2,M:5,I:9}, prijs:{S:2800,M:5500,I:9500}
+  },
+  { code:'CHG', naam:'Change Management', lijn:'versneller', icon:'🔀',
+    vragen:['Hoe worden veranderingsinitiatieven gecommuniceerd naar het team?','Wordt weerstand tegen verandering proactief aangepakt?','Is er een aanpak om draagvlak te creëren bij ingrijpende wijzigingen?'],
+    module:'Change management aanpak & draagvlakplan', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:4000,I:7500}
+  },
+  { code:'OWN', naam:'Eigenaarschap', lijn:'versneller', icon:'🏆',
+    vragen:['Nemen medewerkers initiatief of wachten ze op instructies?','Zijn verantwoordelijkheden per rol helder gedocumenteerd?','Hoe ver reikt de beslissingsbevoegdheid van het middenmanagement?'],
+    module:'Eigenaarschapskader & delegatiestructuur', dagen:{S:1.5,M:3,I:5}, prijs:{S:1800,M:3500,I:6500}
+  }
+];
+
+const PROFIELEN = {
+  STR:{1:{lbl:'Kritische groeipijn',wat:'De organisatie werkt zonder duidelijke strategische koers. Beslissingen worden ad hoc genomen en prioriteiten verschuiven voortdurend.',goed:'Bedrijven die een heldere strategische lijn uitzetten ervaren snel meer rust, minder interne discussies en een betere afstemming.',visie:'Een strategie hoeft niet complex te zijn. Drie heldere prioriteiten voor het komende jaar zijn al voldoende om iedereen in dezelfde richting te laten werken.'},2:{lbl:'Aandachtspunt',wat:'Er zijn strategische intenties, maar ze zijn onvoldoende geconcretiseerd of gecommuniceerd naar de werkvloer.',goed:'Met enkele gerichte stappen — een helder strategisch kader vertaald naar concrete doelen per team — kan de organisatie snel aan kracht winnen.',visie:'Strategie wordt pas krachtig als ze begrepen en gedragen wordt door iedereen die ze uitvoert. De vertaalslag van visie naar actie is de sleutel.'},3:{lbl:'Goed ontwikkeld',wat:'Er is een heldere strategische richting die voldoende bekend is bij het managementteam. Doelen en prioriteiten zijn aanwezig.',goed:'Door de strategische opvolging iets strakker te structureren — bv. een maandelijks ritme — blijft de richting ook bij drukte zichtbaar.',visie:'Het fundament is aanwezig. De volgende stap is veerkracht: een strategie die standhoudt ook als het druk wordt.'},4:{lbl:'Sterke troef',wat:'De strategische lijn is helder, gedragen en vertaald naar concrete doelen op alle niveaus.',goed:'De uitdaging is het bewaken van de strategische wendbaarheid: kunnen bijsturen wanneer de markt verandert.',visie:'Sterke troef. Investeer in het onderhouden van die strategische scherpte.'}},
+  PROD:{1:{lbl:'Kritische groeipijn',wat:'Productontwikkeling verloopt reactief. Er is geen duidelijke roadmap en innovatie gebeurt eerder toevallig dan doelgericht.',goed:'Bedrijven die een minimale R&D-structuur invoeren zien snel een betere afstemming tussen wat ze ontwikkelen en wat de markt vraagt.',visie:'Een heldere roadmap met drie prioriteiten en een vast evaluatiemoment per kwartaal is vaak al voldoende.'},2:{lbl:'Aandachtspunt',wat:'Er zijn productinitiatieven, maar ze missen structurele opvolging en prioritering.',goed:'Een lichte governance-structuur rond productontwikkeling kan al een grote impact hebben op snelheid en rendement.',visie:'Het potentieel is aanwezig. De volgende stap is een eenvoudige beslisstructuur die goede ideeën sneller naar de markt brengt.'},3:{lbl:'Goed ontwikkeld',wat:'Productontwikkeling is voldoende gestructureerd en samenwerking met sales verloopt redelijk.',goed:'Door de feedbackloop met klanten te versterken blijft het productportfolio relevant.',visie:'Solide basis. De volgende stap is het versnellen van de innovatiecyclus.'},4:{lbl:'Sterke troef',wat:'Productontwikkeling is professioneel ingericht met een duidelijke roadmap.',goed:'Op dit niveau is de uitdaging het bewaken van de balans tussen disruptieve innovatie en optimalisatie.',visie:'Uitstekend. Investeer in het onderhouden van deze competentie.'}},
+  MKT:{1:{lbl:'Kritische groeipijn',wat:'Er is geen duidelijke marketingstrategie. Communicatie en positionering zijn inconsistent en de organisatie is nauwelijks zichtbaar.',goed:'Zelfs een beperkte maar consistente marketingaanpak kan snel zichtbaarheid creëren.',visie:'Marketing begint bij een helder verhaal: wie zijn we, voor wie, en wat maakt ons anders?'},2:{lbl:'Aandachtspunt',wat:'Er zijn marketinginitiatieven, maar ze zijn niet strategisch ingebed. De positionering is niet scherp.',goed:'Een heldere positionering en consistente boodschap zijn al voldoende voor een significante stap voorwaarts.',visie:'De bouwblokken zijn er. Wat ontbreekt is een consistente rode draad.'},3:{lbl:'Goed ontwikkeld',wat:'De marketingstrategie is aanwezig en redelijk consistent. Positionering is gekend.',goed:'Door te focussen op de kanalen die het meeste opleveren kan de impact sterk toenemen.',visie:'Goed fundament. De volgende stap is meer sturing op het rendement van marketinginspanningen.'},4:{lbl:'Sterke troef',wat:'Marketing is strategisch ingebed, consistent en meetbaar.',goed:'De uitdaging is de marketingstrategie aanpassen aan een veranderende markt.',visie:'Sterke troef. Investeer in het onderhouden van dit fundament.'}},
+  SAL:{1:{lbl:'Kritische groeipijn',wat:'Er is geen gestructureerd salesproces. Commerciële opportuniteiten ontstaan via toeval of enkele individuen.',goed:'Bedrijven die een basisstructuur invoeren voor sales zien snel meer grip en meer predictabiliteit.',visie:'Sales hoeft niet ingewikkeld te zijn. Een duidelijk proces en een wekelijks ritme zijn al voldoende voor structurele groei.'},2:{lbl:'Aandachtspunt',wat:'Er zijn commerciële activiteiten, maar ze zijn onvoldoende gestructureerd. De pipeline is niet zichtbaar.',goed:'Een eenvoudig CRM-gebruik en wekelijkse salesoverleggen kunnen al een significante verbetering brengen.',visie:'Het commercieel potentieel is aanwezig. Wat ontbreekt is een lichte maar consistente structuur.'},3:{lbl:'Goed ontwikkeld',wat:'Er is een werkend salesproces met voldoende discipline en zichtbare pipeline.',goed:'Door de salesstructuur verder te professionaliseren kan de commerciële slagkracht toenemen.',visie:'Goede basis. De volgende stap is scherpere prioritering in de pipeline.'},4:{lbl:'Sterke troef',wat:'Sales is professioneel gestructureerd, voorspelbaar en meetbaar.',goed:'De uitdaging is de commerciële kwaliteit bewaken bij schaalvergroting.',visie:'Uitstekend fundament. De focus ligt op verdiepen en verbreden.'}},
+  OPS:{1:{lbl:'Kritische groeipijn',wat:'De dagelijkse werking is reactief. Brandjes blussen is de norm. Dezelfde problemen keren telkens terug.',goed:'Bedrijven die een basisstructuur invoeren in operations ervaren snel minder brandjes en meer rust.',visie:'Structuur begint klein: wie doet wat, wanneer, en hoe weten we of het goed gaat?'},2:{lbl:'Aandachtspunt',wat:'Er zijn operationele afspraken, maar ze worden niet consistent nageleefd. De werking is afhankelijk van individuen.',goed:'Door bestaande processen te verduidelijken kan de operationele consistentie snel verbeteren.',visie:'De kennis is aanwezig. De uitdaging is die kennis te structureren zodat ze niet afhangt van individuen.'},3:{lbl:'Goed ontwikkeld',wat:'De operationele werking is redelijk gestructureerd. Processen zijn grotendeels gekend.',goed:'Door een systematische verbetercyclus in te bouwen blijft de kwaliteit op peil bij verdere groei.',visie:'Stevige basis. De volgende stap is een cultuur van continue verbetering.'},4:{lbl:'Sterke troef',wat:'Operations zijn professioneel ingericht, voorspelbaar en continu verbeterend.',goed:'De uitdaging is operationele excellentie bewaken bij schaalvergroting.',visie:'Sterke troef. Blijven investeren in verbetering loont.'}},
+  AFS:{1:{lbl:'Kritische groeipijn',wat:'Klantenopvolging na de verkoop is rudimentair. Klachten worden reactief behandeld.',goed:'Zelfs een eenvoudige opvolgstructuur kan snel het klantbehoud en de reputatie verbeteren.',visie:'Bestaande klanten zijn de goedkoopste bron van nieuwe omzet.'},2:{lbl:'Aandachtspunt',wat:'Er is enige klantenopvolging, maar die is niet systematisch. De klantbeleving is inconsistent.',goed:'Een gestandaardiseerd opvolgproces geeft alle klanten dezelfde ervaring.',visie:'Een helder proces dat iedereen volgt is waardevoller dan tien ad hoc-oplossingen.'},3:{lbl:'Goed ontwikkeld',wat:'Klantenopvolging is voldoende gestructureerd. Er is een basisproces voor klachtenbehandeling.',goed:'Door after sales proactief in te zetten kan de klantbeleving sterk verbeteren.',visie:'Solide basis. De volgende stap is het commercieel activeren van after sales contact.'},4:{lbl:'Sterke troef',wat:'After sales is professioneel, proactief en meetbaar.',goed:'De uitdaging is de servicekwaliteit bewaken bij groei.',visie:'Uitstekend. Klanten als ambassadeurs is de beste commerciële motor.'}},
+  HR:{1:{lbl:'Kritische groeipijn',wat:'HR is nauwelijks gestructureerd. Rollen zijn onduidelijk, aanwerving is ad hoc en medewerkersbehoud is problematisch.',goed:'Een basisstructuur voor HR kan snel een merkbaar verschil maken in rust en retentie.',visie:'De mensen zijn het grootste kapitaal. Een eenvoudige maar consistente HR-aanpak beschermt dat kapitaal.'},2:{lbl:'Aandachtspunt',wat:'Er zijn HR-processen, maar ze zijn niet consistent. Aanwerving en onboarding verlopen onvoldoende gestructureerd.',goed:'Door HR-processen te standaardiseren kan de medewerkerstevredenheid snel verbeteren.',visie:'De wil is aanwezig. Wat ontbreekt is een consistent HR-ritme.'},3:{lbl:'Goed ontwikkeld',wat:'HR is voldoende gestructureerd. Rollen zijn duidelijk en evaluatiegesprekken vinden plaats.',goed:'Gerichte ontwikkeltrajecten kunnen de HR-kwaliteit verder versterken.',visie:'Stevige basis. De volgende stap is bouwen aan een organisatie die mensen aantrekt en houdt.'},4:{lbl:'Sterke troef',wat:'HR is professioneel ingericht met systematische aanwerving, onboarding en retentie.',goed:'De uitdaging is HR-kwaliteit bewaken bij verdere groei.',visie:'Mensen zijn het fundament — en dit bedrijf heeft dat begrepen.'}},
+  FIN:{1:{lbl:'Kritische groeipijn',wat:'Financieel inzicht is beperkt. Beslissingen worden genomen zonder financiële onderbouwing.',goed:'Een eenvoudig maandelijks dashboard geeft al enorm veel meer grip.',visie:'Financieel inzicht is geen luxe, het is de basis van elke goede beslissing.'},2:{lbl:'Aandachtspunt',wat:'Er is enige financiële rapportering, maar ze is onvolledig of te laat beschikbaar.',goed:'Door bestaande data beter te structureren kan de besluitvorming snel verbeteren.',visie:'De data is beschikbaar. Wat ontbreekt is de juiste interpretatie gekoppeld aan beslissingen.'},3:{lbl:'Goed ontwikkeld',wat:'Financiële rapportering is aanwezig en voldoende tijdig. Er is inzicht in marge en cash.',goed:'Door de financiële diepgang te vergroten kan de kwaliteit van beslissingen verder toenemen.',visie:'Solide basis. De volgende stap is het instrumentarium verfijnen.'},4:{lbl:'Sterke troef',wat:'Financieel management is professioneel met real-time inzicht in marges en cash.',goed:'De uitdaging is het instrumentarium up-to-date houden bij groei.',visie:'Finance als stuurinstrument is één van de grootste hefbomen voor waardecreatie.'}},
+  IT:{1:{lbl:'Kritische groeipijn',wat:'IT is rudimentair. Systemen zijn gefragmenteerd en data is moeilijk te vinden.',goed:'Zelfs een beperkte digitalisering kan al een significante productiviteitswinst opleveren.',visie:'De juiste tool voor het juiste probleem is het vertrekpunt.'},2:{lbl:'Aandachtspunt',wat:'Er zijn systemen, maar ze zijn niet geïntegreerd. Rapportering kost te veel manueel werk.',goed:'Door systemen beter te integreren kan de datakwaliteit snel verbeteren.',visie:'De tools zijn er al. De volgende stap is ze beter laten samenwerken.'},3:{lbl:'Goed ontwikkeld',wat:'IT-systemen ondersteunen de werking voldoende. Basisintegratie is aanwezig.',goed:'Door te investeren in automatisering kan IT een grotere bijdrage leveren.',visie:'Solide basis. De volgende stap is de datafunctie versterken.'},4:{lbl:'Sterke troef',wat:'IT is een strategische enabler. Systemen zijn geïntegreerd en data is real-time beschikbaar.',goed:'De uitdaging is anticiperen op nieuwe technologieën en cyberveiligheid.',visie:'Uitstekend. IT als strategische troef is een significant concurrentievoordeel.'}},
+  QUA:{1:{lbl:'Kritische groeipijn',wat:'Kwaliteitsbeheer is afwezig of reactief. Herwerk is normaal.',goed:'Een eenvoudige kwaliteitsaanpak kan al snel de herkwaliteitskosten significant verlagen.',visie:'Kwaliteit begint bij het zichtbaar maken van fouten. Wat je meet, kan je verbeteren.'},2:{lbl:'Aandachtspunt',wat:'Er zijn kwaliteitsafspraken, maar ze worden niet consistent nageleefd.',goed:'Door bestaande afspraken consequenter te handhaven kan de kwaliteitsgraad snel verbeteren.',visie:'De afspraken zijn er al. Consistentie in de uitvoering is de sleutel.'},3:{lbl:'Goed ontwikkeld',wat:'Kwaliteitsbeheer is voldoende gestructureerd met processen en controles.',goed:'Door kwaliteitsverbetering proactiever aan te sturen kan de graad nog omhoog.',visie:'Sterke basis. Van beheersing naar verbetering als continue activiteit.'},4:{lbl:'Sterke troef',wat:'Kwaliteit is ingebed in de organisatiecultuur.',goed:'De uitdaging is de kwaliteitscultuur bewaken bij verdere groei.',visie:'Kwaliteit als cultuur is één van de sterkste troeven van een organisatie.'}},
+  SAF:{1:{lbl:'Kritische groeipijn',wat:'Veiligheid is niet structureel verankerd. Regels bestaan op papier maar worden niet nageleefd.',goed:'Een beperkte investering in veiligheidsstructuur kan het risicoprofiel significant verlagen.',visie:'Veiligheid begint bij leiderschap. Als leidinggevenden het goede voorbeeld geven, volgt de rest.'},2:{lbl:'Aandachtspunt',wat:'Er zijn veiligheidsafspraken, maar de naleving is inconsistent.',goed:'Door veiligheid structureel op de agenda te zetten kan de cultuur versterken.',visie:'De basis is er. Consistentie en zichtbaar leiderschap zijn de sleutel.'},3:{lbl:'Goed ontwikkeld',wat:'Veiligheid is voldoende gestructureerd. Regels zijn gekend en worden nageleefd.',goed:'Door veiligheid nog proactiever te benaderen kan de organisatie naar een echte veiligheidscultuur groeien.',visie:'Sterke basis. Veiligheid als gedeelde verantwoordelijkheid.'},4:{lbl:'Sterke troef',wat:'Veiligheid is een integraal onderdeel van de organisatiecultuur.',goed:'De uitdaging is de cultuur bewaken bij groei en nieuwe medewerkers.',visie:'Uitstekend. Een sterke veiligheidscultuur is een teken van volwassen leiderschap.'}},
+  PM:{1:{lbl:'Kritische groeipijn',wat:'Veranderingsinitiatieven worden niet structureel beheerd. Projecten starten enthousiast maar geraken niet afgewerkt.',goed:'Een eenvoudige projectaanpak kan al een grote verbetering brengen in de slagingskans.',visie:'Projecten falen zelden door gebrek aan ideeën. Ze falen door gebrek aan structuur en eigenaarschap.'},2:{lbl:'Aandachtspunt',wat:'Er zijn projecten, maar ze worden niet systematisch beheerd. Voortgang is niet zichtbaar.',goed:'Een licht maar consistent projectraamwerk kan de slagingskans significant verhogen.',visie:'Projecten mislukken niet door gebrek aan ideeën maar door gebrek aan opvolging.'},3:{lbl:'Goed ontwikkeld',wat:'Projectmanagement is voldoende gestructureerd met eigenaar en tijdlijn.',goed:'Door de projectportfolio actief te beheren kan het rendement verder verbeteren.',visie:'Solide basis. De volgende stap is portfoliomanagement.'},4:{lbl:'Sterke troef',wat:'Projectmanagement is professioneel ingebed. De slagingskans is hoog.',goed:'De uitdaging is projectcapaciteit bewaken en overbelasting voorkomen.',visie:'Uitstekend. Projectmanagement als competentie is één van de sterkste hefbomen.'}},
+  PROC:{1:{lbl:'Kritische groeipijn',wat:'Processen zijn nauwelijks gedocumenteerd. Iedereen werkt op zijn eigen manier.',goed:'Het documenteren van de meest kritische processen geeft al snel meer rust en onafhankelijkheid.',visie:'Processen hoeven niet complex te zijn. Wie doet wat en hoe — dat is al een enorme stap.'},2:{lbl:'Aandachtspunt',wat:'Er zijn processen beschreven, maar ze worden niet consistent gevolgd.',goed:'Door bestaande processen te vereenvoudigen en naleving te ondersteunen kan de procesvolwassenheid snel verbeteren.',visie:'De basis is er. De uitdaging is de stap van documentatie naar dagelijkse praktijk.'},3:{lbl:'Goed ontwikkeld',wat:'Processen zijn beschreven, worden nageleefd en periodiek bijgewerkt.',goed:'Door processen regelmatig te evalueren kan de procesvolwassenheid verder groeien.',visie:'Stevige basis. Continue procesverbetering als ingebedde activiteit.'},4:{lbl:'Sterke troef',wat:'Procesmanagement is professioneel. Processen zijn gedocumenteerd, gevolgd en continu verbeterd.',goed:'De uitdaging is de procesbalans bewaken: structuur zonder wendbaarheid te verliezen.',visie:'Uitstekend. Procesexcellentie is één van de sterkste troeven voor duurzame groei.'}},
+  LEAD:{1:{lbl:'Kritische groeipijn',wat:'Leiderschapscapaciteit is beperkt. Leidinggevenden slagen er niet in om mensen mee te krijgen zonder constant te duwen.',goed:'Gerichte leiderschapsontwikkeling kan snel leiden tot meer zelfstandigheid en minder afhankelijkheid.',visie:'Leiderschap is een vaardigheid die geleerd kan worden. Investeren erin is investeren in groeikracht.'},2:{lbl:'Aandachtspunt',wat:'Er is leiderschapspotentieel, maar leidinggevenden zijn onvoldoende gecoacht.',goed:'Door leidinggevenden gericht te begeleiden kan de organisatie snel winnen aan zelfstandigheid.',visie:'Het potentieel is er. Gerichte coaching en duidelijke rolafspraken kunnen het verschil maken.'},3:{lbl:'Goed ontwikkeld',wat:'Leiderschap is voldoende sterk. Er is psychologische veiligheid voor open gesprekken.',goed:'Investeren in leiderschapsontwikkeling op alle niveaus bouwt strategisch voordeel.',visie:'Sterke basis. Verankeren en vermenigvuldigen is de volgende stap.'},4:{lbl:'Sterke troef',wat:'Leiderschap is een organisatiecompetentie op alle niveaus. Er is een cultuur van eigenaarschap.',goed:'De uitdaging is de leiderschapscultuur bewaken bij verdere groei.',visie:'Leiderschap als cultuur is het fundament van een duurzame, schaalbare organisatie.'}},
+  CHG:{1:{lbl:'Kritische groeipijn',wat:'Er is geen structurele aanpak voor verandering. Initiatieven mislukken door gebrek aan draagvlak.',goed:'Een eenvoudige change management aanpak verhoogt de slagingskans van veranderingen sterk.',visie:'Mensen verzetten zich niet tegen verandering, maar tegen verandering die hen overkomt.'},2:{lbl:'Aandachtspunt',wat:'Er is enig bewustzijn van change management, maar de aanpak is inconsistent.',goed:'Door een consistente change-aanpak te hanteren kan het veranderingsvermogen versterken.',visie:'De wil tot verandering is er. Wat ontbreekt is een consistent kader.'},3:{lbl:'Goed ontwikkeld',wat:'Changes worden voldoende gestructureerd doorgevoerd met aandacht voor communicatie.',goed:'Door change management verder te professionaliseren kan het veranderingsvermogen nog groeien.',visie:'Solide basis. De volgende stap is change management als organisatievaardigheid.'},4:{lbl:'Sterke troef',wat:'Change management is een organisatiecompetentie. Changes worden systematisch gepland en begeleid.',goed:'De uitdaging is verandercapaciteit bewaken en change-moeheid voorkomen.',visie:'Verandervermogen als competentie is één van de meest waardevolle troeven in een turbulente markt.'}},
+  OWN:{1:{lbl:'Kritische groeipijn',wat:'Verantwoordelijkheden zijn onduidelijk. Te veel beslissingen en vragen komen bij de directie terecht.',goed:'Door verantwoordelijkheden helder te definiëren kan de organisatie snel zelfstandiger worden.',visie:'Eigenaarschap creëer je niet door te delegeren en te vergeten. Het vraagt duidelijkheid en vertrouwen.'},2:{lbl:'Aandachtspunt',wat:'Er is enig eigenaarschap, maar het is afhankelijk van individuen. De meeste beslissingen worden nog centraal genomen.',goed:'Door duidelijke kaders voor eigenaarschap te creëren kan de autonomie snel toenemen.',visie:'Het potentieel is er bij de medewerkers. Wat ontbreekt is een helder kader.'},3:{lbl:'Goed ontwikkeld',wat:'Eigenaarschap is voldoende aanwezig. Medewerkers nemen verantwoordelijkheid voor hun domein.',goed:'Eigenaarschap verder verankeren voor complexere beslissingen vergroot autonomie.',visie:'Sterke basis. De volgende stap: eigenaarschap ook op strategisch niveau verankeren.'},4:{lbl:'Sterke troef',wat:'Eigenaarschap is een organisatiewaarde op alle niveaus.',goed:'De uitdaging is eigenaarschap bewaken bij verdere groei.',visie:'Een organisatie met sterk eigenaarschap op alle niveaus is klaar voor de volgende groeifase.'}}
+};
+
+const NIVEAUS = {
+  S: { label: 'Starter', omschrijving: '½ dag diagnose + 1 dag quick win', kleur: '#e8eef8' },
+  M: { label: 'Standaard', omschrijving: 'Diagnose + tool implementatie + coaching (3–5 dagen)', kleur: '#fef0e4' },
+  I: { label: 'Intensief', omschrijving: 'Volledig station uitbouwen + borging (8–12 dagen)', kleur: '#e8f7ef' }
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let scores = {};
+let geselecteerd = {}; // code -> niveau (S/M/I)
+let notities = {};
+
+DOMEINEN.forEach(d => {
+  scores[d.code] = 2;
+  geselecteerd[d.code] = null;
+  notities[d.code] = '';
+});
+
+// ============================================================
+// HELPERS
+// ============================================================
+function getZone(s) {
+  if (s <= 1.75) return 1;
+  if (s <= 2.5) return 2;
+  if (s <= 3.25) return 3;
+  return 4;
+}
+function zoneBadge(z) {
+  const map = {1:{cls:'badge-r',txt:'🔴 Kritisch'},2:{cls:'badge-o',txt:'🟠 Aandachtspunt'},3:{cls:'badge-b',txt:'🔵 Goed'},4:{cls:'badge-g',txt:'🟢 Sterk'}};
+  return map[z];
+}
+function zoneDot(z) {
+  return ['','z1','z2','z3','z4'][z];
+}
+function fmt(n) { return '€' + n.toLocaleString('nl-BE'); }
+
+// ============================================================
+// PANEL NAVIGATION
+// ============================================================
+function goPanel(n) {
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n));
+  document.querySelectorAll('.step-btn').forEach((b,i) => b.classList.toggle('active', i===n));
+  if (n===1) buildGesprek();
+  if (n===2) buildModules();
+  if (n===3) { setTodayDate(); renderOfferte(); }
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+// PANEL 0: SCORES
+// ============================================================
+function buildScores() {
+  const grid = document.getElementById('scores-grid');
+  let html = '<div class="divider-label">🚇 De 11 metrolijnen</div>';
+  DOMEINEN.filter(d=>d.lijn==='metrolijn').forEach(d => {
+    html += scoreRow(d);
+  });
+  html += '<div class="divider-label">⚡ De 5 organisatieversnellers</div>';
+  DOMEINEN.filter(d=>d.lijn==='versneller').forEach(d => {
+    html += scoreRow(d);
+  });
+  grid.innerHTML = html;
+  updatePriorityBar();
+}
+
+function scoreRow(d) {
+  const s = scores[d.code];
+  const z = getZone(s);
+  return `<div class="score-row" id="sr-${d.code}">
+    <div>
+      <div class="score-label">${d.icon} ${d.naam}</div>
+      <div class="score-sub">${d.lijn}</div>
+    </div>
+    <div class="score-controls">
+      <div class="zone-dot ${zoneDot(z)}" id="dot-${d.code}"></div>
+      <button class="score-btn score-minus" onclick="changeScore('${d.code}',-0.25)">−</button>
+      <div class="score-val" id="sv-${d.code}">${s.toFixed(2)}</div>
+      <button class="score-btn score-plus" onclick="changeScore('${d.code}',0.25)">+</button>
+    </div>
+  </div>`;
+}
+
+function changeScore(code, delta) {
+  scores[code] = Math.min(4, Math.max(1, Math.round((scores[code] + delta) * 100) / 100));
+  const s = scores[code];
+  const z = getZone(s);
+  document.getElementById('sv-' + code).textContent = s.toFixed(2);
+  const dot = document.getElementById('dot-' + code);
+  dot.className = 'zone-dot ' + zoneDot(z);
+  updatePriorityBar();
+}
+
+function updatePriorityBar() {
+  const bar = document.getElementById('priority-bar');
+  const sorted = [...DOMEINEN].sort((a,b) => scores[a.code]-scores[b.code]).slice(0,5);
+  bar.innerHTML = sorted.map(d => {
+    const z = getZone(scores[d.code]);
+    const cls = z===1?'chip-red':z===2?'chip-amber':z===3?'chip-navy':'chip-green';
+    return `<span class="priority-chip ${cls}">${d.icon} ${d.naam} (${scores[d.code].toFixed(2)})</span>`;
+  }).join('');
+}
+
+// ============================================================
+// PANEL 1: GESPREK
+// ============================================================
+function buildGesprek() {
+  const sorted = [...DOMEINEN].sort((a,b) => scores[a.code]-scores[b.code]);
+  let html = '';
+  sorted.forEach(d => {
+    const s = scores[d.code];
+    const z = getZone(s);
+    const p = PROFIELEN[d.code] && PROFIELEN[d.code][z];
+    if (!p) return;
+    const bz = zoneBadge(z);
+    html += `<div class="domein-card" id="dc-${d.code}">
+      <div class="domein-header" onclick="toggleDomein('${d.code}')">
+        <div class="domein-title">
+          <span style="font-size:20px">${d.icon}</span>
+          <span class="domein-name">${d.naam}</span>
+          <span class="zone-badge ${bz.cls}">${bz.txt}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="domein-score-badge">${s.toFixed(1)}</span>
+          <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="domein-body">
+        <div class="info-block">
+          <div class="info-block-label">📋 Wat zien wij</div>
+          <p>${p.wat}</p>
+        </div>
+        <div class="info-block" style="background:#fef0e4">
+          <div class="info-block-label">💡 Het goede nieuws</div>
+          <p>${p.goed}</p>
+        </div>
+        <div class="info-block" style="background:#e8f7ef">
+          <div class="info-block-label">🎯 TNL-visie</div>
+          <p>${p.visie}</p>
+        </div>
+        <div class="gesprek-vragen">
+          <h4>Verdiepingsvragen voor dit gesprek</h4>
+          ${d.vragen.map(v=>`<div class="vraag-item"><span class="vraag-bullet">→</span><span>${v}</span></div>`).join('')}
+        </div>
+        <textarea class="notes-field" placeholder="Notities uit het gesprek (verschijnen in de offerte)..." 
+          oninput="notities['${d.code}']=this.value">${notities[d.code]||''}</textarea>
+      </div>
+    </div>`;
+  });
+  document.getElementById('gesprek-domeinen').innerHTML = html;
+  // Auto-open top 3 priority
+  sorted.slice(0,3).forEach(d => {
+    const card = document.getElementById('dc-'+d.code);
+    if (card) card.classList.add('open');
+  });
+}
+
+function toggleDomein(code) {
+  document.getElementById('dc-'+code).classList.toggle('open');
+}
+
+// ============================================================
+// PANEL 2: MODULES
+// ============================================================
+function buildModules() {
+  const sorted = [...DOMEINEN].sort((a,b) => scores[a.code]-scores[b.code]);
+  let html = '';
+  sorted.forEach(d => {
+    const s = scores[d.code];
+    const z = getZone(s);
+    const sel = geselecteerd[d.code];
+    const niveau = sel || 'M';
+    const prijs = d.prijs[niveau];
+    const bz = zoneBadge(z);
+    html += `<div class="module-card ${sel?'selected':''}" id="mc-${d.code}">
+      <div class="module-top">
+        <div class="module-left">
+          <input type="checkbox" class="module-check" ${sel?'checked':''} onchange="toggleModule('${d.code}',this.checked)">
+          <div class="module-info">
+            <div class="module-name">${d.icon} ${d.naam}</div>
+            <div class="module-sub">${d.module} &nbsp;·&nbsp; <span class="zone-badge ${bz.cls}" style="font-size:10px">${bz.txt}</span></div>
+            <div class="niveau-pills" id="np-${d.code}">
+              ${['S','M','I'].map(n=>`<span class="niveau-pill ${niveau===n&&sel?'active':''}" onclick="setNiveau('${d.code}','${n}')">${NIVEAUS[n].label}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="module-right">
+          <div>
+            <div class="price-tag" id="pt-${d.code}">${fmt(prijs)}</div>
+            <div class="price-sub" id="pd-${d.code}">${NIVEAUS[niveau].omschrijving}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('modules-lijst').innerHTML = html;
+  updateTotaal();
+}
+
+function toggleModule(code, checked) {
+  geselecteerd[code] = checked ? (geselecteerd[code] || 'M') : null;
+  const card = document.getElementById('mc-'+code);
+  card.classList.toggle('selected', !!geselecteerd[code]);
+  const pills = document.getElementById('np-'+code).querySelectorAll('.niveau-pill');
+  pills.forEach((p,i) => p.classList.toggle('active', ['S','M','I'][i] === geselecteerd[code]));
+  updateTotaal();
+}
+
+function setNiveau(code, niveau) {
+  if (!geselecteerd[code]) {
+    geselecteerd[code] = niveau;
+    const card = document.getElementById('mc-'+code);
+    card.classList.add('selected');
+    card.querySelector('.module-check').checked = true;
+  } else {
+    geselecteerd[code] = niveau;
+  }
+  const d = DOMEINEN.find(x=>x.code===code);
+  document.getElementById('pt-'+code).textContent = fmt(d.prijs[niveau]);
+  document.getElementById('pd-'+code).textContent = NIVEAUS[niveau].omschrijving;
+  const pills = document.getElementById('np-'+code).querySelectorAll('.niveau-pill');
+  pills.forEach((p,i) => p.classList.toggle('active', ['S','M','I'][i] === niveau));
+  updateTotaal();
+}
+
+function updateTotaal() {
+  let totaal = 0, dagen = 0;
+  DOMEINEN.forEach(d => {
+    const n = geselecteerd[d.code];
+    if (n) { totaal += d.prijs[n]; dagen += d.dagen[n]; }
+  });
+  const bar = document.getElementById('totaal-bar');
+  bar.style.display = totaal > 0 ? 'flex' : 'none';
+  document.getElementById('totaal-prijs').textContent = fmt(totaal);
+  document.getElementById('totaal-days').textContent = `± ${dagen.toFixed(1)} consultantdagen (excl. BTW)`;
+}
+
+// ============================================================
+// PANEL 3: OFFERTE
+// ============================================================
+function setTodayDate() {
+  const d = document.getElementById('f-datum');
+  if (!d.value) d.value = new Date().toISOString().split('T')[0];
+  // Prefill consultant als leeg
+  const c = document.getElementById('f-consultant');
+  if (!c.value) c.value = 'Dirk Vander Eyken';
+  // Prefill context vanuit klantData als beschikbaar
+  const ctx = document.getElementById('f-context');
+  if (!ctx.value && klantData.naam) {
+    const fn = klantData.functie ? ` (${klantData.functie})` : '';
+    const sec = klantData.sector ? ` in de sector ${klantData.sector}` : '';
+    const mw = klantData.medewerkers ? ` met ${klantData.medewerkers} medewerkers` : '';
+    ctx.value = `Na ons gesprek met ${klantData.naam}${fn} van ${klantData.bedrijf||'uw bedrijf'}${sec}${mw} stellen wij onderstaand verbeterplan voor op basis van de Metroplan Quick Scan.`;
+    renderOfferte();
+  }
+}
+
+function renderOfferte() {
+  const naam = document.getElementById('f-naam').value.trim();
+  const bedrijf = document.getElementById('f-bedrijf').value.trim();
+  const consultant = document.getElementById('f-consultant').value.trim();
+  const datum = document.getElementById('f-datum').value;
+  const context = document.getElementById('f-context').value.trim();
+  const preview = document.getElementById('offerte-preview');
+
+  if (!naam && !bedrijf) {
+    preview.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px">Vul klantgegevens in om de offerte te genereren.</div>';
+    return;
+  }
+
+  const gesModules = DOMEINEN.filter(d => geselecteerd[d.code]);
+  let totaal = 0, dagen = 0;
+  gesModules.forEach(d => { totaal += d.prijs[geselecteerd[d.code]]; dagen += d.dagen[geselecteerd[d.code]]; });
+
+  const datumFmt = datum ? new Date(datum).toLocaleDateString('nl-BE', {day:'numeric',month:'long',year:'numeric'}) : '';
+
+  let tabelRows = gesModules.map(d => {
+    const n = geselecteerd[d.code];
+    const niv = NIVEAUS[n];
+    const z = getZone(scores[d.code]);
+    const bz = zoneBadge(z);
+    const note = notities[d.code] ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;font-style:italic">${notities[d.code]}</div>` : '';
+    return `<tr>
+      <td><strong>${d.icon} ${d.naam}</strong><br><span style="font-size:11px;color:var(--muted)">${d.module}</span>${note}</td>
+      <td><span class="zone-badge ${bz.cls}" style="font-size:10px">${bz.txt}</span></td>
+      <td style="white-space:nowrap"><strong>${niv.label}</strong><br><span style="font-size:11px;color:var(--muted)">${niv.omschrijving}</span></td>
+      <td style="text-align:right;font-weight:700">${fmt(d.prijs[n])}</td>
+    </tr>`;
+  }).join('');
+
+  if (!tabelRows) {
+    tabelRows = `<tr><td colspan="4" style="color:var(--muted);font-style:italic">Geen modules geselecteerd.</td></tr>`;
+  }
+
+  const klantInfo = [
+    klantData.email ? `✉️ ${klantData.email}` : null,
+    klantData.tel ? `📞 ${klantData.tel}` : null,
+    klantData.sector ? `🏭 ${klantData.sector}` : null,
+    klantData.medewerkers ? `👥 ${klantData.medewerkers} medewerkers` : null,
+  ].filter(Boolean).join('  ·  ');
+
+  preview.innerHTML = `
+    <div class="offerte-header">
+      <div>
+        <div class="offerte-logo">The Ne<span>x</span>t Level</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Metroplan Methodologie</div>
+      </div>
+      <div class="offerte-meta">
+        <div><strong>Voorstel voor:</strong> ${bedrijf||naam}</div>
+        ${klantInfo ? `<div style="font-size:11px;margin-top:2px">${klantInfo}</div>` : ''}
+        ${datumFmt?`<div>${datumFmt}</div>`:''}
+        ${consultant?`<div>Consultant: ${consultant}</div>`:''}
+      </div>
+    </div>
+
+    <div class="offerte-titel">Verbeterplan op maat</div>
+    <div class="offerte-subtitle">Op basis van de Metroplan Quick Scan — ${bedrijf||naam}</div>
+
+    ${context?`<div class="offerte-section"><p style="font-size:13px;line-height:1.7;color:var(--text)">${context}</p></div>`:''}
+
+    <div class="offerte-section">
+      <h3>Aanpak</h3>
+      <p style="font-size:13px;line-height:1.7;color:var(--text)">
+        Op basis van de Quick Scan en ons gesprek hebben we de prioritaire werkpunten geïdentificeerd. 
+        Voor elk geselecteerd metrostation werken we met een <strong>vaste basisaanpak</strong> die licht aangepast 
+        wordt aan de specifieke context van ${bedrijf||'uw organisatie'}. 
+        We starten waar de nood het hoogst is en bouwen van daaruit verder — stap voor stap, met meetbare resultaten.
+      </p>
+    </div>
+
+    <div class="offerte-section">
+      <h3>Geselecteerde modules</h3>
+      <table class="offerte-table">
+        <thead>
+          <tr>
+            <th>Module / Metrostation</th>
+            <th>Prioriteit</th>
+            <th>Niveau</th>
+            <th style="text-align:right">Investering</th>
+          </tr>
+        </thead>
+        <tbody>${tabelRows}</tbody>
+      </table>
+      <div class="offerte-totaal">
+        <div>
+          <div class="t-label">Totale investering (excl. BTW)</div>
+          <div style="font-size:11px;opacity:0.6">± ${dagen.toFixed(1)} consultantdagen</div>
+        </div>
+        <div class="t-amount">${fmt(totaal)}</div>
+      </div>
+    </div>
+
+    <div class="offerte-section">
+      <h3>Hoe we samenwerken</h3>
+      <p style="font-size:13px;line-height:1.7;color:var(--text)">
+        Elke module wordt uitgevoerd door een TNL-consultant met specialisatie in dat domein. 
+        We werken met <strong>eenvoudige, pragmatische tools</strong> die na onze interventie in jullie organisatie blijven.
+        Begeleiding, opleiding en coaching on the job zijn inbegrepen in het intensiteitsniveau.
+        De modules kunnen <strong>gefaseerd worden opgestart</strong> — we beginnen met de meest urgente.
+      </p>
+    </div>
+
+    <div class="offerte-footer">
+      <p>Dit voorstel is vrijblijvend en geldig voor 30 dagen. Prijzen zijn exclusief BTW. Reiskosten worden afzonderlijk afgesproken.</p>
+      <p style="margin-top:6px"><em>"Moeilijke dingen eenvoudig maken… niet simpel. Wij brengen jouw bedrijf naar The Next Level."</em></p>
+    </div>
+  `;
+}
+
+function copyOfferte() {
+  const el = document.getElementById('offerte-preview');
+  const text = el.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Gekopieerd!';
+    setTimeout(()=>btn.textContent='📋 Kopieer tekst',2000);
+  });
+}
+
+// ============================================================
+// MAIL IMPORT
+// ============================================================
+
+// Mapping van domeinnamen (zoals in de mail) naar codes
+const NAAM_NAAR_CODE = {
+  'strategie': 'STR', 'strategy': 'STR',
+  'product': 'PROD', 'product / r&d': 'PROD', 'r&d': 'PROD',
+  'marketing': 'MKT',
+  'sales': 'SAL',
+  'operations': 'OPS',
+  'after sales': 'AFS', 'aftersales': 'AFS',
+  'hr': 'HR', 'human resources': 'HR',
+  'finance': 'FIN', 'financiën': 'FIN', 'financien': 'FIN',
+  'it': 'IT', 'it & digitalisering': 'IT', 'digitalisering': 'IT',
+  'kwaliteit': 'QUA', 'quality': 'QUA',
+  'veiligheid': 'SAF', 'safety': 'SAF',
+  'project management': 'PM', 'projectmanagement': 'PM',
+  'proces management': 'PROC', 'procesmanagement': 'PROC', 'process management': 'PROC',
+  'leadership': 'LEAD', 'leiderschap': 'LEAD',
+  'change management': 'CHG', 'changemanagement': 'CHG',
+  'ownership': 'OWN', 'eigenaarschap': 'OWN'
+};
+
+let klantData = {};
+
+function importeerMail() {
+  const tekst = document.getElementById('mail-import-tekst').value.trim();
+  if (!tekst) return;
+
+  const regels = tekst.split('\n').map(r => r.trim()).filter(r => r);
+  let gevonden = { scores: {}, klant: {} };
+  let scoreCount = 0;
+
+  regels.forEach(regel => {
+    // Score-regels: "Strategie: 2.5/4 (Aandachtspunt)" of "Strategie: 2.5/4"
+    const scoreMatch = regel.match(/^(.+?):\s*([\d.]+)\s*\/\s*4/i);
+    if (scoreMatch) {
+      const naamRauw = scoreMatch[1].trim().toLowerCase();
+      const score = parseFloat(scoreMatch[2]);
+      if (!isNaN(score) && score >= 1 && score <= 4) {
+        const code = NAAM_NAAR_CODE[naamRauw];
+        if (code) {
+          gevonden.scores[code] = Math.round(score * 100) / 100;
+          scoreCount++;
+        }
+      }
+      return;
+    }
+
+    // Klantgegevens: "Naam: Jan Peeters" of "Bedrijf: Peeters NV" enz.
+    const kvMatch = regel.match(/^(.+?):\s*(.+)$/);
+    if (kvMatch) {
+      const sleutel = kvMatch[1].trim().toLowerCase();
+      const waarde = kvMatch[2].trim();
+      if (waarde === 'Niet ingevuld' || waarde === '') return;
+
+      if (['naam', 'name'].includes(sleutel)) gevonden.klant.naam = waarde;
+      else if (['bedrijf', 'company', 'organisatie'].includes(sleutel)) gevonden.klant.bedrijf = waarde;
+      else if (['e-mail', 'email', 'mail', 'from_email', 'e mail'].includes(sleutel)) gevonden.klant.email = waarde;
+      else if (['functie', 'function', 'titel', 'rol'].includes(sleutel)) gevonden.klant.functie = waarde;
+      else if (['medewerkers', 'employees', 'aantal medewerkers', 'fte'].includes(sleutel)) gevonden.klant.medewerkers = waarde;
+      else if (['sector', 'industry', 'branche'].includes(sleutel)) gevonden.klant.sector = waarde;
+      else if (['tel', 'telefoon', 'phone', 'gsm', 'telefoon/gsm'].includes(sleutel)) gevonden.klant.tel = waarde;
+      else if (['datum', 'date'].includes(sleutel)) gevonden.klant.datum = waarde;
+      else if (['score', 'gemiddelde score', 'totaalscore'].includes(sleutel)) gevonden.klant.score = waarde;
+    }
+  });
+
+  if (scoreCount === 0 && Object.keys(gevonden.klant).length === 0) {
+    document.getElementById('import-status').innerHTML = '<span style="color:var(--red)">⚠ Geen herkenbare gegevens gevonden. Controleer het formaat.</span>';
+    return;
+  }
+
+  // Scores toepassen
+  Object.keys(gevonden.scores).forEach(code => {
+    scores[code] = gevonden.scores[code];
+  });
+
+  // Klantdata opslaan
+  klantData = gevonden.klant;
+
+  // UI updaten
+  buildScores();
+  updatePriorityBar();
+  toonKlantKaart();
+
+  // Offerte-velden prefill
+  if (klantData.naam) document.getElementById('f-naam').value = klantData.naam;
+  if (klantData.bedrijf) document.getElementById('f-bedrijf').value = klantData.bedrijf;
+
+  const resultaatEl = document.getElementById('import-resultaat');
+  let msg = `✅ <strong>Import geslaagd</strong> — `;
+  const delen = [];
+  if (scoreCount > 0) delen.push(`${scoreCount} scores ingelezen`);
+  if (Object.keys(gevonden.klant).length > 0) delen.push(`klantgegevens gevonden`);
+  msg += delen.join(', ');
+  resultaatEl.innerHTML = msg;
+  resultaatEl.style.display = 'block';
+  document.getElementById('import-status').innerHTML = `<span style="color:var(--green)">✓ Geïmporteerd op ${new Date().toLocaleTimeString('nl-BE')}</span>`;
+}
+
+function toonKlantKaart() {
+  const kaart = document.getElementById('klant-kaart');
+  const details = document.getElementById('klant-details');
+  if (Object.keys(klantData).length === 0) { kaart.style.display = 'none'; return; }
+
+  const velden = [
+    { lbl: 'Naam', key: 'naam', icon: '👤' },
+    { lbl: 'Bedrijf', key: 'bedrijf', icon: '🏢' },
+    { lbl: 'E-mail', key: 'email', icon: '✉️' },
+    { lbl: 'Functie', key: 'functie', icon: '💼' },
+    { lbl: 'Medewerkers', key: 'medewerkers', icon: '👥' },
+    { lbl: 'Sector', key: 'sector', icon: '🏭' },
+    { lbl: 'Telefoon', key: 'tel', icon: '📞' },
+    { lbl: 'Gemiddelde score', key: 'score', icon: '📊' },
+  ];
+
+  details.innerHTML = velden
+    .filter(v => klantData[v.key])
+    .map(v => `
+      <div style="background:var(--light);border-radius:8px;padding:10px 14px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">${v.icon} ${v.lbl}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--navy)">${klantData[v.key]}</div>
+      </div>
+    `).join('');
+
+  kaart.style.display = 'block';
+}
+
+function clearImport() {
+  document.getElementById('mail-import-tekst').value = '';
+  document.getElementById('import-status').textContent = 'Nog niets geïmporteerd';
+  document.getElementById('import-resultaat').style.display = 'none';
+  document.getElementById('klant-kaart').style.display = 'none';
+  klantData = {};
+  DOMEINEN.forEach(d => scores[d.code] = 2);
+  buildScores();
+  updatePriorityBar();
+  // Reset offerte-velden
+  document.getElementById('f-naam').value = '';
+  document.getElementById('f-bedrijf').value = '';
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildScores();
+</script>
+</body>
+</html>

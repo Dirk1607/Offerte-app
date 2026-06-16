@@ -1,0 +1,25 @@
+Naam: Jan Peeters
+Bedrijf: Peeters NV
+E-mail: jan@peeters.be
+Functie: Zaakvoerder
+Medewerkers: 25
+Sector: Productie
+Score: 2.6 / 4
+
+Rapport:
+Strategie: 2.5/4 (Aandachtspunt)
+Product / R&D: 3.1/4 (Goed ontwikkeld)
+Marketing: 1.5/4 (Kritisch aandachtspunt)
+Sales: 2.0/4 (Aandachtspunt)
+Operations: 3.5/4 (Goed ontwikkeld)
+After Sales: 2.8/4 (Goed ontwikkeld)
+HR: 1.8/4 (Aandachtspunt)
+Finance: 3.9/4 (Sterke troef)
+IT: 2.2/4 (Aandachtspunt)
+Kwaliteit: 3.0/4 (Goed ontwikkeld)
+Veiligheid: 2.7/4 (Goed ontwikkeld)
+Project Management: 1.9/4 (Aandachtspunt)
+Proces Management: 2.4/4 (Aandachtspunt)
+Leadership: 3.2/4 (Goed ontwikkeld)
+Change Management: 2.1/4 (Aandachtspunt)
+Ownership: 2.9/4 (Goed ontwikkeld)

@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TNL — Gesprek & Offerte</title>
+<style>
+:root {
+  --navy:#1B3A6B; --navy-light:#2a4f8a; --orange:#E8812A; --blue:#4A7CB5;
+  --light:#F4F7FB; --border:#D0DCF0; --green:#2E7D52; --green-light:#e8f7ef;
+  --red:#C0392B; --red-light:#fdecea; --amber:#d97706; --amber-light:#fff8e8;
+  --text:#1a1a2e; --muted:#6b7a99; --white:#fff; --card-shadow:0 2px 16px rgba(27,58,107,0.09);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--text); background:var(--light); line-height:1.5; }
+header { background:var(--navy); color:#fff; padding:16px 28px; display:flex; align-items:center; justify-content:space-between; }
+header h1 { font-size:18px; font-weight:800; letter-spacing:.3px; }
+header .conn { font-size:12px; opacity:.85; }
+nav { display:flex; gap:4px; background:#fff; padding:0 20px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:5; }
+nav button { background:none; border:none; padding:14px 20px; font-size:14px; font-weight:700; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; }
+nav button.actief { color:var(--navy); border-bottom-color:var(--orange); }
+main { max-width:1000px; margin:0 auto; padding:28px 20px 80px; }
+.panel { display:none; }
+.panel.actief { display:block; }
+h2 { font-size:20px; color:var(--navy); margin-bottom:6px; }
+.sub { color:var(--muted); font-size:14px; margin-bottom:20px; }
+.card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:var(--card-shadow); margin-bottom:20px; }
+textarea { width:100%; min-height:180px; border:1px solid var(--border); border-radius:8px; padding:12px; font-family:ui-monospace,monospace; font-size:13px; resize:vertical; }
+.btn { background:var(--navy); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:14px; font-weight:700; cursor:pointer; }
+.btn:hover { background:var(--navy-light); }
+.btn-ghost { background:#fff; color:var(--navy); border:1.5px solid var(--border); }
+.btn-row { display:flex; gap:10px; margin-top:14px; }
+.status { font-size:13px; margin-top:10px; min-height:18px; }
+.klant-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; }
+.klant-veld { background:var(--light); border:1px solid var(--border); border-radius:8px; padding:9px 12px; }
+.klant-veld { min-width:0; }
+.klant-veld .lbl { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+.klant-veld .val { font-size:14px; font-weight:600; color:var(--navy); overflow-wrap:anywhere; word-break:break-word; }
+.score-titel { font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin:22px 0 10px; }
+.score-rij { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid #eef2f9; }
+.score-rij .naam { width:200px; font-weight:600; color:var(--navy); }
+.score-rij .naam small { color:var(--muted); font-weight:400; }
+.bar { flex:1; height:10px; background:#eef2f9; border-radius:6px; overflow:hidden; }
+.bar > div { height:100%; border-radius:6px; }
+.score-rij .cijfer { width:56px; text-align:right; font-weight:800; }
+.badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+.placeholder { color:var(--muted); font-style:italic; padding:40px; text-align:center; }
+.legenda { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:14px; }
+.legenda span { display:inline-flex; align-items:center; gap:6px; }
+.dot { width:11px; height:11px; border-radius:50%; display:inline-block; }
+
+/* Catalogus-boom */
+.lijn-groep { margin-bottom:6px; }
+.lijn-kop { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#fff; border:1px solid var(--border); border-radius:10px; cursor:pointer; }
+.lijn-kop:hover { background:var(--light); }
+.lijn-kop .titel { font-weight:700; color:var(--navy); flex:1; }
+.lijn-kop .telt { font-size:12px; color:var(--muted); }
+.lijn-body { padding:6px 0 6px 22px; }
+.station-kaart { background:#fff; border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin:8px 0; }
+.station-kop { display:flex; align-items:center; gap:10px; }
+.station-kop .snaam { font-weight:700; color:var(--navy); flex:1; }
+.artikel-kaart { display:flex; align-items:center; gap:10px; background:var(--light); border:1px solid var(--border); border-radius:8px; padding:9px 12px; margin:8px 0 0 18px; }
+.artikel-kaart .anaam { flex:1; font-weight:600; color:var(--navy); }
+.artikel-kaart .aprijs { font-size:12px; color:var(--muted); white-space:nowrap; }
+.mini { padding:5px 11px; font-size:12px; border-radius:7px; }
+.mini-danger { color:var(--red); border-color:#f3c0bb; }
+.leeg { color:var(--muted); font-style:italic; font-size:13px; padding:6px 0 4px 4px; }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(20,30,60,.45); display:flex; align-items:flex-start; justify-content:center; padding:30px 16px; overflow:auto; z-index:50; }
+.modal { background:#fff; border-radius:14px; width:100%; max-width:760px; box-shadow:0 12px 50px rgba(0,0,0,.3); }
+.modal-kop { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); position:sticky; top:0; background:#fff; border-radius:14px 14px 0 0; }
+.modal-kop h3 { color:var(--navy); font-size:17px; }
+.modal-kop .x { background:none; border:none; font-size:22px; color:var(--muted); cursor:pointer; line-height:1; }
+.modal-body { padding:22px; }
+.modal-voet { display:flex; gap:10px; justify-content:space-between; padding:16px 22px; border-top:1px solid var(--border); position:sticky; bottom:0; background:#fff; border-radius:0 0 14px 14px; }
+.veld { margin-bottom:14px; }
+.veld label { display:block; font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:5px; }
+.veld input, .veld textarea, .veld select { width:100%; border:1px solid var(--border); border-radius:7px; padding:8px 10px; font-size:13px; font-family:inherit; }
+.veld textarea { min-height:64px; resize:vertical; }
+.rij2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.subkop { font-size:13px; font-weight:800; color:var(--navy); margin:20px 0 8px; padding-bottom:5px; border-bottom:2px solid var(--light); }
+.dyn-rij { display:flex; gap:8px; margin-bottom:7px; align-items:center; }
+.dyn-rij input, .dyn-rij select { padding:6px 8px; font-size:13px; border:1px solid var(--border); border-radius:6px; }
+.dyn-rij .x { background:none; border:none; color:var(--red); cursor:pointer; font-size:16px; }
+.niveau-blok { border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; }
+.niveau-blok .nv-titel { font-weight:700; color:var(--orange); margin-bottom:8px; }
+.niveau-blok .nv-prijs { float:right; color:var(--navy); }
+</style>
+</head>
+<body>
+<header>
+  <h1>🚇 TNL — Gesprek &amp; Offerte</h1>
+  <div class="conn" id="conn">Verbinden met database…</div>
+</header>
+
+<nav>
+  <button class="actief" data-tab="gesprek">① Gespreksvoorbereiding</button>
+  <button data-tab="catalogus">② Catalogus</button>
+  <button data-tab="offerte">③ Offerte</button>
+  <button data-tab="tarieven">⚙ Tarieven</button>
+</nav>
+
+<main>
+  <!-- TAB 1 -->
+  <section class="panel actief" id="tab-gesprek">
+    <h2>Gespreksvoorbereiding</h2>
+    <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden.</p>
+
+    <div class="card">
+      <textarea id="mail-tekst" placeholder="Plak hier de volledige quickscan-mail (of het rapport-blok met de scores)…"></textarea>
+      <div class="btn-row">
+        <button class="btn" onclick="leesMail()">📥 Inlezen</button>
+        <button class="btn" id="btn-opslaan" onclick="opslaanGesprek()" style="display:none;background:var(--green)">💾 Opslaan in dossier</button>
+        <button class="btn btn-ghost" onclick="wisMail()">Wissen</button>
+      </div>
+      <div class="status" id="mail-status"></div>
+    </div>
+
+    <div id="klant-blok" style="display:none">
+      <div class="card">
+        <div class="score-titel" style="margin-top:0">Klantgegevens</div>
+        <div class="klant-grid" id="klant-grid"></div>
+      </div>
+    </div>
+
+    <div id="scores-blok" style="display:none">
+      <div class="card">
+        <div class="score-titel" style="margin-top:0">Scores — zwakste eerst</div>
+        <div id="scores-metro"></div>
+        <div id="scores-versn"></div>
+        <div class="legenda">
+          <span><span class="dot" style="background:var(--red)"></span>Kritisch (&le;1.5)</span>
+          <span><span class="dot" style="background:var(--amber)"></span>Aandachtspunt (&le;2.5)</span>
+          <span><span class="dot" style="background:var(--blue)"></span>Goed ontwikkeld (&le;3.5)</span>
+          <span><span class="dot" style="background:var(--green)"></span>Sterke troef (&gt;3.5)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2 -->
+  <section class="panel" id="tab-catalogus">
+    <h2>Catalogus — beheer</h2>
+    <p class="sub">Je productaanbod: lijn → station → artikel. Voeg stations toe onder een lijn, en artikelen onder een station.</p>
+    <div class="status" id="cat-status">Laden…</div>
+    <div id="cat-tree"></div>
+  </section>
+
+  <!-- TAB 4 -->
+  <section class="panel" id="tab-tarieven">
+    <h2>Tarieven &amp; rollen</h2>
+    <p class="sub">Bedrijfsbrede dagtarieven per rol. Elk artikel rekent z'n prijs hieruit — pas je een tarief aan, dan werkt dat overal door.</p>
+    <div class="card">
+      <div class="status" id="tar-status">Laden…</div>
+      <div id="tar-lijst"></div>
+      <div class="subkop" style="margin-top:18px">Nieuwe rol</div>
+      <div class="dyn-rij" style="flex-wrap:wrap">
+        <input id="tar-naam" placeholder="Rol (bv. Partner, Senior, Medior, Junior)" style="flex:1;min-width:180px">
+        <input id="tar-uur"  type="number" placeholder="€/uur" style="width:100px">
+        <input id="tar-half" type="number" placeholder="€ ½ dag" style="width:100px">
+        <input id="tar-heel" type="number" placeholder="€ hele dag" style="width:110px">
+        <button class="btn" onclick="voegTariefToe()">+ Toevoegen</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3 -->
+  <section class="panel" id="tab-offerte">
+    <h2>Offerte</h2>
+    <p class="sub">Geselecteerde producten → offerte met snapshot. (Volgende stap.)</p>
+    <div class="card"><div class="placeholder">Offerte wordt in de volgende stap gebouwd.</div></div>
+  </section>
+</main>
+
+<!-- Artikel-editor -->
+<div id="art-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-kop">
+      <h3 id="art-titel">Artikel</h3>
+      <button class="x" onclick="sluitArtikel()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="rij2">
+        <div class="veld"><label>Subnaam (optioneel)</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss"></div>
+        <div class="veld"><label>Volledige naam</label><input id="a-volnaam" disabled></div>
+      </div>
+      <div class="veld"><label>Omschrijving</label><textarea id="a-omschrijving"></textarea></div>
+
+      <div class="subkop">Scope</div>
+      <div class="rij2">
+        <div class="veld"><label>✅ Scope in</label><textarea id="a-scope_in"></textarea></div>
+        <div class="veld"><label>❌ Scope out</label><textarea id="a-scope_uit"></textarea></div>
+      </div>
+      <div class="veld"><label>⚠ Beperkingen</label><textarea id="a-beperkingen"></textarea></div>
+      <div class="rij2">
+        <div class="veld"><label>📥 Input (van klant)</label><textarea id="a-input"></textarea></div>
+        <div class="veld"><label>📤 Deliverables</label><textarea id="a-deliverables"></textarea></div>
+      </div>
+      <div class="veld"><label>🎯 Doelstellingen</label><textarea id="a-doelstellingen"></textarea></div>
+      <div class="rij2">
+        <div class="veld"><label>⏱ Doorlooptijd</label><input id="a-doorlooptijd" placeholder="bv. 3-5 weken"></div>
+        <div class="veld"><label>🔄 Proces</label><input id="a-proces" placeholder="Intake → Ontwerp → …"></div>
+      </div>
+
+      <div class="subkop">WBS — werkpakketten</div>
+      <div id="a-wbs"></div>
+      <button class="btn btn-ghost mini" onclick="wbsRij()">+ Regel</button>
+
+      <div class="subkop">Extra opties</div>
+      <div id="a-opties"></div>
+      <button class="btn btn-ghost mini" onclick="optieRij()">+ Optie</button>
+
+      <div class="subkop">Niveaus &amp; prijs (dagen → prijs via tarieven)</div>
+      <div id="a-niveaus"></div>
+    </div>
+    <div class="modal-voet">
+      <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">🗑 Verwijderen</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="sluitArtikel()">Annuleren</button>
+        <button class="btn" onclick="slaArtikelOp()">💾 Opslaan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase/config.js"></script>
+<script src="supabase/db.js"></script>
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let LIJNEN = [];                 // uit Supabase
+let NAAM_NAAR_CODE = {};         // 'finance' -> 'FIN'
+
+// Alias-namen uit de quickscan-mail die afwijken van de DB-namen (of Engels zijn).
+const NAAM_ALIASSEN = {
+  'it':'IT', 'it & digitalisering':'IT', 'it&digitalisering':'IT',
+  'leadership':'LEAD', 'leiderschap':'LEAD',
+  'ownership':'OWN', 'eigenaarschap':'OWN',
+  'product / r&d':'PROD', 'product/r&d':'PROD', 'product r&d':'PROD', 'product':'PROD',
+  'after sales':'AFS', 'aftersales':'AFS',
+  'project management':'PM', 'proces management':'PROC', 'procesmanagement':'PROC',
+  'change management':'CHG', 'changemanagement':'CHG',
+};
+let gesprek = { klant:{}, scores:{}, labels:{} };  // resultaat van de mail-import
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll('nav button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('nav button').forEach(x => x.classList.remove('actief'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('actief'));
+    b.classList.add('actief');
+    document.getElementById('tab-' + b.dataset.tab).classList.add('actief');
+  };
+});
+
+// ============================================================
+// INIT — lijnen laden voor naam->code mapping
+// ============================================================
+(async () => {
+  const conn = document.getElementById('conn');
+  try {
+    LIJNEN = await TNL.getLijnen();
+    // Mapping: DB-namen + code zelf + vaste aliassen uit de quickscan-mail.
+    LIJNEN.forEach(l => {
+      NAAM_NAAR_CODE[l.naam.toLowerCase()] = l.code;
+      NAAM_NAAR_CODE[l.code.toLowerCase()] = l.code;
+    });
+    Object.assign(NAAM_NAAR_CODE, NAAM_ALIASSEN);
+    conn.textContent = `✓ Verbonden (${LIJNEN.length} lijnen)`;
+  } catch (e) {
+    conn.textContent = '✗ Geen verbinding met database';
+    console.error(e);
+  }
+})();
+
+// ============================================================
+// ZONES / KLEUREN
+// ============================================================
+function zone(score) {
+  if (score <= 1.5) return { kleur:'var(--red)',   bg:'var(--red-light)',   lbl:'Kritisch' };
+  if (score <= 2.5) return { kleur:'var(--amber)', bg:'var(--amber-light)', lbl:'Aandachtspunt' };
+  if (score <= 3.5) return { kleur:'var(--blue)',  bg:'#eaf1fa',            lbl:'Goed ontwikkeld' };
+  return { kleur:'var(--green)', bg:'var(--green-light)', lbl:'Sterke troef' };
+}
+
+// ============================================================
+// MAIL INLEZEN
+// ============================================================
+function leesMail() {
+  const tekst = document.getElementById('mail-tekst').value;
+  const status = document.getElementById('mail-status');
+  if (!tekst.trim()) { status.innerHTML = '<span style="color:var(--muted)">Plak eerst een mail.</span>'; return; }
+
+  const klant = {}, scores = {}, labels = {};
+  let scoreCount = 0;
+
+  tekst.split('\n').map(r => r.trim()).filter(Boolean).forEach(regel => {
+    // Score-regel:  "Strategie: 2.5/4 (Aandachtspunt)"
+    const sm = regel.match(/^(.+?):\s*([\d.,]+)\s*\/\s*4(?:\s*\(([^)]+)\))?/i);
+    if (sm) {
+      const naam = sm[1].trim().toLowerCase();
+      const score = parseFloat(sm[2].replace(',', '.'));
+      const code = NAAM_NAAR_CODE[naam];
+      if (code && !isNaN(score) && score >= 0 && score <= 4) {
+        scores[code] = Math.round(score * 100) / 100;
+        if (sm[3]) labels[code] = sm[3].trim();
+        scoreCount++;
+        return;
+      }
+    }
+    // Klant key-value:  "Bedrijf: Peeters NV"
+    const kv = regel.match(/^(.+?):\s*(.+)$/);
+    if (kv) {
+      const s = kv[1].trim().toLowerCase(), v = kv[2].trim();
+      if (!v || v.toLowerCase() === 'niet ingevuld') return;
+      if (['naam','name','voornaam'].includes(s)) klant.naam = v;
+      else if (['bedrijf','company','organisatie'].includes(s)) klant.bedrijf = v;
+      else if (['e-mail','email','mail','from_email'].includes(s)) klant.email = v;
+      else if (['functie','function','titel','rol'].includes(s)) klant.functie = v;
+      else if (['medewerkers','employees','fte','aantal medewerkers'].includes(s)) klant.medewerkers = v;
+      else if (['sector','industry','branche'].includes(s)) klant.sector = v;
+      else if (['tel','telefoon','phone','gsm'].includes(s)) klant.tel = v;
+      else if (['datum','date'].includes(s)) klant.datum = v;
+      else if (['score','gemiddelde score','algemene score','totaalscore'].includes(s)) {
+        const mm = v.match(/[\d.,]+\s*\/\s*4/);   // "2.8 / 4/4" -> "2.8 / 4"
+        klant.score = mm ? mm[0] : v;
+      }
+    }
+  });
+
+  if (scoreCount === 0 && Object.keys(klant).length === 0) {
+    status.innerHTML = '<span style="color:var(--red)">⚠ Geen herkenbare gegevens gevonden. Controleer het formaat.</span>';
+    return;
+  }
+
+  const gemMatch = (klant.score || '').match(/[\d.,]+/);
+  const gemiddelde = gemMatch ? parseFloat(gemMatch[0].replace(',', '.')) : null;
+  gesprek = { klant, scores, labels, gemiddelde, ruweMail: tekst };
+  toonKlant();
+  toonScores();
+  document.getElementById('btn-opslaan').style.display = (scoreCount || Object.keys(klant).length) ? 'inline-block' : 'none';
+  const delen = [];
+  if (scoreCount) delen.push(`${scoreCount} scores`);
+  if (Object.keys(klant).length) delen.push('klantgegevens');
+  status.innerHTML = `<span style="color:var(--green)">✓ Ingelezen: ${delen.join(' + ')} — ${new Date().toLocaleTimeString('nl-BE')}</span>`;
+}
+
+async function opslaanGesprek() {
+  const status = document.getElementById('mail-status');
+  if (!Object.keys(gesprek.scores).length && !Object.keys(gesprek.klant).length) {
+    status.innerHTML = '<span style="color:var(--red)">Niets om op te slaan — lees eerst een mail in.</span>';
+    return;
+  }
+  const btn = document.getElementById('btn-opslaan');
+  btn.disabled = true; btn.textContent = '⏳ Opslaan…';
+  try {
+    const r = await TNL.saveGesprek({
+      klant: gesprek.klant,
+      scores: gesprek.scores,
+      labels: gesprek.labels,
+      gemiddelde: gesprek.gemiddelde,
+      ruweMail: gesprek.ruweMail
+    });
+    gesprek.klantId = r.klant.id;
+    gesprek.scanId = r.quickscan.id;
+    status.innerHTML = `<span style="color:var(--green)">✓ Opgeslagen in dossier "${r.klant.bedrijf}" (scan ${r.quickscan.datum}).</span>`;
+  } catch (e) {
+    status.innerHTML = '<span style="color:var(--red)">✗ Opslaan mislukt: ' + (e.message || e) + '</span>';
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Opslaan in dossier';
+  }
+}
+
+function toonKlant() {
+  const blok = document.getElementById('klant-blok');
+  const grid = document.getElementById('klant-grid');
+  const k = gesprek.klant;
+  if (!Object.keys(k).length) { blok.style.display = 'none'; return; }
+  const velden = [
+    ['👤 Naam','naam'], ['🏢 Bedrijf','bedrijf'], ['✉️ E-mail','email'],
+    ['💼 Functie','functie'], ['👥 Medewerkers','medewerkers'], ['🏭 Sector','sector'],
+    ['📞 Telefoon','tel'], ['📊 Gem. score','score'], ['📅 Datum','datum'],
+  ];
+  grid.innerHTML = velden.filter(([,key]) => k[key])
+    .map(([lbl,key]) => `<div class="klant-veld"><div class="lbl">${lbl}</div><div class="val">${k[key]}</div></div>`).join('');
+  blok.style.display = 'block';
+}
+
+function toonScores() {
+  const blok = document.getElementById('scores-blok');
+  const scores = gesprek.scores;
+  if (!Object.keys(scores).length) { blok.style.display = 'none'; return; }
+
+  const rij = (l) => {
+    const sc = scores[l.code];
+    if (sc === undefined) return '';
+    const z = zone(sc);
+    const lbl = gesprek.labels[l.code] || z.lbl;
+    const pct = Math.round(sc / 4 * 100);
+    return `<div class="score-rij">
+      <div class="naam">${l.icon || ''} ${l.naam} <small>(${l.code})</small></div>
+      <div class="bar"><div style="width:${pct}%;background:${z.kleur}"></div></div>
+      <div class="cijfer" style="color:${z.kleur}">${sc.toFixed(1)}/4</div>
+      <span class="badge" style="background:${z.bg};color:${z.kleur}">${lbl}</span>
+    </div>`;
+  };
+  const sorteer = (type) => LIJNEN
+    .filter(l => l.type === type && scores[l.code] !== undefined)
+    .sort((a,b) => scores[a.code] - scores[b.code]);
+
+  const metro = sorteer('metrolijn'), versn = sorteer('versneller');
+  document.getElementById('scores-metro').innerHTML =
+    (metro.length ? `<div class="score-titel">🚇 Metrolijnen</div>` + metro.map(rij).join('') : '');
+  document.getElementById('scores-versn').innerHTML =
+    (versn.length ? `<div class="score-titel">⚡ Versnellers</div>` + versn.map(rij).join('') : '');
+  blok.style.display = 'block';
+}
+
+function wisMail() {
+  document.getElementById('mail-tekst').value = '';
+  document.getElementById('mail-status').textContent = '';
+  document.getElementById('klant-blok').style.display = 'none';
+  document.getElementById('scores-blok').style.display = 'none';
+  document.getElementById('btn-opslaan').style.display = 'none';
+  gesprek = { klant:{}, scores:{}, labels:{} };
+}
+</script>
+
+<script>
+// ============================================================
+// TABBLAD ② — CATALOGUS-BEHEER
+// ============================================================
+var TARIEVEN = {};         // { rol: { uurprijs, halvedagprijs, heledagprijs } }
+var TARIEF_ROLLEN = [];    // [{ rol, uurprijs, halvedagprijs, heledagprijs }] geordend
+var catStations = [];
+var catArtikelen = [];
+var catGeladen = false;
+var edit = null;   // editor-state voor het open artikel
+
+function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function leegNiveau(){ return { dagen:{}, klantDagen:0, omschrijving:'' }; }
+
+// Zet een artikel-niveau om naar het rol-formaat (vangt ook oud jr/sr formaat op).
+function normaliseerNiveaus(nv) {
+  const out = {};
+  ['S','M','I'].forEach(n => {
+    const v = (nv && nv[n]) || {};
+    let dagen = v.dagen;
+    if (!dagen) { dagen = {}; if (v.jrDagen != null) dagen.Jr = v.jrDagen; if (v.srDagen != null) dagen.Sr = v.srDagen; }
+    out[n] = { dagen: Object.assign({}, dagen), klantDagen: v.klantDagen || 0, omschrijving: v.omschrijving || '' };
+  });
+  return out;
+}
+
+// Laad catalogus bij eerste bezoek aan het tabblad
+document.querySelector('nav button[data-tab="catalogus"]').addEventListener('click', () => {
+  if (!catGeladen) laadCatalogus();
+});
+
+async function laadCatalogus() {
+  const st = document.getElementById('cat-status');
+  st.textContent = 'Laden…';
+  try {
+    if (!LIJNEN.length) {
+      LIJNEN = await TNL.getLijnen();
+      LIJNEN.forEach(l => { NAAM_NAAR_CODE[l.naam.toLowerCase()] = l.code; });
+    }
+    const [tarMap, tarLijst, stations, artikelen] = await Promise.all([
+      TNL.getTarieven(), TNL.getTarievenLijst(), TNL.getStations(), TNL.getCatalogus({ alleenActief:false })
+    ]);
+    TARIEVEN = tarMap; TARIEF_ROLLEN = tarLijst; catStations = stations; catArtikelen = artikelen;
+    catGeladen = true;
+    renderCatBeheer();
+    st.textContent = '';
+  } catch (e) {
+    st.innerHTML = '<span style="color:var(--red)">Laden mislukt: ' + (e.message||e) + '</span>';
+    console.error(e);
+  }
+}
+
+function renderCatBeheer() {
+  const tree = document.getElementById('cat-tree');
+  const stPerLijn = {}; catStations.forEach(s => (stPerLijn[s.lijn_code] ??= []).push(s));
+  const artPerStat = {}; catArtikelen.forEach(a => (artPerStat[a.station_id] ??= []).push(a));
+
+  let html = '';
+  for (const type of ['metrolijn','versneller']) {
+    html += `<div class="score-titel">${type==='metrolijn'?'🚇 Metrolijnen':'⚡ Versnellers'}</div>`;
+    LIJNEN.filter(l => l.type===type).forEach(l => {
+      const sts = stPerLijn[l.code] || [];
+      html += `<div class="lijn-groep">
+        <div class="lijn-kop">
+          <span>${l.icon||''}</span>
+          <span class="titel">${l.naam} <small style="color:var(--muted);font-weight:400">(${l.code})</small></span>
+          <span class="telt">${sts.length} station(s)</span>
+          <button class="btn btn-ghost mini" onclick="nieuwStation('${l.code}')">+ Station</button>
+        </div>
+        <div class="lijn-body">`;
+      if (!sts.length) html += `<div class="leeg">Nog geen stations.</div>`;
+      sts.forEach(s => {
+        const arts = artPerStat[s.id] || [];
+        html += `<div class="station-kaart">
+          <div class="station-kop">
+            <span>📍</span><span class="snaam">${s.naam}</span>
+            <button class="btn btn-ghost mini" onclick="hernoemStation('${s.id}')">✏️</button>
+            <button class="btn btn-ghost mini mini-danger" onclick="verwijderStation('${s.id}')">🗑</button>
+            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ Artikel</button>
+          </div>`;
+        if (!arts.length) html += `<div class="leeg">Nog geen artikelen.</div>`;
+        arts.forEach(a => {
+          const m = TNL.berekenNiveau(a.niveaus?.M, TARIEVEN);
+          const onb = onbekendeRollen(a);
+          html += `<div class="artikel-kaart">
+            <span class="anaam">${a.subnaam||'(naamloos)'}${a.actief===false?' <small style="color:var(--red)">· inactief</small>':''}${onb.length?` <small style="color:var(--red)">⚠ onbekende rol: ${onb.map(escAttr).join(', ')}</small>`:''}</span>
+            <span class="aprijs">M: €${m.prijs.toLocaleString('nl-BE')} · ${m.dagen}d</span>
+            <button class="btn btn-ghost mini" onclick="bewerkArtikel('${a.id}')">Bewerk</button>
+          </div>`;
+        });
+        html += `</div>`;
+      });
+      html += `</div></div>`;
+    });
+  }
+  tree.innerHTML = html;
+}
+
+// ---------- STATION CRUD ----------
+async function nieuwStation(lijnCode) {
+  const naam = prompt('Naam van het nieuwe station:');
+  if (!naam || !naam.trim()) return;
+  const n = catStations.filter(s => s.lijn_code===lijnCode).length;
+  try { await TNL.upsertStation({ lijn_code:lijnCode, naam:naam.trim(), sort:(n+1)*10 }); await laadCatalogus(); }
+  catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
+async function hernoemStation(id) {
+  const s = catStations.find(x => x.id===id);
+  const naam = prompt('Nieuwe naam:', s?.naam || '');
+  if (!naam || !naam.trim()) return;
+  try { await TNL.upsertStation({ id, lijn_code:s.lijn_code, naam:naam.trim(), sort:s.sort }); await laadCatalogus(); }
+  catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
+async function verwijderStation(id) {
+  const s = catStations.find(x => x.id===id);
+  const aantal = catArtikelen.filter(a => a.station_id===id).length;
+  if (!confirm(`Station "${s?.naam}" verwijderen?` + (aantal?` Let op: ${aantal} artikel(en) worden óók verwijderd.`:''))) return;
+  try { await TNL.deleteStation(id); await laadCatalogus(); }
+  catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
+
+// ---------- ARTIKEL EDITOR ----------
+function nieuwArtikel(stationId) {
+  edit = { id:null, station_id:stationId, wbs:[], opties:[], niveaus:{ S:leegNiveau(), M:leegNiveau(), I:leegNiveau() } };
+  vulArtikelForm({});
+  document.getElementById('art-titel').textContent = 'Nieuw artikel';
+  document.getElementById('a-verwijder').style.display = 'none';
+  document.getElementById('art-modal').style.display = 'flex';
+}
+function bewerkArtikel(id) {
+  const a = catArtikelen.find(x => x.id===id); if (!a) return;
+  edit = {
+    id:a.id, station_id:a.station_id,
+    wbs: JSON.parse(JSON.stringify(a.wbs||[])),
+    opties: JSON.parse(JSON.stringify(a.opties||[])),
+    niveaus: normaliseerNiveaus(a.niveaus)
+  };
+  vulArtikelForm(a);
+  document.getElementById('art-titel').textContent = 'Artikel bewerken';
+  document.getElementById('a-verwijder').style.display = 'inline-block';
+  document.getElementById('art-modal').style.display = 'flex';
+}
+function sluitArtikel() { document.getElementById('art-modal').style.display = 'none'; edit = null; }
+
+function vulArtikelForm(a) {
+  const f = id => document.getElementById(id);
+  f('a-subnaam').value = a.subnaam || '';
+  ['omschrijving','scope_in','scope_uit','beperkingen','input','deliverables','doelstellingen','doorlooptijd','proces']
+    .forEach(k => f('a-'+k).value = a[k] || '');
+  renderVolnaam(); renderWbs(); renderOpties(); renderNiveaus();
+}
+
+function renderVolnaam() {
+  const s = catStations.find(x => x.id===edit.station_id);
+  const l = s ? LIJNEN.find(x => x.code===s.lijn_code) : null;
+  const sub = document.getElementById('a-subnaam').value.trim();
+  document.getElementById('a-volnaam').value = [l?.naam, s?.naam, sub].filter(Boolean).join(' — ');
+}
+
+function renderWbs() {
+  document.getElementById('a-wbs').innerHTML = edit.wbs.map((w,i) => {
+    const rolOpts = ['<option value="">—</option>'].concat(
+      TARIEF_ROLLEN.map(t => `<option value="${escAttr(t.rol)}"${w.rol===t.rol?' selected':''}>${escAttr(t.rol)}</option>`)
+    ).join('');
+    return `<div class="dyn-rij">
+    <input style="flex:1" placeholder="Activiteit" value="${escAttr(w.activiteit)}" oninput="edit.wbs[${i}].activiteit=this.value">
+    <select onchange="edit.wbs[${i}].type=this.value">
+      <option value="consultant"${w.type!=='klant'?' selected':''}>Consultant</option>
+      <option value="klant"${w.type==='klant'?' selected':''}>Klant</option>
+    </select>
+    <select onchange="edit.wbs[${i}].rol=this.value||null">${rolOpts}</select>
+    <input style="width:72px" type="number" step="0.5" placeholder="dagen" value="${w.dagen??''}" oninput="edit.wbs[${i}].dagen=parseFloat(this.value)||0">
+    <button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs()">×</button>
+  </div>`;
+  }).join('') || '<div class="leeg">Nog geen WBS-regels.</div>';
+}
+function wbsRij() { edit.wbs.push({ activiteit:'', type:'consultant', rol:'Sr', dagen:0 }); renderWbs(); }
+
+function renderOpties() {
+  document.getElementById('a-opties').innerHTML = edit.opties.map((o,i) => `<div class="dyn-rij">
+    <input style="flex:1" placeholder="Omschrijving" value="${escAttr(o.omschrijving)}" oninput="edit.opties[${i}].omschrijving=this.value">
+    <input style="width:120px" type="number" placeholder="prijs €" value="${o.prijs??''}" oninput="edit.opties[${i}].prijs=parseFloat(this.value)||0">
+    <button class="x" title="verwijderen" onclick="edit.opties.splice(${i},1);renderOpties()">×</button>
+  </div>`).join('') || '<div class="leeg">Nog geen opties.</div>';
+}
+function optieRij() { edit.opties.push({ omschrijving:'', prijs:0 }); renderOpties(); }
+
+function renderNiveaus() {
+  const labels = { S:'Starter', M:'Standaard', I:'Intensief' };
+  const rollenLeeg = TARIEF_ROLLEN.length === 0;
+  document.getElementById('a-niveaus').innerHTML = ['S','M','I'].map(n => {
+    const v = edit.niveaus[n] || leegNiveau();
+    const c = TNL.berekenNiveau(v, TARIEVEN);
+    const rolInputs = TARIEF_ROLLEN.map(t =>
+      `<label style="font-size:12px;color:var(--muted)">${escAttr(t.rol)} <input type="number" step="0.5" style="width:64px" value="${(v.dagen && v.dagen[t.rol]) ?? 0}" oninput="setNiveauDag('${n}','${escAttr(t.rol)}',this.value)"></label>`
+    ).join(' ');
+    return `<div class="niveau-blok">
+      <div class="nv-titel">${n} — ${labels[n]} <span class="nv-prijs" id="nvprijs-${n}">€${c.prijs.toLocaleString('nl-BE')} · ${c.dagen}d</span></div>
+      <div class="dyn-rij" style="flex-wrap:wrap">${rolInputs}
+        <label style="font-size:12px;color:var(--muted)">Klant dagen <input type="number" step="0.5" style="width:64px" value="${v.klantDagen??0}" oninput="edit.niveaus['${n}'].klantDagen=parseFloat(this.value)||0"></label>
+      </div>
+      <input style="width:100%;margin-top:6px" placeholder="Korte omschrijving van dit niveau" value="${escAttr(v.omschrijving)}" oninput="edit.niveaus['${n}'].omschrijving=this.value">
+    </div>`;
+  }).join('') + (rollenLeeg ? '<div class="leeg">Nog geen rollen — voeg ze toe in tabblad ⚙ Tarieven.</div>' : '');
+}
+function setNiveauDag(n, rol, val) {
+  if (!edit.niveaus[n].dagen) edit.niveaus[n].dagen = {};
+  edit.niveaus[n].dagen[rol] = parseFloat(val) || 0;
+  updateNiveauPrijs(n);
+}
+function updateNiveauPrijs(n) {
+  const c = TNL.berekenNiveau(edit.niveaus[n], TARIEVEN);
+  const el = document.getElementById('nvprijs-'+n);
+  if (el) el.textContent = `€${c.prijs.toLocaleString('nl-BE')} · ${c.dagen}d`;
+}
+
+// ---------- TABBLAD ④ — TARIEVEN ----------
+document.querySelector('nav button[data-tab="tarieven"]').addEventListener('click', laadTarieven);
+
+async function laadTarieven() {
+  const st = document.getElementById('tar-status');
+  st.textContent = 'Laden…';
+  try {
+    [TARIEF_ROLLEN, catArtikelen] = await Promise.all([
+      TNL.getTarievenLijst(), TNL.getCatalogus({ alleenActief:false })
+    ]);
+    TARIEVEN = Object.fromEntries(TARIEF_ROLLEN.map(t => [t.rol, {
+      uurprijs: Number(t.uurprijs)||0, halvedagprijs: Number(t.halvedagprijs)||0, heledagprijs: Number(t.heledagprijs)||0
+    }]));
+    renderTarieven();
+    st.textContent = '';
+  } catch (e) {
+    st.innerHTML = '<span style="color:var(--red)">Laden mislukt: ' + (e.message||e) + '</span>';
+  }
+}
+function renderTarieven() {
+  const kop = `<div class="dyn-rij" style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">
+    <span style="flex:1">Rol</span><span style="width:100px">€/uur</span><span style="width:100px">€ ½ dag</span><span style="width:110px">€ hele dag</span><span style="width:78px"></span>
+  </div>`;
+  document.getElementById('tar-lijst').innerHTML = kop + (TARIEF_ROLLEN.map(t => {
+    const n = artikelenMetRol(t.rol).length;
+    return `<div class="dyn-rij">
+    <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} artikel(en)</small>`:''}</span>
+    <input type="number" style="width:100px" value="${t.uurprijs??''}"      onchange="wijzigTariefVeld('${escAttr(t.rol)}','uurprijs',this.value)">
+    <input type="number" style="width:100px" value="${t.halvedagprijs??''}" onchange="wijzigTariefVeld('${escAttr(t.rol)}','halvedagprijs',this.value)">
+    <input type="number" style="width:110px" value="${t.heledagprijs??''}"  onchange="wijzigTariefVeld('${escAttr(t.rol)}','heledagprijs',this.value)">
+    <button class="btn btn-ghost mini" title="hernoemen" onclick="hernoemTarief('${escAttr(t.rol)}')">✏️</button>
+    <button class="x" title="verwijderen" onclick="verwijderTariefUI('${escAttr(t.rol)}')">×</button>
+  </div>`;
+  }).join('') || '<div class="leeg">Nog geen rollen.</div>');
+}
+
+// ---------- rol-gebruik detecteren ----------
+function artikelNaam(a) {
+  const s = a.station, l = s && s.lijn;
+  return [l && l.naam, s && s.naam, a.subnaam].filter(Boolean).join(' — ') || '(naamloos)';
+}
+function artikelenMetRol(rol) {
+  return catArtikelen.filter(a => {
+    const nv = a.niveaus || {};
+    const inNiveau = ['S','M','I'].some(n => nv[n] && nv[n].dagen && (Number(nv[n].dagen[rol]) || 0) > 0);
+    const inWbs = (a.wbs || []).some(w => w.rol === rol);
+    return inNiveau || inWbs;
+  });
+}
+function onbekendeRollen(a) {
+  const set = new Set();
+  const nv = a.niveaus || {};
+  ['S','M','I'].forEach(n => {
+    const d = (nv[n] && nv[n].dagen) || {};
+    Object.keys(d).forEach(r => { if ((Number(d[r]) || 0) > 0 && !(r in TARIEVEN)) set.add(r); });
+  });
+  (a.wbs || []).forEach(w => { if (w.rol && !(w.rol in TARIEVEN)) set.add(w.rol); });
+  return [...set];
+}
+
+// ---------- veilig hernoemen (cascade naar alle artikelen) ----------
+async function hernoemTarief(oud) {
+  const inv = prompt(`Nieuwe naam voor rol "${oud}":`, oud);
+  if (!inv || !inv.trim() || inv.trim() === oud) return;
+  const naam = inv.trim();
+  if (TARIEVEN[naam] != null) { alert(`Er bestaat al een rol "${naam}".`); return; }
+  const used = artikelenMetRol(oud);
+  if (!confirm(`Rol "${oud}" hernoemen naar "${naam}"?` + (used.length ? `\n${used.length} artikel(en) worden automatisch mee aangepast.` : ''))) return;
+  try {
+    await TNL.setTarief(naam, TARIEVEN[oud]);                 // 1) nieuwe rol, zelfde tarief
+    for (const a of used) {                                   // 2) artikelen omzetten
+      const nv = JSON.parse(JSON.stringify(a.niveaus || {}));
+      ['S','M','I'].forEach(n => {
+        if (nv[n] && nv[n].dagen && nv[n].dagen[oud] != null) {
+          nv[n].dagen[naam] = (Number(nv[n].dagen[naam]) || 0) + Number(nv[n].dagen[oud]);
+          delete nv[n].dagen[oud];
+        }
+      });
+      const wbs = (a.wbs || []).map(w => w.rol === oud ? { ...w, rol: naam } : w);
+      await TNL.updateArtikel(a.id, { niveaus: nv, wbs });
+    }
+    await TNL.verwijderTarief(oud);                           // 3) oude rol weg
+    await laadTarieven();
+    alert(`Hernoemd naar "${naam}".`);
+  } catch (e) { alert('Hernoemen mislukt: ' + (e.message||e)); }
+}
+async function voegTariefToe() {
+  const naam = document.getElementById('tar-naam').value.trim();
+  if (!naam) { alert('Geef een rolnaam.'); return; }
+  const lees = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+  try {
+    await TNL.setTarief(naam, { uurprijs: lees('tar-uur'), halvedagprijs: lees('tar-half'), heledagprijs: lees('tar-heel') });
+    ['tar-naam','tar-uur','tar-half','tar-heel'].forEach(id => document.getElementById(id).value = '');
+    await laadTarieven();
+  } catch (e) { alert('Mislukt: ' + (e.message||e)); }
+}
+async function wijzigTariefVeld(rol, veld, val) {
+  const h = TARIEF_ROLLEN.find(t => t.rol === rol) || {};
+  const prijzen = { uurprijs: h.uurprijs, halvedagprijs: h.halvedagprijs, heledagprijs: h.heledagprijs };
+  const v = parseFloat(val); prijzen[veld] = isNaN(v) ? null : v;
+  try { await TNL.setTarief(rol, prijzen); await laadTarieven(); }
+  catch (e) { alert('Mislukt: ' + (e.message||e)); }
+}
+async function verwijderTariefUI(rol) {
+  const used = artikelenMetRol(rol);
+  let msg = `Rol "${rol}" verwijderen?`;
+  if (used.length) {
+    msg += `\n\n⚠ Deze rol wordt gebruikt in ${used.length} artikel(en):\n- ` +
+           used.map(artikelNaam).join('\n- ') +
+           `\n\nDie dagen vallen dan uit de prijsberekening.`;
+  }
+  if (!confirm(msg)) return;
+  try { await TNL.verwijderTarief(rol); await laadTarieven(); }
+  catch (e) { alert('Mislukt: ' + (e.message||e)); }
+}
+
+async function slaArtikelOp() {
+  const f = id => document.getElementById(id).value;
+  const artikel = {
+    station_id: edit.station_id,
+    subnaam: f('a-subnaam').trim() || null,
+    omschrijving:f('a-omschrijving'), scope_in:f('a-scope_in'), scope_uit:f('a-scope_uit'),
+    beperkingen:f('a-beperkingen'), input:f('a-input'), deliverables:f('a-deliverables'),
+    doelstellingen:f('a-doelstellingen'), doorlooptijd:f('a-doorlooptijd'), proces:f('a-proces'),
+    wbs: edit.wbs, opties: edit.opties, niveaus: edit.niveaus
+  };
+  if (edit.id) artikel.id = edit.id;
+  try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }
+  catch(e){ alert('Opslaan mislukt: '+(e.message||e)); }
+}
+async function verwijderArtikel() {
+  if (!edit.id) return;
+  if (!confirm('Dit artikel definitief verwijderen?')) return;
+  try { await TNL.deleteArtikel(edit.id); sluitArtikel(); await laadCatalogus(); }
+  catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
+
+// volledige naam live bijwerken bij typen van subnaam
+document.getElementById('a-subnaam').addEventListener('input', () => { if (edit) renderVolnaam(); });
+</script>
+</body>
+</html>

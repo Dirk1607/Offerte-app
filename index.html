@@ -6,1833 +6,787 @@
 <title>TNL — Gesprek & Offerte</title>
 <style>
 :root {
-  --navy: #1B3A6B;
-  --navy-light: #2a4f8a;
-  --orange: #E8812A;
-  --orange-light: #f5a05a;
-  --blue: #4A7CB5;
-  --light: #F4F7FB;
-  --border: #D0DCF0;
-  --green: #2E7D52;
-  --green-light: #e8f7ef;
-  --red: #C0392B;
-  --red-light: #fdecea;
-  --amber: #d97706;
-  --amber-light: #fff8e8;
-  --text: #1a1a2e;
-  --muted: #6b7a99;
-  --white: #ffffff;
-  --card-shadow: 0 2px 16px rgba(27,58,107,0.09);
+  --navy:#1B3A6B; --navy-light:#2a4f8a; --orange:#E8812A; --blue:#4A7CB5;
+  --light:#F4F7FB; --border:#D0DCF0; --green:#2E7D52; --green-light:#e8f7ef;
+  --red:#C0392B; --red-light:#fdecea; --amber:#d97706; --amber-light:#fff8e8;
+  --text:#1a1a2e; --muted:#6b7a99; --white:#fff; --card-shadow:0 2px 16px rgba(27,58,107,0.09);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--light); color: var(--text); min-height: 100vh; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--text); background:var(--light); line-height:1.5; }
+header { background:var(--navy); color:#fff; padding:16px 28px; display:flex; align-items:center; justify-content:space-between; }
+header h1 { font-size:18px; font-weight:800; letter-spacing:.3px; }
+header .conn { font-size:12px; opacity:.85; }
+nav { display:flex; gap:4px; background:#fff; padding:0 20px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:5; }
+nav button { background:none; border:none; padding:14px 20px; font-size:14px; font-weight:700; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; }
+nav button.actief { color:var(--navy); border-bottom-color:var(--orange); }
+main { max-width:1000px; margin:0 auto; padding:28px 20px 80px; }
+.panel { display:none; }
+.panel.actief { display:block; }
+h2 { font-size:20px; color:var(--navy); margin-bottom:6px; }
+.sub { color:var(--muted); font-size:14px; margin-bottom:20px; }
+.card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:var(--card-shadow); margin-bottom:20px; }
+textarea { width:100%; min-height:180px; border:1px solid var(--border); border-radius:8px; padding:12px; font-family:ui-monospace,monospace; font-size:13px; resize:vertical; }
+.btn { background:var(--navy); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:14px; font-weight:700; cursor:pointer; }
+.btn:hover { background:var(--navy-light); }
+.btn-ghost { background:#fff; color:var(--navy); border:1.5px solid var(--border); }
+.btn-row { display:flex; gap:10px; margin-top:14px; }
+.status { font-size:13px; margin-top:10px; min-height:18px; }
+.klant-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; }
+.klant-veld { background:var(--light); border:1px solid var(--border); border-radius:8px; padding:9px 12px; }
+.klant-veld { min-width:0; }
+.klant-veld .lbl { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+.klant-veld .val { font-size:14px; font-weight:600; color:var(--navy); overflow-wrap:anywhere; word-break:break-word; }
+.score-titel { font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin:22px 0 10px; }
+.score-rij { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid #eef2f9; }
+.score-rij .naam { width:200px; font-weight:600; color:var(--navy); }
+.score-rij .naam small { color:var(--muted); font-weight:400; }
+.bar { flex:1; height:10px; background:#eef2f9; border-radius:6px; overflow:hidden; }
+.bar > div { height:100%; border-radius:6px; }
+.score-rij .cijfer { width:56px; text-align:right; font-weight:800; }
+.badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+.placeholder { color:var(--muted); font-style:italic; padding:40px; text-align:center; }
+.legenda { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:14px; }
+.legenda span { display:inline-flex; align-items:center; gap:6px; }
+.dot { width:11px; height:11px; border-radius:50%; display:inline-block; }
 
-/* HEADER */
-header {
-  background: var(--navy);
-  padding: 0 32px;
-  display: flex; align-items: center; justify-content: space-between;
-  height: 64px;
-  box-shadow: 0 2px 12px rgba(27,58,107,0.25);
-  position: sticky; top: 0; z-index: 100;
-}
-.logo { display: flex; align-items: center; gap: 12px; }
-.logo-badge {
-  width: 36px; height: 36px; background: var(--orange);
-  border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  font-weight: 900; color: white; font-size: 14px; letter-spacing: -0.5px;
-}
-.logo h1 { color: white; font-size: 17px; font-weight: 700; }
-.logo p { color: rgba(255,255,255,0.5); font-size: 11px; }
+/* Catalogus-boom */
+.lijn-groep { margin-bottom:6px; }
+.lijn-kop { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#fff; border:1px solid var(--border); border-radius:10px; cursor:pointer; }
+.lijn-kop:hover { background:var(--light); }
+.lijn-kop .titel { font-weight:700; color:var(--navy); flex:1; }
+.lijn-kop .telt { font-size:12px; color:var(--muted); }
+.lijn-body { padding:6px 0 6px 22px; }
+.station-kaart { background:#fff; border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin:8px 0; }
+.station-kop { display:flex; align-items:center; gap:10px; }
+.station-kop .snaam { font-weight:700; color:var(--navy); flex:1; }
+.artikel-kaart { display:flex; align-items:center; gap:10px; background:var(--light); border:1px solid var(--border); border-radius:8px; padding:9px 12px; margin:8px 0 0 18px; }
+.artikel-kaart .anaam { flex:1; font-weight:600; color:var(--navy); }
+.artikel-kaart .aprijs { font-size:12px; color:var(--muted); white-space:nowrap; }
+.mini { padding:5px 11px; font-size:12px; border-radius:7px; }
+.mini-danger { color:var(--red); border-color:#f3c0bb; }
+.leeg { color:var(--muted); font-style:italic; font-size:13px; padding:6px 0 4px 4px; }
 
-/* STEPPER */
-.stepper {
-  display: flex; align-items: center; gap: 0;
-  background: rgba(255,255,255,0.07);
-  border-radius: 8px; padding: 4px;
-}
-.step-btn {
-  padding: 6px 14px; border: none; background: none;
-  color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 600;
-  cursor: pointer; border-radius: 6px; transition: all 0.2s;
-  display: flex; align-items: center; gap-:6px; white-space: nowrap;
-}
-.step-btn.active { background: var(--orange); color: white; }
-.step-btn:hover:not(.active) { color: white; background: rgba(255,255,255,0.1); }
-
-/* MAIN */
-main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
-
-/* SECTION CARDS */
-.section-card {
-  background: white; border-radius: 16px;
-  box-shadow: var(--card-shadow);
-  padding: 28px 32px; margin-bottom: 20px;
-}
-.section-header {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
-}
-.section-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-}
-.icon-navy { background: #e8eef8; }
-.icon-orange { background: #fef0e4; }
-.icon-green { background: var(--green-light); }
-.section-header h2 { font-size: 18px; font-weight: 700; color: var(--navy); }
-.section-header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
-
-/* PANELS */
-.panel { display: none; }
-.panel.active { display: block; }
-
-/* STEP 1 — SCORES */
-.scores-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-bottom: 20px;
-}
-@media(max-width:700px){ .scores-grid { grid-template-columns: 1fr; } }
-
-.score-row {
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--light); border-radius: 10px; padding: 10px 14px;
-  border: 1.5px solid var(--border); transition: border-color 0.2s;
-}
-.score-row:hover { border-color: var(--blue); }
-.score-label { font-size: 13px; font-weight: 600; color: var(--navy); }
-.score-sub { font-size: 11px; color: var(--muted); }
-.score-controls { display: flex; gap: 4px; align-items: center; }
-.score-btn {
-  width: 28px; height: 28px; border-radius: 6px; border: none;
-  cursor: pointer; font-size: 14px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-}
-.score-minus { background: #f0f0f8; color: var(--navy); }
-.score-minus:hover { background: var(--navy); color: white; }
-.score-plus { background: var(--orange); color: white; }
-.score-plus:hover { background: var(--orange-light); }
-.score-val {
-  width: 36px; text-align: center; font-size: 16px; font-weight: 800;
-  color: var(--navy);
-}
-.zone-dot {
-  width: 10px; height: 10px; border-radius: 50%; margin-left: 6px; flex-shrink: 0;
-}
-.z1 { background: #e53935; }
-.z2 { background: #FB8C00; }
-.z3 { background: #1B3A6B; }
-.z4 { background: #2E7D52; }
-
-.divider-label {
-  font-size: 11px; font-weight: 700; color: var(--muted);
-  letter-spacing: 1px; text-transform: uppercase;
-  padding: 8px 0 4px; grid-column: 1/-1;
-  border-top: 1px solid var(--border); margin-top: 4px;
-}
-
-/* PRIORITY SUMMARY */
-.priority-bar {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
-}
-.priority-chip {
-  display: flex; align-items: center; gap: 6px;
-  padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-}
-.chip-red { background: var(--red-light); color: var(--red); }
-.chip-amber { background: var(--amber-light); color: var(--amber); }
-.chip-navy { background: #e8eef8; color: var(--navy); }
-.chip-green { background: var(--green-light); color: var(--green); }
-
-/* STEP 2 — GESPREK */
-.gesprek-intro {
-  background: linear-gradient(135deg, #e8eef8 0%, #f4f7fb 100%);
-  border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
-  border-left: 4px solid var(--navy);
-}
-.gesprek-intro p { font-size: 13px; color: var(--navy); line-height: 1.6; }
-
-.domein-card {
-  border: 1.5px solid var(--border); border-radius: 12px;
-  margin-bottom: 14px; overflow: hidden;
-}
-.domein-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px; cursor: pointer; user-select: none;
-  transition: background 0.15s;
-}
-.domein-header:hover { background: var(--light); }
-.domein-title { display: flex; align-items: center; gap: 10px; }
-.domein-name { font-size: 15px; font-weight: 700; color: var(--navy); }
-.zone-badge {
-  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
-}
-.badge-r { background: var(--red-light); color: var(--red); }
-.badge-o { background: var(--amber-light); color: var(--amber); }
-.badge-b { background: #e8eef8; color: var(--navy); }
-.badge-g { background: var(--green-light); color: var(--green); }
-.domein-score-badge {
-  font-size: 20px; font-weight: 900; color: var(--navy); min-width: 40px; text-align: right;
-}
-.chevron { color: var(--muted); transition: transform 0.2s; font-size: 18px; }
-.domein-card.open .chevron { transform: rotate(180deg); }
-
-.domein-body { display: none; padding: 0 18px 18px; }
-.domein-card.open .domein-body { display: block; }
-
-.info-block {
-  background: var(--light); border-radius: 8px; padding: 12px 14px;
-  margin-bottom: 10px;
-}
-.info-block-label {
-  font-size: 10px; font-weight: 700; color: var(--muted);
-  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px;
-}
-.info-block p { font-size: 13px; color: var(--text); line-height: 1.6; }
-
-.gesprek-vragen { margin-top: 14px; }
-.gesprek-vragen h4 { font-size: 12px; font-weight: 700; color: var(--navy); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
-.vraag-item {
-  display: flex; align-items: flex-start; gap: 8px;
-  padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text);
-}
-.vraag-item:last-child { border-bottom: none; }
-.vraag-bullet { color: var(--orange); font-weight: 900; flex-shrink: 0; margin-top: 1px; }
-
-.notes-field {
-  width: 100%; margin-top: 12px; border: 1.5px solid var(--border);
-  border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: inherit;
-  resize: vertical; min-height: 64px; outline: none; transition: border-color 0.2s;
-}
-.notes-field:focus { border-color: var(--blue); }
-
-/* STEP 3 — AANBOD */
-.aanbod-intro {
-  background: linear-gradient(135deg, #fef0e4 0%, #fff8f5 100%);
-  border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
-  border-left: 4px solid var(--orange);
-}
-
-.module-card {
-  border: 1.5px solid var(--border); border-radius: 12px;
-  margin-bottom: 12px; overflow: hidden;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.module-card.selected {
-  border-color: var(--orange);
-  box-shadow: 0 0 0 3px rgba(232,129,42,0.12);
-}
-.module-top {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px; gap: 12px;
-}
-.module-left { display: flex; align-items: center; gap: 12px; flex: 1; }
-.module-check {
-  width: 20px; height: 20px; accent-color: var(--orange); cursor: pointer; flex-shrink: 0;
-}
-.module-info { flex: 1; }
-.module-name { font-size: 14px; font-weight: 700; color: var(--navy); }
-.module-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.module-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-
-.niveau-select {
-  border: 1.5px solid var(--border); border-radius: 7px; padding: 6px 10px;
-  font-size: 12px; font-weight: 600; cursor: pointer; outline: none;
-  background: white; color: var(--navy); transition: border-color 0.2s;
-}
-.niveau-select:focus { border-color: var(--blue); }
-
-.price-tag {
-  font-size: 17px; font-weight: 800; color: var(--navy);
-  min-width: 80px; text-align: right;
-}
-.price-sub { font-size: 10px; color: var(--muted); font-weight: 400; display: block; text-align: right; }
-
-.module-desc {
-  padding: 0 18px 14px 50px;
-  font-size: 12px; color: var(--muted); line-height: 1.6;
-  border-top: 1px solid var(--border);
-}
-.module-desc.hidden { display: none; }
-
-/* NIVEAU PILLS */
-.niveau-pills { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-.niveau-pill {
-  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
-  border: 1.5px solid var(--border); cursor: pointer; transition: all 0.15s;
-  background: white; color: var(--muted);
-}
-.niveau-pill.active { background: var(--navy); color: white; border-color: var(--navy); }
-
-/* TOTAAL BAR */
-.totaal-bar {
-  background: var(--navy); color: white; border-radius: 12px;
-  padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
-  margin-top: 20px; flex-wrap: wrap; gap: 10px;
-}
-.totaal-bar .label { font-size: 14px; font-weight: 600; opacity: 0.8; }
-.totaal-bar .amount { font-size: 28px; font-weight: 900; }
-.totaal-bar .days { font-size: 12px; opacity: 0.6; }
-
-/* STEP 4 — OFFERTE */
-.offerte-form {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 12px; margin-bottom: 20px;
-}
-@media(max-width:600px){ .offerte-form { grid-template-columns: 1fr; } }
-.form-group { display: flex; flex-direction: column; gap: 4px; }
-.form-group.full { grid-column: 1/-1; }
-.form-group label { font-size: 12px; font-weight: 600; color: var(--muted); }
-.form-group input, .form-group textarea, .form-group select {
-  border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
-  font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s;
-  background: white;
-}
-.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-  border-color: var(--blue);
-}
-
-/* OFFERTE PREVIEW */
-.offerte-preview {
-  border: 1.5px solid var(--border); border-radius: 12px;
-  padding: 32px 36px; background: white; margin-top: 20px;
-  font-size: 13px; line-height: 1.7;
-}
-.offerte-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
-.offerte-logo { font-size: 20px; font-weight: 900; color: var(--navy); }
-.offerte-logo span { color: var(--orange); }
-.offerte-meta { text-align: right; font-size: 12px; color: var(--muted); }
-.offerte-titel { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
-.offerte-subtitle { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
-.offerte-section { margin-bottom: 20px; }
-.offerte-section h3 { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-.offerte-table { width: 100%; border-collapse: collapse; }
-.offerte-table th { background: var(--light); padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
-.offerte-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-.offerte-table tr:last-child td { border-bottom: none; }
-.offerte-totaal { background: var(--navy); color: white; border-radius: 8px; padding: 14px 20px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center; }
-.offerte-totaal .t-label { font-size: 13px; opacity: 0.8; }
-.offerte-totaal .t-amount { font-size: 22px; font-weight: 900; }
-.offerte-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
-
-/* BUTTONS */
-.btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-.btn-primary { background: var(--orange); color: white; }
-.btn-primary:hover { background: #d4741f; }
-.btn-navy { background: var(--navy); color: white; }
-.btn-navy:hover { background: var(--navy-light); }
-.btn-ghost { background: white; color: var(--navy); border: 1.5px solid var(--border); }
-.btn-ghost:hover { border-color: var(--navy); }
-.btn-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 10px; }
-
-/* EMPTY STATE */
-.empty-state { text-align: center; padding: 40px; color: var(--muted); }
-.empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
-.empty-state p { font-size: 14px; }
-
-/* CATALOGUS */
-.ed-sectie { margin-bottom: 24px; }
-.ed-sectie-titel { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-.ed-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ed-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-@media(max-width:600px){ .ed-grid-2,.ed-grid-3 { grid-template-columns: 1fr; } }
-.ed-veld { display: flex; flex-direction: column; gap: 4px; }
-.ed-veld.full { grid-column: 1/-1; }
-.ed-veld label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.ed-veld input, .ed-veld textarea, .ed-veld select { border: 1.5px solid var(--border); border-radius: 7px; padding: 8px 10px; font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s; background: white; }
-.ed-veld input:focus, .ed-veld textarea:focus, .ed-veld select:focus { border-color: var(--blue); }
-.niveau-blok { border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
-.niveau-blok-titel { padding: 8px 14px; font-size: 12px; font-weight: 700; }
-.niveau-blok .ed-grid-3 { padding: 12px 14px; }
-.niveau-totaal { padding: 8px 14px; background: var(--light); font-size: 13px; font-weight: 700; color: var(--navy); text-align: right; border-top: 1px solid var(--border); }
-.wbs-rij { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
-.wbs-rij input { border: 1.5px solid var(--border); border-radius: 7px; padding: 7px 10px; font-size: 12px; font-family: inherit; outline: none; }
-.wbs-rij input:focus { border-color: var(--blue); }
-.wbs-rij select { border: 1.5px solid var(--border); border-radius: 7px; padding: 7px 8px; font-size: 12px; outline: none; background: white; }
-.optie-rij { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
-.optie-rij input { border: 1.5px solid var(--border); border-radius: 7px; padding: 7px 10px; font-size: 12px; font-family: inherit; outline: none; }
-.optie-rij input:focus { border-color: var(--blue); }
-.btn-del { background: var(--red-light); color: var(--red); border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-.btn-del:hover { background: #fad0d0; }
-.station-kaart { background: white; border-radius: 14px; box-shadow: var(--card-shadow); margin-bottom: 14px; overflow: hidden; border: 1.5px solid var(--border); transition: border-color 0.2s; }
-.station-kaart:hover { border-color: var(--blue); }
-.station-kaart-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; cursor: pointer; }
-.station-kaart-left { display: flex; align-items: center; gap: 12px; }
-.station-kaart-body { display: none; padding: 0 20px 18px; border-top: 1px solid var(--border); }
-.station-kaart.open .station-kaart-body { display: block; }
-.station-kaart.open .station-chevron { transform: rotate(180deg); }
-.station-chevron { color: var(--muted); transition: transform 0.2s; }
-.prijs-tabel { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
-.prijs-tabel th { background: var(--light); padding: 7px 10px; text-align: left; font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: 10px; }
-.prijs-tabel td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
-.prijs-tabel tr:last-child td { border-bottom: none; }
-.scope-blok { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-@media(max-width:600px){ .scope-blok { grid-template-columns: 1fr; } }
-.scope-item { background: var(--light); border-radius: 8px; padding: 10px 12px; }
-.scope-item-titel { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-.scope-item p { font-size: 12px; color: var(--text); line-height: 1.6; white-space: pre-line; }
-</style>
-
-  header, .stepper, .btn-bar, .no-print { display: none !important; }
-  body { background: white; }
-  .section-card { box-shadow: none; border: 1px solid #ddd; }
-  .offerte-preview { border: none; padding: 0; }
-}
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(20,30,60,.45); display:flex; align-items:flex-start; justify-content:center; padding:30px 16px; overflow:auto; z-index:50; }
+.modal { background:#fff; border-radius:14px; width:100%; max-width:760px; box-shadow:0 12px 50px rgba(0,0,0,.3); }
+.modal-kop { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); position:sticky; top:0; background:#fff; border-radius:14px 14px 0 0; }
+.modal-kop h3 { color:var(--navy); font-size:17px; }
+.modal-kop .x { background:none; border:none; font-size:22px; color:var(--muted); cursor:pointer; line-height:1; }
+.modal-body { padding:22px; }
+.modal-voet { display:flex; gap:10px; justify-content:space-between; padding:16px 22px; border-top:1px solid var(--border); position:sticky; bottom:0; background:#fff; border-radius:0 0 14px 14px; }
+.veld { margin-bottom:14px; }
+.veld label { display:block; font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:5px; }
+.veld input, .veld textarea, .veld select { width:100%; border:1px solid var(--border); border-radius:7px; padding:8px 10px; font-size:13px; font-family:inherit; }
+.veld textarea { min-height:64px; resize:vertical; }
+.rij2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.subkop { font-size:13px; font-weight:800; color:var(--navy); margin:20px 0 8px; padding-bottom:5px; border-bottom:2px solid var(--light); }
+.dyn-rij { display:flex; gap:8px; margin-bottom:7px; align-items:center; }
+.dyn-rij input, .dyn-rij select { padding:6px 8px; font-size:13px; border:1px solid var(--border); border-radius:6px; }
+.dyn-rij .x { background:none; border:none; color:var(--red); cursor:pointer; font-size:16px; }
+.niveau-blok { border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; }
+.niveau-blok .nv-titel { font-weight:700; color:var(--orange); margin-bottom:8px; }
+.niveau-blok .nv-prijs { float:right; color:var(--navy); }
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">
-    <div class="logo-badge">TNL</div>
-    <div>
-      <h1>Gesprek & Offerte Tool</h1>
-      <p>The Next Level — na de Quick Scan</p>
-    </div>
-  </div>
-  <div class="stepper">
-    <button class="step-btn active" onclick="goPanel(0)">① Scores</button>
-    <button class="step-btn" onclick="goPanel(1)">② Gesprek</button>
-    <button class="step-btn" onclick="goPanel(2)">③ Aanbod</button>
-    <button class="step-btn" onclick="goPanel(3)">④ Offerte</button>
-    <button class="step-btn" onclick="goPanel(4)" style="border-left:1px solid rgba(255,255,255,0.15);margin-left:4px;padding-left:16px">📚 Catalogus</button>
-  </div>
+  <h1>🚇 TNL — Gesprek &amp; Offerte</h1>
+  <div class="conn" id="conn">Verbinden met database…</div>
 </header>
 
+<nav>
+  <button class="actief" data-tab="gesprek">① Gespreksvoorbereiding</button>
+  <button data-tab="catalogus">② Catalogus</button>
+  <button data-tab="offerte">③ Offerte</button>
+  <button data-tab="tarieven">⚙ Tarieven</button>
+</nav>
+
 <main>
+  <!-- TAB 1 -->
+  <section class="panel actief" id="tab-gesprek">
+    <h2>Gespreksvoorbereiding</h2>
+    <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden.</p>
 
-<!-- PANEL 0: SCORES -->
-<div class="panel active" id="panel-0">
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-icon icon-orange">📧</div>
-      <div>
-        <h2>Importeer vanuit notificatiemail</h2>
-        <p>Plak de volledige mail die je van de Quick Scan ontvangen hebt — alle gegevens en scores worden automatisch ingelezen</p>
+    <div class="card">
+      <textarea id="mail-tekst" placeholder="Plak hier de volledige quickscan-mail (of het rapport-blok met de scores)…"></textarea>
+      <div class="btn-row">
+        <button class="btn" onclick="leesMail()">📥 Inlezen</button>
+        <button class="btn" id="btn-opslaan" onclick="opslaanGesprek()" style="display:none;background:var(--green)">💾 Opslaan in dossier</button>
+        <button class="btn btn-ghost" onclick="wisMail()">Wissen</button>
       </div>
+      <div class="status" id="mail-status"></div>
     </div>
-    <textarea id="mail-import-tekst" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;min-height:110px;resize:vertical;outline:none;transition:border-color 0.2s" placeholder="Plak hier de inhoud van de notificatiemail van de Quick Scan...&#10;&#10;Formaat dat herkend wordt:&#10;Naam: Jan Peeters&#10;Bedrijf: Peeters NV&#10;E-mail: jan@peeters.be&#10;Strategie: 2.5/4 (Aandachtspunt)&#10;Operations: 1.8/4 (Kritische groeipijn)&#10;..." onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"></textarea>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:8px">
-      <div id="import-status" style="font-size:12px;color:var(--muted)">Nog niets geïmporteerd</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="clearImport()">✕ Wissen</button>
-        <button class="btn btn-primary" onclick="importeerMail()">📥 Importeer gegevens</button>
-      </div>
-    </div>
-    <div id="import-resultaat" style="display:none;margin-top:12px;background:var(--green-light);border:1px solid #a7f3d0;border-radius:10px;padding:12px 16px;font-size:13px;color:var(--green)"></div>
-  </div>
 
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-icon icon-navy">📊</div>
-      <div>
-        <h2>Quick Scan scores</h2>
-        <p>Geïmporteerd via mail of manueel aanpasbaar (1 = laag, 4 = sterk)</p>
+    <div id="klant-blok" style="display:none">
+      <div class="card">
+        <div class="score-titel" style="margin-top:0">Klantgegevens</div>
+        <div class="klant-grid" id="klant-grid"></div>
       </div>
     </div>
 
-    <div class="scores-grid" id="scores-grid">
-      <div class="divider-label">🚇 De 11 metrolijnen</div>
-    </div>
-
-    <div class="btn-bar">
-      <div id="priority-bar" class="priority-bar"></div>
-      <button class="btn btn-primary" onclick="goPanel(1)">Naar gespreksgids →</button>
-    </div>
-  </div>
-
-  <!-- Klantgegevens preview na import -->
-  <div class="section-card" id="klant-kaart" style="display:none">
-    <div class="section-header">
-      <div class="section-icon icon-green">👤</div>
-      <div>
-        <h2>Geïmporteerde klantgegevens</h2>
-        <p>Automatisch ingelezen vanuit de notificatiemail</p>
-      </div>
-    </div>
-    <div id="klant-details" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
-  </div>
-</div>
-
-<!-- PANEL 1: GESPREK -->
-<div class="panel" id="panel-1">
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-icon icon-navy">💬</div>
-      <div>
-        <h2>Gespreksgids</h2>
-        <p>Gefilterd op prioriteiten — klik een domein open voor gespreksinhoud</p>
-      </div>
-    </div>
-    <div class="gesprek-intro">
-      <p><strong>Hoe gebruik je dit?</strong> De domeinen zijn gesorteerd van laagste naar hoogste score. Open elk prioritair domein, lees de indruk voor aan de klant en stel de verdiepingsvragen. Noteer inzichten onderaan elk domein — die komen automatisch in de offerte.</p>
-    </div>
-    <div id="gesprek-domeinen"></div>
-    <div class="btn-bar">
-      <button class="btn btn-ghost" onclick="goPanel(0)">← Scores</button>
-      <button class="btn btn-primary" onclick="goPanel(2)">Naar aanbod →</button>
-    </div>
-  </div>
-</div>
-
-<!-- PANEL 2: AANBOD -->
-<div class="panel" id="panel-2">
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-icon icon-orange">💼</div>
-      <div>
-        <h2>Modules selecteren & prijzen bepalen</h2>
-        <p>Vink aan wat je aanbiedt — kies het niveau per module</p>
-      </div>
-    </div>
-    <div class="aanbod-intro">
-      <p><strong>Werkwijze:</strong> Elke module staat voor één metrostation dat je aanpakt. Selecteer de modules die relevant zijn op basis van het gesprek. Kies het intensiteitsniveau. De prijs past automatisch aan.</p>
-    </div>
-    <div id="modules-lijst"></div>
-    <div id="totaal-bar" class="totaal-bar" style="display:none">
-      <div>
-        <div class="label">Totaal geselecteerde modules</div>
-        <div class="days" id="totaal-days"></div>
-      </div>
-      <div class="amount" id="totaal-prijs">€0</div>
-    </div>
-    <div class="btn-bar">
-      <button class="btn btn-ghost" onclick="goPanel(1)">← Gesprek</button>
-      <button class="btn btn-primary" onclick="goPanel(3)">Naar offerte →</button>
-    </div>
-  </div>
-</div>
-
-<!-- PANEL 3: OFFERTE -->
-<div class="panel" id="panel-3">
-  <div class="section-card no-print">
-    <div class="section-header">
-      <div class="section-icon icon-green">📄</div>
-      <div>
-        <h2>Offerte opmaken</h2>
-        <p>Vul de klantgegevens aan — de offerte wordt automatisch gegenereerd</p>
-      </div>
-    </div>
-    <div class="offerte-form">
-      <div class="form-group">
-        <label>Naam klant / zaakvoerder</label>
-        <input id="f-naam" type="text" placeholder="Bv. Jan Peeters" oninput="renderOfferte()">
-      </div>
-      <div class="form-group">
-        <label>Bedrijfsnaam</label>
-        <input id="f-bedrijf" type="text" placeholder="Bv. Peeters NV" oninput="renderOfferte()">
-      </div>
-      <div class="form-group">
-        <label>Consultant</label>
-        <input id="f-consultant" type="text" placeholder="Bv. Dirk Vander Eyken" oninput="renderOfferte()">
-      </div>
-      <div class="form-group">
-        <label>Datum</label>
-        <input id="f-datum" type="date" oninput="renderOfferte()">
-      </div>
-      <div class="form-group full">
-        <label>Openingszin / context (optioneel)</label>
-        <textarea id="f-context" rows="2" placeholder="Bv. Na ons gesprek van vandaag..." oninput="renderOfferte()"></textarea>
-      </div>
-    </div>
-    <div class="btn-bar">
-      <button class="btn btn-ghost" onclick="goPanel(2)">← Aanbod</button>
-      <div style="display:flex;gap:10px;">
-        <button class="btn btn-ghost" onclick="window.print()">🖨 Afdrukken</button>
-        <button class="btn btn-navy" onclick="copyOfferte()">📋 Kopieer tekst</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="offerte-preview" id="offerte-preview">
-    <div style="text-align:center;color:var(--muted);padding:40px">Vul klantgegevens in om de offerte te genereren.</div>
-  </div>
-</div>
-
-<!-- PANEL 4: CATALOGUS -->
-<div class="panel" id="panel-4">
-
-  <!-- Toolbar -->
-  <div class="section-card" style="padding:18px 24px">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="section-icon icon-orange" style="width:36px;height:36px;font-size:16px">📚</div>
-        <div>
-          <h2 style="font-size:17px;font-weight:700;color:var(--navy)">Productcatalogus</h2>
-          <p style="font-size:12px;color:var(--muted)">Beheer het volledige aanbod per metrostation</p>
+    <div id="scores-blok" style="display:none">
+      <div class="card">
+        <div class="score-titel" style="margin-top:0">Scores — zwakste eerst</div>
+        <div id="scores-metro"></div>
+        <div id="scores-versn"></div>
+        <div class="legenda">
+          <span><span class="dot" style="background:var(--red)"></span>Kritisch (&le;1.5)</span>
+          <span><span class="dot" style="background:var(--amber)"></span>Aandachtspunt (&le;2.5)</span>
+          <span><span class="dot" style="background:var(--blue)"></span>Goed ontwikkeld (&le;3.5)</span>
+          <span><span class="dot" style="background:var(--green)"></span>Sterke troef (&gt;3.5)</span>
         </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <label class="btn btn-ghost" style="cursor:pointer">
-          📂 Laad catalogus
-          <input type="file" accept=".json" style="display:none" onchange="laadCatalogus(this)">
-        </label>
-        <button class="btn btn-ghost" onclick="slaatCatalogusOp()">💾 Sla op als JSON</button>
-        <button class="btn btn-primary" onclick="openNieuwStation()">+ Nieuw station</button>
+    </div>
+  </section>
+
+  <!-- TAB 2 -->
+  <section class="panel" id="tab-catalogus">
+    <h2>Catalogus — beheer</h2>
+    <p class="sub">Je productaanbod: lijn → station → artikel. Voeg stations toe onder een lijn, en artikelen onder een station.</p>
+    <div class="status" id="cat-status">Laden…</div>
+    <div id="cat-tree"></div>
+  </section>
+
+  <!-- TAB 4 -->
+  <section class="panel" id="tab-tarieven">
+    <h2>Tarieven &amp; rollen</h2>
+    <p class="sub">Bedrijfsbrede dagtarieven per rol. Elk artikel rekent z'n prijs hieruit — pas je een tarief aan, dan werkt dat overal door.</p>
+    <div class="card">
+      <div class="status" id="tar-status">Laden…</div>
+      <div id="tar-lijst"></div>
+      <div class="subkop" style="margin-top:18px">Nieuwe rol</div>
+      <div class="dyn-rij" style="flex-wrap:wrap">
+        <input id="tar-naam" placeholder="Rol (bv. Partner, Senior, Medior, Junior)" style="flex:1;min-width:180px">
+        <input id="tar-uur"  type="number" placeholder="€/uur" style="width:100px">
+        <input id="tar-half" type="number" placeholder="€ ½ dag" style="width:100px">
+        <input id="tar-heel" type="number" placeholder="€ hele dag" style="width:110px">
+        <button class="btn" onclick="voegTariefToe()">+ Toevoegen</button>
       </div>
     </div>
-    <div id="cat-status" style="margin-top:10px;font-size:12px;color:var(--muted)">Nog geen catalogus geladen — maak een nieuw station aan of laad een bestaand JSON-bestand.</div>
-  </div>
+  </section>
 
-  <!-- Stationslijst -->
-  <div id="cat-stations-lijst"></div>
-
-  <!-- EDITOR MODAL -->
-  <div id="cat-editor" style="display:none">
-    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
-      <div style="background:white;border-radius:16px;width:100%;max-width:820px;box-shadow:0 8px 40px rgba(0,0,0,0.2);margin:auto">
-
-        <!-- Editor header -->
-        <div style="background:var(--navy);padding:20px 28px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="color:white;font-size:17px;font-weight:700" id="ed-titel">Nieuw metrostation</div>
-            <div style="color:rgba(255,255,255,0.5);font-size:12px" id="ed-subtitel">Vul alle velden in</div>
-          </div>
-          <button onclick="sluitEditor()" style="background:rgba(255,255,255,0.15);border:none;color:white;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
-        </div>
-
-        <div style="padding:24px 28px;max-height:75vh;overflow-y:auto">
-
-          <!-- Sectie: Identificatie -->
-          <div class="ed-sectie">
-            <div class="ed-sectie-titel">🏷 Identificatie</div>
-            <div class="ed-grid-2">
-              <div class="ed-veld">
-                <label>Metrolijn</label>
-                <select id="ed-lijn">
-                  <option value="metrolijn">🚇 Metrolijn</option>
-                  <option value="versneller">⚡ Versneller</option>
-                </select>
-              </div>
-              <div class="ed-veld">
-                <label>Domeincode</label>
-                <select id="ed-code">
-                  <option value="STR">STR — Strategie</option>
-                  <option value="PROD">PROD — Product / R&D</option>
-                  <option value="MKT">MKT — Marketing</option>
-                  <option value="SAL">SAL — Sales</option>
-                  <option value="OPS">OPS — Operations</option>
-                  <option value="AFS">AFS — After Sales</option>
-                  <option value="HR">HR — HR</option>
-                  <option value="FIN">FIN — Finance</option>
-                  <option value="IT">IT — IT & Digitalisering</option>
-                  <option value="QUA">QUA — Kwaliteit</option>
-                  <option value="SAF">SAF — Veiligheid</option>
-                  <option value="PM">PM — Project Management</option>
-                  <option value="PROC">PROC — Proces Management</option>
-                  <option value="LEAD">LEAD — Leiderschap</option>
-                  <option value="CHG">CHG — Change Management</option>
-                  <option value="OWN">OWN — Eigenaarschap</option>
-                </select>
-              </div>
-              <div class="ed-veld full">
-                <label>Naam van het project / module</label>
-                <input type="text" id="ed-naam" placeholder="Bv. P&L — Profit & Loss rapportering">
-              </div>
-              <div class="ed-veld full">
-                <label>Korte omschrijving (1 zin voor de klant)</label>
-                <input type="text" id="ed-omschrijving" placeholder="Bv. We implementeren een maandelijkse P&L-rapportering zodat u altijd weet waar uw marge naartoe gaat.">
-              </div>
-            </div>
-          </div>
-
-          <!-- Sectie: Scope -->
-          <div class="ed-sectie">
-            <div class="ed-sectie-titel">🎯 Scope</div>
-            <div class="ed-grid-2">
-              <div class="ed-veld full">
-                <label>Wat doen we WEL (scope in)</label>
-                <textarea id="ed-scope-in" rows="4" placeholder="Bv.&#10;• Opzetten van een maandelijkse P&L-structuur&#10;• Koppeling aan bestaande boekhouding&#10;• Training van de verantwoordelijke medewerker"></textarea>
-              </div>
-              <div class="ed-veld full">
-                <label>Wat doen we NIET (scope out)</label>
-                <textarea id="ed-scope-uit" rows="3" placeholder="Bv.&#10;• Geen aanpassing van het boekhoudpakket&#10;• Geen historische data-analyse van meer dan 2 jaar&#10;• Geen consolidatie van meerdere juridische entiteiten"></textarea>
-              </div>
-              <div class="ed-veld full">
-                <label>Beperkingen / voorwaarden</label>
-                <textarea id="ed-beperkingen" rows="2" placeholder="Bv. Vereist een operationele boekhouding. Niet geschikt voor bedrijven zonder resultatenrekening per kostenplaats."></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sectie: Input / Output -->
-          <div class="ed-sectie">
-            <div class="ed-sectie-titel">📥 Input → 📤 Output</div>
-            <div class="ed-grid-2">
-              <div class="ed-veld full">
-                <label>Input — wat heeft de klant klaar bij de start?</label>
-                <textarea id="ed-input" rows="3" placeholder="Bv.&#10;• Toegang tot het boekhoudpakket&#10;• Overzicht van kostenstructuur&#10;• Contactpersoon financiën beschikbaar voor 2 × ½ dag"></textarea>
-              </div>
-              <div class="ed-veld full">
-                <label>Deliverables — wat levert TNL op?</label>
-                <textarea id="ed-deliverables" rows="4" placeholder="Bv.&#10;• Excel P&L-template op maat&#10;• Instructiedocument voor maandelijkse invulling&#10;• Dashboard met marge per activiteit&#10;• 1 validatiesessie na eerste maand"></textarea>
-              </div>
-              <div class="ed-veld full">
-                <label>Meetbare doelstellingen</label>
-                <textarea id="ed-doelstellingen" rows="2" placeholder="Bv. Maandelijkse P&L beschikbaar binnen 5 werkdagen na maandafsluiting. Inzicht in marge per product/klant/afdeling."></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sectie: WBS -->
-          <div class="ed-sectie">
-            <div class="ed-sectie-titel">🔧 WBS — Werkpaketten</div>
-            <div id="ed-wbs-lijst" style="margin-bottom:10px"></div>
-            <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="voegWBSToe()">+ Werkpakket toevoegen</button>
-          </div>
-
-          <!-- Sectie: Doorlooptijd -->
-          <div class="ed-sectie">
-            <div class="ed-sectie-titel">📅 Doorlooptijd & Proces</div>
-            <div class="ed-grid-2">
-              <div class="ed-veld">
-                <label>Totale doorlooptijd</label>
-                <input type="text" id="ed-doorlooptijd" placeholder="Bv. 4-6 weken">
-              </div>
-              <div class="ed-veld">
-                <label>Typisch proces (stappen)</label>
-                <input type="text" id="ed-proces" placeholder="Bv. Intake → Analyse → Implementatie → Validatie">
-              </div>
-            </div>
-          </div>
-
-          <!-- Sectie: Extra opties -->
-          <div class="ed-sectie">
-            <div class="ed-sectie-titel">⭐ Extra opties (Advanced — niet in basis)</div>
-            <div id="ed-opties-lijst" style="margin-bottom:10px"></div>
-            <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="voegOptieToe()">+ Extra optie toevoegen</button>
-          </div>
-
-          <!-- Sectie: Prijscalculator -->
-          <div class="ed-sectie">
-            <div class="ed-sectie-titel">💰 Prijscalculator per niveau</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Stel per niveau (Starter / Standaard / Intensief) de consultantdagen en tarieven in. De prijs wordt automatisch berekend.</div>
-
-            <div id="ed-niveaus">
-              <!-- Starter -->
-              <div class="niveau-blok" id="nb-S">
-                <div class="niveau-blok-titel" style="background:#e8eef8;color:var(--navy)">🔵 Starter</div>
-                <div class="ed-grid-3">
-                  <div class="ed-veld">
-                    <label>Jr. consultant (dagen)</label>
-                    <input type="number" id="ed-S-jr-dagen" min="0" step="0.5" value="0" oninput="herbereken('S')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Jr. dagtarief (€)</label>
-                    <input type="number" id="ed-S-jr-tarief" min="0" step="50" value="800" oninput="herbereken('S')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Sr. consultant (dagen)</label>
-                    <input type="number" id="ed-S-sr-dagen" min="0" step="0.5" value="1.5" oninput="herbereken('S')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Sr. dagtarief (€)</label>
-                    <input type="number" id="ed-S-sr-tarief" min="0" step="50" value="1200" oninput="herbereken('S')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Klant (dagen)</label>
-                    <input type="number" id="ed-S-klant-dagen" min="0" step="0.5" value="0.5" oninput="herbereken('S')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Omschrijving niveau</label>
-                    <input type="text" id="ed-S-omschrijving" placeholder="Bv. Diagnose + quick win" oninput="herbereken('S')">
-                  </div>
-                </div>
-                <div class="niveau-totaal" id="nt-S">Totaal: €0</div>
-              </div>
-
-              <!-- Standaard -->
-              <div class="niveau-blok" id="nb-M">
-                <div class="niveau-blok-titel" style="background:#fef0e4;color:var(--orange)">🟠 Standaard</div>
-                <div class="ed-grid-3">
-                  <div class="ed-veld">
-                    <label>Jr. consultant (dagen)</label>
-                    <input type="number" id="ed-M-jr-dagen" min="0" step="0.5" value="1" oninput="herbereken('M')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Jr. dagtarief (€)</label>
-                    <input type="number" id="ed-M-jr-tarief" min="0" step="50" value="800" oninput="herbereken('M')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Sr. consultant (dagen)</label>
-                    <input type="number" id="ed-M-sr-dagen" min="0" step="0.5" value="3" oninput="herbereken('M')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Sr. dagtarief (€)</label>
-                    <input type="number" id="ed-M-sr-tarief" min="0" step="50" value="1200" oninput="herbereken('M')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Klant (dagen)</label>
-                    <input type="number" id="ed-M-klant-dagen" min="0" step="0.5" value="1" oninput="herbereken('M')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Omschrijving niveau</label>
-                    <input type="text" id="ed-M-omschrijving" placeholder="Bv. Implementatie + coaching" oninput="herbereken('M')">
-                  </div>
-                </div>
-                <div class="niveau-totaal" id="nt-M">Totaal: €0</div>
-              </div>
-
-              <!-- Intensief -->
-              <div class="niveau-blok" id="nb-I">
-                <div class="niveau-blok-titel" style="background:#e8f7ef;color:var(--green)">🟢 Intensief</div>
-                <div class="ed-grid-3">
-                  <div class="ed-veld">
-                    <label>Jr. consultant (dagen)</label>
-                    <input type="number" id="ed-I-jr-dagen" min="0" step="0.5" value="2" oninput="herbereken('I')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Jr. dagtarief (€)</label>
-                    <input type="number" id="ed-I-jr-tarief" min="0" step="50" value="800" oninput="herbereken('I')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Sr. consultant (dagen)</label>
-                    <input type="number" id="ed-I-sr-dagen" min="0" step="0.5" value="8" oninput="herbereken('I')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Sr. dagtarief (€)</label>
-                    <input type="number" id="ed-I-sr-tarief" min="0" step="50" value="1200" oninput="herbereken('I')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Klant (dagen)</label>
-                    <input type="number" id="ed-I-klant-dagen" min="0" step="0.5" value="2" oninput="herbereken('I')">
-                  </div>
-                  <div class="ed-veld">
-                    <label>Omschrijving niveau</label>
-                    <input type="text" id="ed-I-omschrijving" placeholder="Bv. Volledig uitbouwen + borging" oninput="herbereken('I')">
-                  </div>
-                </div>
-                <div class="niveau-totaal" id="nt-I">Totaal: €0</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Editor footer -->
-        <div style="padding:16px 28px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-danger" id="ed-verwijder-btn" onclick="verwijderStation()" style="display:none">🗑 Verwijder station</button>
-          <div style="flex:1"></div>
-          <button class="btn btn-ghost" onclick="sluitEditor()">Annuleer</button>
-          <button class="btn btn-primary" onclick="slaStationOp()">✓ Station opslaan</button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-</div>
-
+  <!-- TAB 3 -->
+  <section class="panel" id="tab-offerte">
+    <h2>Offerte</h2>
+    <p class="sub">Geselecteerde producten → offerte met snapshot. (Volgende stap.)</p>
+    <div class="card"><div class="placeholder">Offerte wordt in de volgende stap gebouwd.</div></div>
+  </section>
 </main>
 
+<!-- Artikel-editor -->
+<div id="art-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-kop">
+      <h3 id="art-titel">Artikel</h3>
+      <button class="x" onclick="sluitArtikel()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="rij2">
+        <div class="veld"><label>Subnaam (optioneel)</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss"></div>
+        <div class="veld"><label>Volledige naam</label><input id="a-volnaam" disabled></div>
+      </div>
+      <div class="veld"><label>Omschrijving</label><textarea id="a-omschrijving"></textarea></div>
+
+      <div class="subkop">Scope</div>
+      <div class="rij2">
+        <div class="veld"><label>✅ Scope in</label><textarea id="a-scope_in"></textarea></div>
+        <div class="veld"><label>❌ Scope out</label><textarea id="a-scope_uit"></textarea></div>
+      </div>
+      <div class="veld"><label>⚠ Beperkingen</label><textarea id="a-beperkingen"></textarea></div>
+      <div class="rij2">
+        <div class="veld"><label>📥 Input (van klant)</label><textarea id="a-input"></textarea></div>
+        <div class="veld"><label>📤 Deliverables</label><textarea id="a-deliverables"></textarea></div>
+      </div>
+      <div class="veld"><label>🎯 Doelstellingen</label><textarea id="a-doelstellingen"></textarea></div>
+      <div class="rij2">
+        <div class="veld"><label>⏱ Doorlooptijd</label><input id="a-doorlooptijd" placeholder="bv. 3-5 weken"></div>
+        <div class="veld"><label>🔄 Proces</label><input id="a-proces" placeholder="Intake → Ontwerp → …"></div>
+      </div>
+
+      <div class="subkop">WBS — werkpakketten</div>
+      <div id="a-wbs"></div>
+      <button class="btn btn-ghost mini" onclick="wbsRij()">+ Regel</button>
+
+      <div class="subkop">Extra opties</div>
+      <div id="a-opties"></div>
+      <button class="btn btn-ghost mini" onclick="optieRij()">+ Optie</button>
+
+      <div class="subkop">Niveaus &amp; prijs (dagen → prijs via tarieven)</div>
+      <div id="a-niveaus"></div>
+    </div>
+    <div class="modal-voet">
+      <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">🗑 Verwijderen</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="sluitArtikel()">Annuleren</button>
+        <button class="btn" onclick="slaArtikelOp()">💾 Opslaan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase/config.js"></script>
+<script src="supabase/db.js"></script>
 <script>
-// ============================================================
-// DATA
-// ============================================================
-const DOMEINEN = [
-  { code:'STR', naam:'Strategie', lijn:'metrolijn', icon:'🗺️',
-    vragen:['Heeft het managementteam een gedeeld beeld van waar het bedrijf naartoe wil?','Worden strategische prioriteiten omgezet in concrete jaarplannen?','Hoe worden beslissingen genomen — op gevoel of vanuit een kader?'],
-    module:'Strategisch kader & prioriteitenplan', dagen:{S:1.5,M:4,I:8}, prijs:{S:2200,M:4500,I:8500}
-  },
-  { code:'PROD', naam:'Product / R&D', lijn:'metrolijn', icon:'🔬',
-    vragen:['Is er een productroadmap die de komende 12 maanden richting geeft?','Hoe worden nieuwe ideeën geëvalueerd en geprioriteerd?','Hoe sterk is de samenwerking tussen productontwikkeling en sales?'],
-    module:'Product roadmap & innovatiestructuur', dagen:{S:2,M:4,I:7}, prijs:{S:2500,M:4500,I:8000}
-  },
-  { code:'MKT', naam:'Marketing', lijn:'metrolijn', icon:'📣',
-    vragen:['Is er een heldere positionering die iedereen in het bedrijf kent?','Via welke kanalen bereiken jullie nieuwe klanten?','Hoe consistent is de communicatie naar buiten toe?'],
-    module:'Marketingstrategie & positionering', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:3500,I:7000}
-  },
-  { code:'SAL', naam:'Sales', lijn:'metrolijn', icon:'📈',
-    vragen:['Is er een actieve salespipeline die opgevolgd wordt?','Hoe verloopt de prospectie — structureel of via toeval?','Welk deel van de omzet komt van terugkerende klanten?'],
-    module:'Salesstructuur & pipelinebeheer', dagen:{S:2,M:4,I:7}, prijs:{S:2500,M:4500,I:8000}
-  },
-  { code:'OPS', naam:'Operations', lijn:'metrolijn', icon:'⚙️',
-    vragen:['Hoeveel tijd wordt er besteed aan het herhalen van hetzelfde werk?','Zijn verantwoordelijkheden in de uitvoering helder?','Wat zijn de drie grootste operationele knelpunten vandaag?'],
-    module:'Operationele structuur & procesverbetering', dagen:{S:2,M:5,I:10}, prijs:{S:2800,M:5500,I:10000}
-  },
-  { code:'AFS', naam:'After Sales', lijn:'metrolijn', icon:'🤝',
-    vragen:['Hoe wordt klanttevredenheid gemeten na een project of levering?','Is er een systematische opvolging van bestaande klanten?','Hoe worden klachten behandeld — reactief of proactief?'],
-    module:'After sales & klantbehoud systeem', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:3500,I:6500}
-  },
-  { code:'HR', naam:'HR', lijn:'metrolijn', icon:'👥',
-    vragen:['Is er een onboardingproces voor nieuwe medewerkers?','Worden functieverwachtingen en rollen formeel vastgelegd?','Wat is het verlooppercentage — en weten jullie waarom mensen vertrekken?'],
-    module:'HR-structuur & medewerkerscyclus', dagen:{S:2,M:4,I:8}, prijs:{S:2500,M:4500,I:8500}
-  },
-  { code:'FIN', naam:'Finance', lijn:'metrolijn', icon:'💰',
-    vragen:['Is er een maandelijkse financiële rapportering beschikbaar?','Zijn marges per klant, product of project gekend?','Hoe wordt cash actief bewaakt en gestuurd?'],
-    module:'Financieel dashboard & margerapportering', dagen:{S:1.5,M:3,I:6}, prijs:{S:2200,M:4000,I:7500}
-  },
-  { code:'IT', naam:'IT & Digitalisering', lijn:'metrolijn', icon:'💻',
-    vragen:['Zijn de kernsystemen geïntegreerd of werkt iedereen met eigen Excel?','Hoe lang duurt het om een klantrapport of managementoverzicht te maken?','Zijn er cyberveiligheidsrisico\'s die vandaag onbeheerd zijn?'],
-    module:'IT-audit & digitaliseringsplan', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:3500,I:7000}
-  },
-  { code:'QUA', naam:'Kwaliteit', lijn:'metrolijn', icon:'✅',
-    vragen:['Hoe hoog zijn de herkwaliteitskosten — worden die gemeten?','Is er een systematisch klachtenregister?','Worden oorzaken van fouten structureel aangepakt?'],
-    module:'Kwaliteitsbeheersing & verbetercyclus', dagen:{S:1.5,M:3,I:6}, prijs:{S:1800,M:3500,I:6500}
-  },
-  { code:'SAF', naam:'Veiligheid', lijn:'metrolijn', icon:'🦺',
-    vragen:['Worden veiligheidsincidenten systematisch geregistreerd en geanalyseerd?','Is er een risicoanalyse aanwezig en up-to-date?','Hoe sterk is de veiligheidscultuur in de dagelijkse praktijk?'],
-    module:'Veiligheidsstructuur & risicobeheersing', dagen:{S:1.5,M:3,I:5}, prijs:{S:1800,M:3500,I:6000}
-  },
-  // Versnellers
-  { code:'PM', naam:'Project Management', lijn:'versneller', icon:'📋',
-    vragen:['Worden projecten gestart met een duidelijk doel, eigenaar en tijdlijn?','Hoe vaak worden deadlines en budgetten gehaald?','Is er een overzicht van alle lopende initiatieven?'],
-    module:'Projectraamwerk & portfoliobeheer', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:3800,I:7000}
-  },
-  { code:'PROC', naam:'Proces Management', lijn:'versneller', icon:'🔄',
-    vragen:['Zijn de kritische processen gedocumenteerd en gekend door iedereen?','Hoe worden nieuwe medewerkers ingewerkt in de werking?','Worden processen periodiek geëvalueerd en verbeterd?'],
-    module:'Procesinventaris & standaardisatie', dagen:{S:2,M:4,I:7}, prijs:{S:2500,M:4500,I:8000}
-  },
-  { code:'LEAD', naam:'Leiderschap', lijn:'versneller', icon:'🎯',
-    vragen:['Slagen leidinggevenden erin om mensen mee te krijgen zonder constant te duwen?','Hoe comfortabel zijn teamleiders in het geven van moeilijke feedback?','Worden beslissingen op het juiste niveau genomen?'],
-    module:'Leiderschapsontwikkeling & coachingtraject', dagen:{S:2,M:5,I:9}, prijs:{S:2800,M:5500,I:9500}
-  },
-  { code:'CHG', naam:'Change Management', lijn:'versneller', icon:'🔀',
-    vragen:['Hoe worden veranderingsinitiatieven gecommuniceerd naar het team?','Wordt weerstand tegen verandering proactief aangepakt?','Is er een aanpak om draagvlak te creëren bij ingrijpende wijzigingen?'],
-    module:'Change management aanpak & draagvlakplan', dagen:{S:1.5,M:3,I:6}, prijs:{S:2000,M:4000,I:7500}
-  },
-  { code:'OWN', naam:'Eigenaarschap', lijn:'versneller', icon:'🏆',
-    vragen:['Nemen medewerkers initiatief of wachten ze op instructies?','Zijn verantwoordelijkheden per rol helder gedocumenteerd?','Hoe ver reikt de beslissingsbevoegdheid van het middenmanagement?'],
-    module:'Eigenaarschapskader & delegatiestructuur', dagen:{S:1.5,M:3,I:5}, prijs:{S:1800,M:3500,I:6500}
-  }
-];
-
-const PROFIELEN = {
-  STR:{1:{lbl:'Kritische groeipijn',wat:'De organisatie werkt zonder duidelijke strategische koers. Beslissingen worden ad hoc genomen en prioriteiten verschuiven voortdurend.',goed:'Bedrijven die een heldere strategische lijn uitzetten ervaren snel meer rust, minder interne discussies en een betere afstemming.',visie:'Een strategie hoeft niet complex te zijn. Drie heldere prioriteiten voor het komende jaar zijn al voldoende om iedereen in dezelfde richting te laten werken.'},2:{lbl:'Aandachtspunt',wat:'Er zijn strategische intenties, maar ze zijn onvoldoende geconcretiseerd of gecommuniceerd naar de werkvloer.',goed:'Met enkele gerichte stappen — een helder strategisch kader vertaald naar concrete doelen per team — kan de organisatie snel aan kracht winnen.',visie:'Strategie wordt pas krachtig als ze begrepen en gedragen wordt door iedereen die ze uitvoert. De vertaalslag van visie naar actie is de sleutel.'},3:{lbl:'Goed ontwikkeld',wat:'Er is een heldere strategische richting die voldoende bekend is bij het managementteam. Doelen en prioriteiten zijn aanwezig.',goed:'Door de strategische opvolging iets strakker te structureren — bv. een maandelijks ritme — blijft de richting ook bij drukte zichtbaar.',visie:'Het fundament is aanwezig. De volgende stap is veerkracht: een strategie die standhoudt ook als het druk wordt.'},4:{lbl:'Sterke troef',wat:'De strategische lijn is helder, gedragen en vertaald naar concrete doelen op alle niveaus.',goed:'De uitdaging is het bewaken van de strategische wendbaarheid: kunnen bijsturen wanneer de markt verandert.',visie:'Sterke troef. Investeer in het onderhouden van die strategische scherpte.'}},
-  PROD:{1:{lbl:'Kritische groeipijn',wat:'Productontwikkeling verloopt reactief. Er is geen duidelijke roadmap en innovatie gebeurt eerder toevallig dan doelgericht.',goed:'Bedrijven die een minimale R&D-structuur invoeren zien snel een betere afstemming tussen wat ze ontwikkelen en wat de markt vraagt.',visie:'Een heldere roadmap met drie prioriteiten en een vast evaluatiemoment per kwartaal is vaak al voldoende.'},2:{lbl:'Aandachtspunt',wat:'Er zijn productinitiatieven, maar ze missen structurele opvolging en prioritering.',goed:'Een lichte governance-structuur rond productontwikkeling kan al een grote impact hebben op snelheid en rendement.',visie:'Het potentieel is aanwezig. De volgende stap is een eenvoudige beslisstructuur die goede ideeën sneller naar de markt brengt.'},3:{lbl:'Goed ontwikkeld',wat:'Productontwikkeling is voldoende gestructureerd en samenwerking met sales verloopt redelijk.',goed:'Door de feedbackloop met klanten te versterken blijft het productportfolio relevant.',visie:'Solide basis. De volgende stap is het versnellen van de innovatiecyclus.'},4:{lbl:'Sterke troef',wat:'Productontwikkeling is professioneel ingericht met een duidelijke roadmap.',goed:'Op dit niveau is de uitdaging het bewaken van de balans tussen disruptieve innovatie en optimalisatie.',visie:'Uitstekend. Investeer in het onderhouden van deze competentie.'}},
-  MKT:{1:{lbl:'Kritische groeipijn',wat:'Er is geen duidelijke marketingstrategie. Communicatie en positionering zijn inconsistent en de organisatie is nauwelijks zichtbaar.',goed:'Zelfs een beperkte maar consistente marketingaanpak kan snel zichtbaarheid creëren.',visie:'Marketing begint bij een helder verhaal: wie zijn we, voor wie, en wat maakt ons anders?'},2:{lbl:'Aandachtspunt',wat:'Er zijn marketinginitiatieven, maar ze zijn niet strategisch ingebed. De positionering is niet scherp.',goed:'Een heldere positionering en consistente boodschap zijn al voldoende voor een significante stap voorwaarts.',visie:'De bouwblokken zijn er. Wat ontbreekt is een consistente rode draad.'},3:{lbl:'Goed ontwikkeld',wat:'De marketingstrategie is aanwezig en redelijk consistent. Positionering is gekend.',goed:'Door te focussen op de kanalen die het meeste opleveren kan de impact sterk toenemen.',visie:'Goed fundament. De volgende stap is meer sturing op het rendement van marketinginspanningen.'},4:{lbl:'Sterke troef',wat:'Marketing is strategisch ingebed, consistent en meetbaar.',goed:'De uitdaging is de marketingstrategie aanpassen aan een veranderende markt.',visie:'Sterke troef. Investeer in het onderhouden van dit fundament.'}},
-  SAL:{1:{lbl:'Kritische groeipijn',wat:'Er is geen gestructureerd salesproces. Commerciële opportuniteiten ontstaan via toeval of enkele individuen.',goed:'Bedrijven die een basisstructuur invoeren voor sales zien snel meer grip en meer predictabiliteit.',visie:'Sales hoeft niet ingewikkeld te zijn. Een duidelijk proces en een wekelijks ritme zijn al voldoende voor structurele groei.'},2:{lbl:'Aandachtspunt',wat:'Er zijn commerciële activiteiten, maar ze zijn onvoldoende gestructureerd. De pipeline is niet zichtbaar.',goed:'Een eenvoudig CRM-gebruik en wekelijkse salesoverleggen kunnen al een significante verbetering brengen.',visie:'Het commercieel potentieel is aanwezig. Wat ontbreekt is een lichte maar consistente structuur.'},3:{lbl:'Goed ontwikkeld',wat:'Er is een werkend salesproces met voldoende discipline en zichtbare pipeline.',goed:'Door de salesstructuur verder te professionaliseren kan de commerciële slagkracht toenemen.',visie:'Goede basis. De volgende stap is scherpere prioritering in de pipeline.'},4:{lbl:'Sterke troef',wat:'Sales is professioneel gestructureerd, voorspelbaar en meetbaar.',goed:'De uitdaging is de commerciële kwaliteit bewaken bij schaalvergroting.',visie:'Uitstekend fundament. De focus ligt op verdiepen en verbreden.'}},
-  OPS:{1:{lbl:'Kritische groeipijn',wat:'De dagelijkse werking is reactief. Brandjes blussen is de norm. Dezelfde problemen keren telkens terug.',goed:'Bedrijven die een basisstructuur invoeren in operations ervaren snel minder brandjes en meer rust.',visie:'Structuur begint klein: wie doet wat, wanneer, en hoe weten we of het goed gaat?'},2:{lbl:'Aandachtspunt',wat:'Er zijn operationele afspraken, maar ze worden niet consistent nageleefd. De werking is afhankelijk van individuen.',goed:'Door bestaande processen te verduidelijken kan de operationele consistentie snel verbeteren.',visie:'De kennis is aanwezig. De uitdaging is die kennis te structureren zodat ze niet afhangt van individuen.'},3:{lbl:'Goed ontwikkeld',wat:'De operationele werking is redelijk gestructureerd. Processen zijn grotendeels gekend.',goed:'Door een systematische verbetercyclus in te bouwen blijft de kwaliteit op peil bij verdere groei.',visie:'Stevige basis. De volgende stap is een cultuur van continue verbetering.'},4:{lbl:'Sterke troef',wat:'Operations zijn professioneel ingericht, voorspelbaar en continu verbeterend.',goed:'De uitdaging is operationele excellentie bewaken bij schaalvergroting.',visie:'Sterke troef. Blijven investeren in verbetering loont.'}},
-  AFS:{1:{lbl:'Kritische groeipijn',wat:'Klantenopvolging na de verkoop is rudimentair. Klachten worden reactief behandeld.',goed:'Zelfs een eenvoudige opvolgstructuur kan snel het klantbehoud en de reputatie verbeteren.',visie:'Bestaande klanten zijn de goedkoopste bron van nieuwe omzet.'},2:{lbl:'Aandachtspunt',wat:'Er is enige klantenopvolging, maar die is niet systematisch. De klantbeleving is inconsistent.',goed:'Een gestandaardiseerd opvolgproces geeft alle klanten dezelfde ervaring.',visie:'Een helder proces dat iedereen volgt is waardevoller dan tien ad hoc-oplossingen.'},3:{lbl:'Goed ontwikkeld',wat:'Klantenopvolging is voldoende gestructureerd. Er is een basisproces voor klachtenbehandeling.',goed:'Door after sales proactief in te zetten kan de klantbeleving sterk verbeteren.',visie:'Solide basis. De volgende stap is het commercieel activeren van after sales contact.'},4:{lbl:'Sterke troef',wat:'After sales is professioneel, proactief en meetbaar.',goed:'De uitdaging is de servicekwaliteit bewaken bij groei.',visie:'Uitstekend. Klanten als ambassadeurs is de beste commerciële motor.'}},
-  HR:{1:{lbl:'Kritische groeipijn',wat:'HR is nauwelijks gestructureerd. Rollen zijn onduidelijk, aanwerving is ad hoc en medewerkersbehoud is problematisch.',goed:'Een basisstructuur voor HR kan snel een merkbaar verschil maken in rust en retentie.',visie:'De mensen zijn het grootste kapitaal. Een eenvoudige maar consistente HR-aanpak beschermt dat kapitaal.'},2:{lbl:'Aandachtspunt',wat:'Er zijn HR-processen, maar ze zijn niet consistent. Aanwerving en onboarding verlopen onvoldoende gestructureerd.',goed:'Door HR-processen te standaardiseren kan de medewerkerstevredenheid snel verbeteren.',visie:'De wil is aanwezig. Wat ontbreekt is een consistent HR-ritme.'},3:{lbl:'Goed ontwikkeld',wat:'HR is voldoende gestructureerd. Rollen zijn duidelijk en evaluatiegesprekken vinden plaats.',goed:'Gerichte ontwikkeltrajecten kunnen de HR-kwaliteit verder versterken.',visie:'Stevige basis. De volgende stap is bouwen aan een organisatie die mensen aantrekt en houdt.'},4:{lbl:'Sterke troef',wat:'HR is professioneel ingericht met systematische aanwerving, onboarding en retentie.',goed:'De uitdaging is HR-kwaliteit bewaken bij verdere groei.',visie:'Mensen zijn het fundament — en dit bedrijf heeft dat begrepen.'}},
-  FIN:{1:{lbl:'Kritische groeipijn',wat:'Financieel inzicht is beperkt. Beslissingen worden genomen zonder financiële onderbouwing.',goed:'Een eenvoudig maandelijks dashboard geeft al enorm veel meer grip.',visie:'Financieel inzicht is geen luxe, het is de basis van elke goede beslissing.'},2:{lbl:'Aandachtspunt',wat:'Er is enige financiële rapportering, maar ze is onvolledig of te laat beschikbaar.',goed:'Door bestaande data beter te structureren kan de besluitvorming snel verbeteren.',visie:'De data is beschikbaar. Wat ontbreekt is de juiste interpretatie gekoppeld aan beslissingen.'},3:{lbl:'Goed ontwikkeld',wat:'Financiële rapportering is aanwezig en voldoende tijdig. Er is inzicht in marge en cash.',goed:'Door de financiële diepgang te vergroten kan de kwaliteit van beslissingen verder toenemen.',visie:'Solide basis. De volgende stap is het instrumentarium verfijnen.'},4:{lbl:'Sterke troef',wat:'Financieel management is professioneel met real-time inzicht in marges en cash.',goed:'De uitdaging is het instrumentarium up-to-date houden bij groei.',visie:'Finance als stuurinstrument is één van de grootste hefbomen voor waardecreatie.'}},
-  IT:{1:{lbl:'Kritische groeipijn',wat:'IT is rudimentair. Systemen zijn gefragmenteerd en data is moeilijk te vinden.',goed:'Zelfs een beperkte digitalisering kan al een significante productiviteitswinst opleveren.',visie:'De juiste tool voor het juiste probleem is het vertrekpunt.'},2:{lbl:'Aandachtspunt',wat:'Er zijn systemen, maar ze zijn niet geïntegreerd. Rapportering kost te veel manueel werk.',goed:'Door systemen beter te integreren kan de datakwaliteit snel verbeteren.',visie:'De tools zijn er al. De volgende stap is ze beter laten samenwerken.'},3:{lbl:'Goed ontwikkeld',wat:'IT-systemen ondersteunen de werking voldoende. Basisintegratie is aanwezig.',goed:'Door te investeren in automatisering kan IT een grotere bijdrage leveren.',visie:'Solide basis. De volgende stap is de datafunctie versterken.'},4:{lbl:'Sterke troef',wat:'IT is een strategische enabler. Systemen zijn geïntegreerd en data is real-time beschikbaar.',goed:'De uitdaging is anticiperen op nieuwe technologieën en cyberveiligheid.',visie:'Uitstekend. IT als strategische troef is een significant concurrentievoordeel.'}},
-  QUA:{1:{lbl:'Kritische groeipijn',wat:'Kwaliteitsbeheer is afwezig of reactief. Herwerk is normaal.',goed:'Een eenvoudige kwaliteitsaanpak kan al snel de herkwaliteitskosten significant verlagen.',visie:'Kwaliteit begint bij het zichtbaar maken van fouten. Wat je meet, kan je verbeteren.'},2:{lbl:'Aandachtspunt',wat:'Er zijn kwaliteitsafspraken, maar ze worden niet consistent nageleefd.',goed:'Door bestaande afspraken consequenter te handhaven kan de kwaliteitsgraad snel verbeteren.',visie:'De afspraken zijn er al. Consistentie in de uitvoering is de sleutel.'},3:{lbl:'Goed ontwikkeld',wat:'Kwaliteitsbeheer is voldoende gestructureerd met processen en controles.',goed:'Door kwaliteitsverbetering proactiever aan te sturen kan de graad nog omhoog.',visie:'Sterke basis. Van beheersing naar verbetering als continue activiteit.'},4:{lbl:'Sterke troef',wat:'Kwaliteit is ingebed in de organisatiecultuur.',goed:'De uitdaging is de kwaliteitscultuur bewaken bij verdere groei.',visie:'Kwaliteit als cultuur is één van de sterkste troeven van een organisatie.'}},
-  SAF:{1:{lbl:'Kritische groeipijn',wat:'Veiligheid is niet structureel verankerd. Regels bestaan op papier maar worden niet nageleefd.',goed:'Een beperkte investering in veiligheidsstructuur kan het risicoprofiel significant verlagen.',visie:'Veiligheid begint bij leiderschap. Als leidinggevenden het goede voorbeeld geven, volgt de rest.'},2:{lbl:'Aandachtspunt',wat:'Er zijn veiligheidsafspraken, maar de naleving is inconsistent.',goed:'Door veiligheid structureel op de agenda te zetten kan de cultuur versterken.',visie:'De basis is er. Consistentie en zichtbaar leiderschap zijn de sleutel.'},3:{lbl:'Goed ontwikkeld',wat:'Veiligheid is voldoende gestructureerd. Regels zijn gekend en worden nageleefd.',goed:'Door veiligheid nog proactiever te benaderen kan de organisatie naar een echte veiligheidscultuur groeien.',visie:'Sterke basis. Veiligheid als gedeelde verantwoordelijkheid.'},4:{lbl:'Sterke troef',wat:'Veiligheid is een integraal onderdeel van de organisatiecultuur.',goed:'De uitdaging is de cultuur bewaken bij groei en nieuwe medewerkers.',visie:'Uitstekend. Een sterke veiligheidscultuur is een teken van volwassen leiderschap.'}},
-  PM:{1:{lbl:'Kritische groeipijn',wat:'Veranderingsinitiatieven worden niet structureel beheerd. Projecten starten enthousiast maar geraken niet afgewerkt.',goed:'Een eenvoudige projectaanpak kan al een grote verbetering brengen in de slagingskans.',visie:'Projecten falen zelden door gebrek aan ideeën. Ze falen door gebrek aan structuur en eigenaarschap.'},2:{lbl:'Aandachtspunt',wat:'Er zijn projecten, maar ze worden niet systematisch beheerd. Voortgang is niet zichtbaar.',goed:'Een licht maar consistent projectraamwerk kan de slagingskans significant verhogen.',visie:'Projecten mislukken niet door gebrek aan ideeën maar door gebrek aan opvolging.'},3:{lbl:'Goed ontwikkeld',wat:'Projectmanagement is voldoende gestructureerd met eigenaar en tijdlijn.',goed:'Door de projectportfolio actief te beheren kan het rendement verder verbeteren.',visie:'Solide basis. De volgende stap is portfoliomanagement.'},4:{lbl:'Sterke troef',wat:'Projectmanagement is professioneel ingebed. De slagingskans is hoog.',goed:'De uitdaging is projectcapaciteit bewaken en overbelasting voorkomen.',visie:'Uitstekend. Projectmanagement als competentie is één van de sterkste hefbomen.'}},
-  PROC:{1:{lbl:'Kritische groeipijn',wat:'Processen zijn nauwelijks gedocumenteerd. Iedereen werkt op zijn eigen manier.',goed:'Het documenteren van de meest kritische processen geeft al snel meer rust en onafhankelijkheid.',visie:'Processen hoeven niet complex te zijn. Wie doet wat en hoe — dat is al een enorme stap.'},2:{lbl:'Aandachtspunt',wat:'Er zijn processen beschreven, maar ze worden niet consistent gevolgd.',goed:'Door bestaande processen te vereenvoudigen en naleving te ondersteunen kan de procesvolwassenheid snel verbeteren.',visie:'De basis is er. De uitdaging is de stap van documentatie naar dagelijkse praktijk.'},3:{lbl:'Goed ontwikkeld',wat:'Processen zijn beschreven, worden nageleefd en periodiek bijgewerkt.',goed:'Door processen regelmatig te evalueren kan de procesvolwassenheid verder groeien.',visie:'Stevige basis. Continue procesverbetering als ingebedde activiteit.'},4:{lbl:'Sterke troef',wat:'Procesmanagement is professioneel. Processen zijn gedocumenteerd, gevolgd en continu verbeterd.',goed:'De uitdaging is de procesbalans bewaken: structuur zonder wendbaarheid te verliezen.',visie:'Uitstekend. Procesexcellentie is één van de sterkste troeven voor duurzame groei.'}},
-  LEAD:{1:{lbl:'Kritische groeipijn',wat:'Leiderschapscapaciteit is beperkt. Leidinggevenden slagen er niet in om mensen mee te krijgen zonder constant te duwen.',goed:'Gerichte leiderschapsontwikkeling kan snel leiden tot meer zelfstandigheid en minder afhankelijkheid.',visie:'Leiderschap is een vaardigheid die geleerd kan worden. Investeren erin is investeren in groeikracht.'},2:{lbl:'Aandachtspunt',wat:'Er is leiderschapspotentieel, maar leidinggevenden zijn onvoldoende gecoacht.',goed:'Door leidinggevenden gericht te begeleiden kan de organisatie snel winnen aan zelfstandigheid.',visie:'Het potentieel is er. Gerichte coaching en duidelijke rolafspraken kunnen het verschil maken.'},3:{lbl:'Goed ontwikkeld',wat:'Leiderschap is voldoende sterk. Er is psychologische veiligheid voor open gesprekken.',goed:'Investeren in leiderschapsontwikkeling op alle niveaus bouwt strategisch voordeel.',visie:'Sterke basis. Verankeren en vermenigvuldigen is de volgende stap.'},4:{lbl:'Sterke troef',wat:'Leiderschap is een organisatiecompetentie op alle niveaus. Er is een cultuur van eigenaarschap.',goed:'De uitdaging is de leiderschapscultuur bewaken bij verdere groei.',visie:'Leiderschap als cultuur is het fundament van een duurzame, schaalbare organisatie.'}},
-  CHG:{1:{lbl:'Kritische groeipijn',wat:'Er is geen structurele aanpak voor verandering. Initiatieven mislukken door gebrek aan draagvlak.',goed:'Een eenvoudige change management aanpak verhoogt de slagingskans van veranderingen sterk.',visie:'Mensen verzetten zich niet tegen verandering, maar tegen verandering die hen overkomt.'},2:{lbl:'Aandachtspunt',wat:'Er is enig bewustzijn van change management, maar de aanpak is inconsistent.',goed:'Door een consistente change-aanpak te hanteren kan het veranderingsvermogen versterken.',visie:'De wil tot verandering is er. Wat ontbreekt is een consistent kader.'},3:{lbl:'Goed ontwikkeld',wat:'Changes worden voldoende gestructureerd doorgevoerd met aandacht voor communicatie.',goed:'Door change management verder te professionaliseren kan het veranderingsvermogen nog groeien.',visie:'Solide basis. De volgende stap is change management als organisatievaardigheid.'},4:{lbl:'Sterke troef',wat:'Change management is een organisatiecompetentie. Changes worden systematisch gepland en begeleid.',goed:'De uitdaging is verandercapaciteit bewaken en change-moeheid voorkomen.',visie:'Verandervermogen als competentie is één van de meest waardevolle troeven in een turbulente markt.'}},
-  OWN:{1:{lbl:'Kritische groeipijn',wat:'Verantwoordelijkheden zijn onduidelijk. Te veel beslissingen en vragen komen bij de directie terecht.',goed:'Door verantwoordelijkheden helder te definiëren kan de organisatie snel zelfstandiger worden.',visie:'Eigenaarschap creëer je niet door te delegeren en te vergeten. Het vraagt duidelijkheid en vertrouwen.'},2:{lbl:'Aandachtspunt',wat:'Er is enig eigenaarschap, maar het is afhankelijk van individuen. De meeste beslissingen worden nog centraal genomen.',goed:'Door duidelijke kaders voor eigenaarschap te creëren kan de autonomie snel toenemen.',visie:'Het potentieel is er bij de medewerkers. Wat ontbreekt is een helder kader.'},3:{lbl:'Goed ontwikkeld',wat:'Eigenaarschap is voldoende aanwezig. Medewerkers nemen verantwoordelijkheid voor hun domein.',goed:'Eigenaarschap verder verankeren voor complexere beslissingen vergroot autonomie.',visie:'Sterke basis. De volgende stap: eigenaarschap ook op strategisch niveau verankeren.'},4:{lbl:'Sterke troef',wat:'Eigenaarschap is een organisatiewaarde op alle niveaus.',goed:'De uitdaging is eigenaarschap bewaken bij verdere groei.',visie:'Een organisatie met sterk eigenaarschap op alle niveaus is klaar voor de volgende groeifase.'}}
-};
-
-const NIVEAUS = {
-  S: { label: 'Starter', omschrijving: '½ dag diagnose + 1 dag quick win', kleur: '#e8eef8' },
-  M: { label: 'Standaard', omschrijving: 'Diagnose + tool implementatie + coaching (3–5 dagen)', kleur: '#fef0e4' },
-  I: { label: 'Intensief', omschrijving: 'Volledig station uitbouwen + borging (8–12 dagen)', kleur: '#e8f7ef' }
-};
-
 // ============================================================
 // STATE
 // ============================================================
-let scores = {};
-let geselecteerd = {}; // code -> niveau (S/M/I)
-let notities = {};
+let LIJNEN = [];                 // uit Supabase
+let NAAM_NAAR_CODE = {};         // 'finance' -> 'FIN'
 
-DOMEINEN.forEach(d => {
-  scores[d.code] = 2;
-  geselecteerd[d.code] = null;
-  notities[d.code] = '';
+// Alias-namen uit de quickscan-mail die afwijken van de DB-namen (of Engels zijn).
+const NAAM_ALIASSEN = {
+  'it':'IT', 'it & digitalisering':'IT', 'it&digitalisering':'IT',
+  'leadership':'LEAD', 'leiderschap':'LEAD',
+  'ownership':'OWN', 'eigenaarschap':'OWN',
+  'product / r&d':'PROD', 'product/r&d':'PROD', 'product r&d':'PROD', 'product':'PROD',
+  'after sales':'AFS', 'aftersales':'AFS',
+  'project management':'PM', 'proces management':'PROC', 'procesmanagement':'PROC',
+  'change management':'CHG', 'changemanagement':'CHG',
+};
+let gesprek = { klant:{}, scores:{}, labels:{} };  // resultaat van de mail-import
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll('nav button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('nav button').forEach(x => x.classList.remove('actief'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('actief'));
+    b.classList.add('actief');
+    document.getElementById('tab-' + b.dataset.tab).classList.add('actief');
+  };
 });
 
 // ============================================================
-// HELPERS
+// INIT — lijnen laden voor naam->code mapping
 // ============================================================
-function getZone(s) {
-  if (s <= 1.75) return 1;
-  if (s <= 2.5) return 2;
-  if (s <= 3.25) return 3;
-  return 4;
-}
-function zoneBadge(z) {
-  const map = {1:{cls:'badge-r',txt:'🔴 Kritisch'},2:{cls:'badge-o',txt:'🟠 Aandachtspunt'},3:{cls:'badge-b',txt:'🔵 Goed'},4:{cls:'badge-g',txt:'🟢 Sterk'}};
-  return map[z];
-}
-function zoneDot(z) {
-  return ['','z1','z2','z3','z4'][z];
-}
-function fmt(n) { return '€' + n.toLocaleString('nl-BE'); }
-
-// ============================================================
-// PANEL NAVIGATION
-// ============================================================
-function goPanel(n) {
-  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n));
-  document.querySelectorAll('.step-btn').forEach((b,i) => b.classList.toggle('active', i===n));
-  if (n===1) buildGesprek();
-  if (n===2) buildModules();
-  if (n===3) { setTodayDate(); renderOfferte(); }
-  if (n===4) renderCatalogus();
-  window.scrollTo(0,0);
-}
-
-// ============================================================
-// PANEL 0: SCORES
-// ============================================================
-function buildScores() {
-  const grid = document.getElementById('scores-grid');
-  let html = '<div class="divider-label">🚇 De 11 metrolijnen</div>';
-  DOMEINEN.filter(d=>d.lijn==='metrolijn').forEach(d => {
-    html += scoreRow(d);
-  });
-  html += '<div class="divider-label">⚡ De 5 organisatieversnellers</div>';
-  DOMEINEN.filter(d=>d.lijn==='versneller').forEach(d => {
-    html += scoreRow(d);
-  });
-  grid.innerHTML = html;
-  updatePriorityBar();
-}
-
-function scoreRow(d) {
-  const s = scores[d.code];
-  const z = getZone(s);
-  return `<div class="score-row" id="sr-${d.code}">
-    <div>
-      <div class="score-label">${d.icon} ${d.naam}</div>
-      <div class="score-sub">${d.lijn}</div>
-    </div>
-    <div class="score-controls">
-      <div class="zone-dot ${zoneDot(z)}" id="dot-${d.code}"></div>
-      <button class="score-btn score-minus" onclick="changeScore('${d.code}',-0.25)">−</button>
-      <div class="score-val" id="sv-${d.code}">${s.toFixed(2)}</div>
-      <button class="score-btn score-plus" onclick="changeScore('${d.code}',0.25)">+</button>
-    </div>
-  </div>`;
-}
-
-function changeScore(code, delta) {
-  scores[code] = Math.min(4, Math.max(1, Math.round((scores[code] + delta) * 100) / 100));
-  const s = scores[code];
-  const z = getZone(s);
-  document.getElementById('sv-' + code).textContent = s.toFixed(2);
-  const dot = document.getElementById('dot-' + code);
-  dot.className = 'zone-dot ' + zoneDot(z);
-  updatePriorityBar();
-}
-
-function updatePriorityBar() {
-  const bar = document.getElementById('priority-bar');
-  const sorted = [...DOMEINEN].sort((a,b) => scores[a.code]-scores[b.code]).slice(0,5);
-  bar.innerHTML = sorted.map(d => {
-    const z = getZone(scores[d.code]);
-    const cls = z===1?'chip-red':z===2?'chip-amber':z===3?'chip-navy':'chip-green';
-    return `<span class="priority-chip ${cls}">${d.icon} ${d.naam} (${scores[d.code].toFixed(2)})</span>`;
-  }).join('');
-}
-
-// ============================================================
-// PANEL 1: GESPREK
-// ============================================================
-function buildGesprek() {
-  const sorted = [...DOMEINEN].sort((a,b) => scores[a.code]-scores[b.code]);
-  let html = '';
-  sorted.forEach(d => {
-    const s = scores[d.code];
-    const z = getZone(s);
-    const p = PROFIELEN[d.code] && PROFIELEN[d.code][z];
-    if (!p) return;
-    const bz = zoneBadge(z);
-    html += `<div class="domein-card" id="dc-${d.code}">
-      <div class="domein-header" onclick="toggleDomein('${d.code}')">
-        <div class="domein-title">
-          <span style="font-size:20px">${d.icon}</span>
-          <span class="domein-name">${d.naam}</span>
-          <span class="zone-badge ${bz.cls}">${bz.txt}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span class="domein-score-badge">${s.toFixed(1)}</span>
-          <span class="chevron">▼</span>
-        </div>
-      </div>
-      <div class="domein-body">
-        <div class="info-block">
-          <div class="info-block-label">📋 Wat zien wij</div>
-          <p>${p.wat}</p>
-        </div>
-        <div class="info-block" style="background:#fef0e4">
-          <div class="info-block-label">💡 Het goede nieuws</div>
-          <p>${p.goed}</p>
-        </div>
-        <div class="info-block" style="background:#e8f7ef">
-          <div class="info-block-label">🎯 TNL-visie</div>
-          <p>${p.visie}</p>
-        </div>
-        <div class="gesprek-vragen">
-          <h4>Verdiepingsvragen voor dit gesprek</h4>
-          ${d.vragen.map(v=>`<div class="vraag-item"><span class="vraag-bullet">→</span><span>${v}</span></div>`).join('')}
-        </div>
-        <textarea class="notes-field" placeholder="Notities uit het gesprek (verschijnen in de offerte)..." 
-          oninput="notities['${d.code}']=this.value">${notities[d.code]||''}</textarea>
-      </div>
-    </div>`;
-  });
-  document.getElementById('gesprek-domeinen').innerHTML = html;
-  // Auto-open top 3 priority
-  sorted.slice(0,3).forEach(d => {
-    const card = document.getElementById('dc-'+d.code);
-    if (card) card.classList.add('open');
-  });
-}
-
-function toggleDomein(code) {
-  document.getElementById('dc-'+code).classList.toggle('open');
-}
-
-// ============================================================
-// PANEL 2: MODULES
-// ============================================================
-function buildModules() {
-  const sorted = [...DOMEINEN].sort((a,b) => scores[a.code]-scores[b.code]);
-  let html = '';
-  sorted.forEach(d => {
-    const s = scores[d.code];
-    const z = getZone(s);
-    const sel = geselecteerd[d.code];
-    const niveau = sel || 'M';
-    const prijs = d.prijs[niveau];
-    const bz = zoneBadge(z);
-    html += `<div class="module-card ${sel?'selected':''}" id="mc-${d.code}">
-      <div class="module-top">
-        <div class="module-left">
-          <input type="checkbox" class="module-check" ${sel?'checked':''} onchange="toggleModule('${d.code}',this.checked)">
-          <div class="module-info">
-            <div class="module-name">${d.icon} ${d.naam}</div>
-            <div class="module-sub">${d.module} &nbsp;·&nbsp; <span class="zone-badge ${bz.cls}" style="font-size:10px">${bz.txt}</span></div>
-            <div class="niveau-pills" id="np-${d.code}">
-              ${['S','M','I'].map(n=>`<span class="niveau-pill ${niveau===n&&sel?'active':''}" onclick="setNiveau('${d.code}','${n}')">${NIVEAUS[n].label}</span>`).join('')}
-            </div>
-          </div>
-        </div>
-        <div class="module-right">
-          <div>
-            <div class="price-tag" id="pt-${d.code}">${fmt(prijs)}</div>
-            <div class="price-sub" id="pd-${d.code}">${NIVEAUS[niveau].omschrijving}</div>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  });
-  document.getElementById('modules-lijst').innerHTML = html;
-  updateTotaal();
-}
-
-function toggleModule(code, checked) {
-  geselecteerd[code] = checked ? (geselecteerd[code] || 'M') : null;
-  const card = document.getElementById('mc-'+code);
-  card.classList.toggle('selected', !!geselecteerd[code]);
-  const pills = document.getElementById('np-'+code).querySelectorAll('.niveau-pill');
-  pills.forEach((p,i) => p.classList.toggle('active', ['S','M','I'][i] === geselecteerd[code]));
-  updateTotaal();
-}
-
-function setNiveau(code, niveau) {
-  if (!geselecteerd[code]) {
-    geselecteerd[code] = niveau;
-    const card = document.getElementById('mc-'+code);
-    card.classList.add('selected');
-    card.querySelector('.module-check').checked = true;
-  } else {
-    geselecteerd[code] = niveau;
+(async () => {
+  const conn = document.getElementById('conn');
+  try {
+    LIJNEN = await TNL.getLijnen();
+    // Mapping: DB-namen + code zelf + vaste aliassen uit de quickscan-mail.
+    LIJNEN.forEach(l => {
+      NAAM_NAAR_CODE[l.naam.toLowerCase()] = l.code;
+      NAAM_NAAR_CODE[l.code.toLowerCase()] = l.code;
+    });
+    Object.assign(NAAM_NAAR_CODE, NAAM_ALIASSEN);
+    conn.textContent = `✓ Verbonden (${LIJNEN.length} lijnen)`;
+  } catch (e) {
+    conn.textContent = '✗ Geen verbinding met database';
+    console.error(e);
   }
-  const d = DOMEINEN.find(x=>x.code===code);
-  document.getElementById('pt-'+code).textContent = fmt(d.prijs[niveau]);
-  document.getElementById('pd-'+code).textContent = NIVEAUS[niveau].omschrijving;
-  const pills = document.getElementById('np-'+code).querySelectorAll('.niveau-pill');
-  pills.forEach((p,i) => p.classList.toggle('active', ['S','M','I'][i] === niveau));
-  updateTotaal();
-}
+})();
 
-function updateTotaal() {
-  let totaal = 0, dagen = 0;
-  DOMEINEN.forEach(d => {
-    const n = geselecteerd[d.code];
-    if (n) { totaal += d.prijs[n]; dagen += d.dagen[n]; }
-  });
-  const bar = document.getElementById('totaal-bar');
-  bar.style.display = totaal > 0 ? 'flex' : 'none';
-  document.getElementById('totaal-prijs').textContent = fmt(totaal);
-  document.getElementById('totaal-days').textContent = `± ${dagen.toFixed(1)} consultantdagen (excl. BTW)`;
+// ============================================================
+// ZONES / KLEUREN
+// ============================================================
+function zone(score) {
+  if (score <= 1.5) return { kleur:'var(--red)',   bg:'var(--red-light)',   lbl:'Kritisch' };
+  if (score <= 2.5) return { kleur:'var(--amber)', bg:'var(--amber-light)', lbl:'Aandachtspunt' };
+  if (score <= 3.5) return { kleur:'var(--blue)',  bg:'#eaf1fa',            lbl:'Goed ontwikkeld' };
+  return { kleur:'var(--green)', bg:'var(--green-light)', lbl:'Sterke troef' };
 }
 
 // ============================================================
-// PANEL 3: OFFERTE
+// MAIL INLEZEN
 // ============================================================
-function setTodayDate() {
-  const d = document.getElementById('f-datum');
-  if (!d.value) d.value = new Date().toISOString().split('T')[0];
-  // Prefill consultant als leeg
-  const c = document.getElementById('f-consultant');
-  if (!c.value) c.value = 'Dirk Vander Eyken';
-  // Prefill context vanuit klantData als beschikbaar
-  const ctx = document.getElementById('f-context');
-  if (!ctx.value && klantData.naam) {
-    const fn = klantData.functie ? ` (${klantData.functie})` : '';
-    const sec = klantData.sector ? ` in de sector ${klantData.sector}` : '';
-    const mw = klantData.medewerkers ? ` met ${klantData.medewerkers} medewerkers` : '';
-    ctx.value = `Na ons gesprek met ${klantData.naam}${fn} van ${klantData.bedrijf||'uw bedrijf'}${sec}${mw} stellen wij onderstaand verbeterplan voor op basis van de Metroplan Quick Scan.`;
-    renderOfferte();
-  }
-}
+function leesMail() {
+  const tekst = document.getElementById('mail-tekst').value;
+  const status = document.getElementById('mail-status');
+  if (!tekst.trim()) { status.innerHTML = '<span style="color:var(--muted)">Plak eerst een mail.</span>'; return; }
 
-function renderOfferte() {
-  const naam = document.getElementById('f-naam').value.trim();
-  const bedrijf = document.getElementById('f-bedrijf').value.trim();
-  const consultant = document.getElementById('f-consultant').value.trim();
-  const datum = document.getElementById('f-datum').value;
-  const context = document.getElementById('f-context').value.trim();
-  const preview = document.getElementById('offerte-preview');
-
-  if (!naam && !bedrijf) {
-    preview.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px">Vul klantgegevens in om de offerte te genereren.</div>';
-    return;
-  }
-
-  const gesModules = DOMEINEN.filter(d => geselecteerd[d.code]);
-  let totaal = 0, dagen = 0;
-  gesModules.forEach(d => { totaal += d.prijs[geselecteerd[d.code]]; dagen += d.dagen[geselecteerd[d.code]]; });
-
-  const datumFmt = datum ? new Date(datum).toLocaleDateString('nl-BE', {day:'numeric',month:'long',year:'numeric'}) : '';
-
-  let tabelRows = gesModules.map(d => {
-    const n = geselecteerd[d.code];
-    const niv = NIVEAUS[n];
-    const z = getZone(scores[d.code]);
-    const bz = zoneBadge(z);
-    const note = notities[d.code] ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;font-style:italic">${notities[d.code]}</div>` : '';
-    return `<tr>
-      <td><strong>${d.icon} ${d.naam}</strong><br><span style="font-size:11px;color:var(--muted)">${d.module}</span>${note}</td>
-      <td><span class="zone-badge ${bz.cls}" style="font-size:10px">${bz.txt}</span></td>
-      <td style="white-space:nowrap"><strong>${niv.label}</strong><br><span style="font-size:11px;color:var(--muted)">${niv.omschrijving}</span></td>
-      <td style="text-align:right;font-weight:700">${fmt(d.prijs[n])}</td>
-    </tr>`;
-  }).join('');
-
-  if (!tabelRows) {
-    tabelRows = `<tr><td colspan="4" style="color:var(--muted);font-style:italic">Geen modules geselecteerd.</td></tr>`;
-  }
-
-  const klantInfo = [
-    klantData.email ? `✉️ ${klantData.email}` : null,
-    klantData.tel ? `📞 ${klantData.tel}` : null,
-    klantData.sector ? `🏭 ${klantData.sector}` : null,
-    klantData.medewerkers ? `👥 ${klantData.medewerkers} medewerkers` : null,
-  ].filter(Boolean).join('  ·  ');
-
-  preview.innerHTML = `
-    <div class="offerte-header">
-      <div>
-        <div class="offerte-logo">The Ne<span>x</span>t Level</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Metroplan Methodologie</div>
-      </div>
-      <div class="offerte-meta">
-        <div><strong>Voorstel voor:</strong> ${bedrijf||naam}</div>
-        ${klantInfo ? `<div style="font-size:11px;margin-top:2px">${klantInfo}</div>` : ''}
-        ${datumFmt?`<div>${datumFmt}</div>`:''}
-        ${consultant?`<div>Consultant: ${consultant}</div>`:''}
-      </div>
-    </div>
-
-    <div class="offerte-titel">Verbeterplan op maat</div>
-    <div class="offerte-subtitle">Op basis van de Metroplan Quick Scan — ${bedrijf||naam}</div>
-
-    ${context?`<div class="offerte-section"><p style="font-size:13px;line-height:1.7;color:var(--text)">${context}</p></div>`:''}
-
-    <div class="offerte-section">
-      <h3>Aanpak</h3>
-      <p style="font-size:13px;line-height:1.7;color:var(--text)">
-        Op basis van de Quick Scan en ons gesprek hebben we de prioritaire werkpunten geïdentificeerd. 
-        Voor elk geselecteerd metrostation werken we met een <strong>vaste basisaanpak</strong> die licht aangepast 
-        wordt aan de specifieke context van ${bedrijf||'uw organisatie'}. 
-        We starten waar de nood het hoogst is en bouwen van daaruit verder — stap voor stap, met meetbare resultaten.
-      </p>
-    </div>
-
-    <div class="offerte-section">
-      <h3>Geselecteerde modules</h3>
-      <table class="offerte-table">
-        <thead>
-          <tr>
-            <th>Module / Metrostation</th>
-            <th>Prioriteit</th>
-            <th>Niveau</th>
-            <th style="text-align:right">Investering</th>
-          </tr>
-        </thead>
-        <tbody>${tabelRows}</tbody>
-      </table>
-      <div class="offerte-totaal">
-        <div>
-          <div class="t-label">Totale investering (excl. BTW)</div>
-          <div style="font-size:11px;opacity:0.6">± ${dagen.toFixed(1)} consultantdagen</div>
-        </div>
-        <div class="t-amount">${fmt(totaal)}</div>
-      </div>
-    </div>
-
-    <div class="offerte-section">
-      <h3>Hoe we samenwerken</h3>
-      <p style="font-size:13px;line-height:1.7;color:var(--text)">
-        Elke module wordt uitgevoerd door een TNL-consultant met specialisatie in dat domein. 
-        We werken met <strong>eenvoudige, pragmatische tools</strong> die na onze interventie in jullie organisatie blijven.
-        Begeleiding, opleiding en coaching on the job zijn inbegrepen in het intensiteitsniveau.
-        De modules kunnen <strong>gefaseerd worden opgestart</strong> — we beginnen met de meest urgente.
-      </p>
-    </div>
-
-    <div class="offerte-footer">
-      <p>Dit voorstel is vrijblijvend en geldig voor 30 dagen. Prijzen zijn exclusief BTW. Reiskosten worden afzonderlijk afgesproken.</p>
-      <p style="margin-top:6px"><em>"Moeilijke dingen eenvoudig maken… niet simpel. Wij brengen jouw bedrijf naar The Next Level."</em></p>
-    </div>
-  `;
-}
-
-function copyOfferte() {
-  const el = document.getElementById('offerte-preview');
-  const text = el.innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = event.target;
-    btn.textContent = '✓ Gekopieerd!';
-    setTimeout(()=>btn.textContent='📋 Kopieer tekst',2000);
-  });
-}
-
-// ============================================================
-// MAIL IMPORT
-// ============================================================
-
-// Mapping van domeinnamen (zoals in de mail) naar codes
-const NAAM_NAAR_CODE = {
-  'strategie': 'STR', 'strategy': 'STR',
-  'product': 'PROD', 'product / r&d': 'PROD', 'r&d': 'PROD',
-  'marketing': 'MKT',
-  'sales': 'SAL',
-  'operations': 'OPS',
-  'after sales': 'AFS', 'aftersales': 'AFS',
-  'hr': 'HR', 'human resources': 'HR',
-  'finance': 'FIN', 'financiën': 'FIN', 'financien': 'FIN',
-  'it': 'IT', 'it & digitalisering': 'IT', 'digitalisering': 'IT',
-  'kwaliteit': 'QUA', 'quality': 'QUA',
-  'veiligheid': 'SAF', 'safety': 'SAF',
-  'project management': 'PM', 'projectmanagement': 'PM',
-  'proces management': 'PROC', 'procesmanagement': 'PROC', 'process management': 'PROC',
-  'leadership': 'LEAD', 'leiderschap': 'LEAD',
-  'change management': 'CHG', 'changemanagement': 'CHG',
-  'ownership': 'OWN', 'eigenaarschap': 'OWN'
-};
-
-let klantData = {};
-
-function importeerMail() {
-  const tekst = document.getElementById('mail-import-tekst').value.trim();
-  if (!tekst) return;
-
-  const regels = tekst.split('\n').map(r => r.trim()).filter(r => r);
-  let gevonden = { scores: {}, klant: {} };
+  const klant = {}, scores = {}, labels = {};
   let scoreCount = 0;
 
-  regels.forEach(regel => {
-    // Score-regels: "Strategie: 2.5/4 (Aandachtspunt)" of "Strategie: 2.5/4"
-    const scoreMatch = regel.match(/^(.+?):\s*([\d.]+)\s*\/\s*4/i);
-    if (scoreMatch) {
-      const naamRauw = scoreMatch[1].trim().toLowerCase();
-      const score = parseFloat(scoreMatch[2]);
-      if (!isNaN(score) && score >= 1 && score <= 4) {
-        const code = NAAM_NAAR_CODE[naamRauw];
-        if (code) {
-          gevonden.scores[code] = Math.round(score * 100) / 100;
-          scoreCount++;
-        }
+  tekst.split('\n').map(r => r.trim()).filter(Boolean).forEach(regel => {
+    // Score-regel:  "Strategie: 2.5/4 (Aandachtspunt)"
+    const sm = regel.match(/^(.+?):\s*([\d.,]+)\s*\/\s*4(?:\s*\(([^)]+)\))?/i);
+    if (sm) {
+      const naam = sm[1].trim().toLowerCase();
+      const score = parseFloat(sm[2].replace(',', '.'));
+      const code = NAAM_NAAR_CODE[naam];
+      if (code && !isNaN(score) && score >= 0 && score <= 4) {
+        scores[code] = Math.round(score * 100) / 100;
+        if (sm[3]) labels[code] = sm[3].trim();
+        scoreCount++;
+        return;
       }
-      return;
     }
-
-    // Klantgegevens: "Naam: Jan Peeters" of "Bedrijf: Peeters NV" enz.
-    const kvMatch = regel.match(/^(.+?):\s*(.+)$/);
-    if (kvMatch) {
-      const sleutel = kvMatch[1].trim().toLowerCase();
-      const waarde = kvMatch[2].trim();
-      if (waarde === 'Niet ingevuld' || waarde === '') return;
-
-      if (['naam', 'name'].includes(sleutel)) gevonden.klant.naam = waarde;
-      else if (['bedrijf', 'company', 'organisatie'].includes(sleutel)) gevonden.klant.bedrijf = waarde;
-      else if (['e-mail', 'email', 'mail', 'from_email', 'e mail'].includes(sleutel)) gevonden.klant.email = waarde;
-      else if (['functie', 'function', 'titel', 'rol'].includes(sleutel)) gevonden.klant.functie = waarde;
-      else if (['medewerkers', 'employees', 'aantal medewerkers', 'fte'].includes(sleutel)) gevonden.klant.medewerkers = waarde;
-      else if (['sector', 'industry', 'branche'].includes(sleutel)) gevonden.klant.sector = waarde;
-      else if (['tel', 'telefoon', 'phone', 'gsm', 'telefoon/gsm'].includes(sleutel)) gevonden.klant.tel = waarde;
-      else if (['datum', 'date'].includes(sleutel)) gevonden.klant.datum = waarde;
-      else if (['score', 'gemiddelde score', 'totaalscore'].includes(sleutel)) gevonden.klant.score = waarde;
+    // Klant key-value:  "Bedrijf: Peeters NV"
+    const kv = regel.match(/^(.+?):\s*(.+)$/);
+    if (kv) {
+      const s = kv[1].trim().toLowerCase(), v = kv[2].trim();
+      if (!v || v.toLowerCase() === 'niet ingevuld') return;
+      if (['naam','name','voornaam'].includes(s)) klant.naam = v;
+      else if (['bedrijf','company','organisatie'].includes(s)) klant.bedrijf = v;
+      else if (['e-mail','email','mail','from_email'].includes(s)) klant.email = v;
+      else if (['functie','function','titel','rol'].includes(s)) klant.functie = v;
+      else if (['medewerkers','employees','fte','aantal medewerkers'].includes(s)) klant.medewerkers = v;
+      else if (['sector','industry','branche'].includes(s)) klant.sector = v;
+      else if (['tel','telefoon','phone','gsm'].includes(s)) klant.tel = v;
+      else if (['datum','date'].includes(s)) klant.datum = v;
+      else if (['score','gemiddelde score','algemene score','totaalscore'].includes(s)) {
+        const mm = v.match(/[\d.,]+\s*\/\s*4/);   // "2.8 / 4/4" -> "2.8 / 4"
+        klant.score = mm ? mm[0] : v;
+      }
     }
   });
 
-  if (scoreCount === 0 && Object.keys(gevonden.klant).length === 0) {
-    document.getElementById('import-status').innerHTML = '<span style="color:var(--red)">⚠ Geen herkenbare gegevens gevonden. Controleer het formaat.</span>';
+  if (scoreCount === 0 && Object.keys(klant).length === 0) {
+    status.innerHTML = '<span style="color:var(--red)">⚠ Geen herkenbare gegevens gevonden. Controleer het formaat.</span>';
     return;
   }
 
-  // Scores toepassen
-  Object.keys(gevonden.scores).forEach(code => {
-    scores[code] = gevonden.scores[code];
-  });
-
-  // Klantdata opslaan
-  klantData = gevonden.klant;
-
-  // UI updaten
-  buildScores();
-  updatePriorityBar();
-  toonKlantKaart();
-
-  // Offerte-velden prefill
-  if (klantData.naam) document.getElementById('f-naam').value = klantData.naam;
-  if (klantData.bedrijf) document.getElementById('f-bedrijf').value = klantData.bedrijf;
-
-  const resultaatEl = document.getElementById('import-resultaat');
-  let msg = `✅ <strong>Import geslaagd</strong> — `;
+  const gemMatch = (klant.score || '').match(/[\d.,]+/);
+  const gemiddelde = gemMatch ? parseFloat(gemMatch[0].replace(',', '.')) : null;
+  gesprek = { klant, scores, labels, gemiddelde, ruweMail: tekst };
+  toonKlant();
+  toonScores();
+  document.getElementById('btn-opslaan').style.display = (scoreCount || Object.keys(klant).length) ? 'inline-block' : 'none';
   const delen = [];
-  if (scoreCount > 0) delen.push(`${scoreCount} scores ingelezen`);
-  if (Object.keys(gevonden.klant).length > 0) delen.push(`klantgegevens gevonden`);
-  msg += delen.join(', ');
-  resultaatEl.innerHTML = msg;
-  resultaatEl.style.display = 'block';
-  document.getElementById('import-status').innerHTML = `<span style="color:var(--green)">✓ Geïmporteerd op ${new Date().toLocaleTimeString('nl-BE')}</span>`;
+  if (scoreCount) delen.push(`${scoreCount} scores`);
+  if (Object.keys(klant).length) delen.push('klantgegevens');
+  status.innerHTML = `<span style="color:var(--green)">✓ Ingelezen: ${delen.join(' + ')} — ${new Date().toLocaleTimeString('nl-BE')}</span>`;
 }
 
-function toonKlantKaart() {
-  const kaart = document.getElementById('klant-kaart');
-  const details = document.getElementById('klant-details');
-  if (Object.keys(klantData).length === 0) { kaart.style.display = 'none'; return; }
-
-  const velden = [
-    { lbl: 'Naam', key: 'naam', icon: '👤' },
-    { lbl: 'Bedrijf', key: 'bedrijf', icon: '🏢' },
-    { lbl: 'E-mail', key: 'email', icon: '✉️' },
-    { lbl: 'Functie', key: 'functie', icon: '💼' },
-    { lbl: 'Medewerkers', key: 'medewerkers', icon: '👥' },
-    { lbl: 'Sector', key: 'sector', icon: '🏭' },
-    { lbl: 'Telefoon', key: 'tel', icon: '📞' },
-    { lbl: 'Gemiddelde score', key: 'score', icon: '📊' },
-  ];
-
-  details.innerHTML = velden
-    .filter(v => klantData[v.key])
-    .map(v => `
-      <div style="background:var(--light);border-radius:8px;padding:10px 14px;border:1px solid var(--border)">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">${v.icon} ${v.lbl}</div>
-        <div style="font-size:13px;font-weight:600;color:var(--navy)">${klantData[v.key]}</div>
-      </div>
-    `).join('');
-
-  kaart.style.display = 'block';
-}
-
-function clearImport() {
-  document.getElementById('mail-import-tekst').value = '';
-  document.getElementById('import-status').textContent = 'Nog niets geïmporteerd';
-  document.getElementById('import-resultaat').style.display = 'none';
-  document.getElementById('klant-kaart').style.display = 'none';
-  klantData = {};
-  DOMEINEN.forEach(d => scores[d.code] = 2);
-  buildScores();
-  updatePriorityBar();
-  // Reset offerte-velden
-  document.getElementById('f-naam').value = '';
-  document.getElementById('f-bedrijf').value = '';
-}
-
-// ============================================================
-// CATALOGUS
-// ============================================================
-
-let catalogus = []; // Array van station-objecten
-let editIdx = null;  // null = nieuw, number = bestaande index
-let wbsItems = [];
-let optieItems = [];
-
-// Voorbeeldstation Finance/P&L wordt automatisch geladen
-const VOORBEELD_STATION = {
-  code: 'FIN', lijn: 'metrolijn',
-  naam: 'P&L — Profit & Loss rapportering',
-  omschrijving: 'We implementeren een maandelijkse P&L-rapportering zodat u altijd weet waar uw marge naartoe gaat.',
-  scopeIn: '• Opzetten van een maandelijkse P&L-structuur op maat\n• Koppeling aan bestaande boekhouding (manueel of via export)\n• Definitie van kostenstructuur en margeberekening\n• Excel-dashboard met resultatenrekening per activiteit\n• Training van de verantwoordelijke medewerker',
-  scopeUit: '• Geen aanpassing of migratie van het boekhoudpakket\n• Geen historische reconstructie van meer dan 12 maanden\n• Geen consolidatie van meerdere juridische entiteiten\n• Geen geautomatiseerde koppeling via API of BI-tool',
-  beperkingen: 'Vereist een operationele boekhouding met resultatenrekening. Niet geschikt voor bedrijven zonder kostenstructuur of zonder maandelijkse afsluiting.',
-  input: '• Toegang tot het boekhoudpakket of maandelijkse exports\n• Overzicht van de kostenstructuur (kostenplaatsen, activiteiten)\n• Contactpersoon financiën beschikbaar (2 × ½ dag)',
-  deliverables: '• Excel P&L-template op maat van de organisatie\n• Instructiedocument voor maandelijkse invulling\n• Dashboard met marge per product / klant / afdeling\n• 1 validatiesessie na de eerste maandafsluiting\n• Eindrapport met aanbevelingen',
-  doelstellingen: 'Maandelijkse P&L beschikbaar binnen 5 werkdagen na maandafsluiting. Inzicht in bruto- en nettomarge per activiteit. Zaakvoerder kan zelfstandig bijsturen op basis van cijfers.',
-  wbs: [
-    { activiteit: 'Intake & analyse kostenstructuur', type: 'consultant', wie: 'Sr', dagen: 0.5 },
-    { activiteit: 'Ontwerp P&L-structuur & template', type: 'consultant', wie: 'Sr', dagen: 1 },
-    { activiteit: 'Koppeling aan boekhouding & test', type: 'consultant', wie: 'Jr', dagen: 1 },
-    { activiteit: 'Dashboard bouwen', type: 'consultant', wie: 'Jr', dagen: 1 },
-    { activiteit: 'Training verantwoordelijke', type: 'consultant', wie: 'Sr', dagen: 0.5 },
-    { activiteit: 'Validatiesessie maand 1', type: 'consultant', wie: 'Sr', dagen: 0.5 },
-    { activiteit: 'Aanleveren data & exports', type: 'klant', wie: '', dagen: 0.5 },
-    { activiteit: 'Deelname training & validatie', type: 'klant', wie: '', dagen: 0.5 },
-  ],
-  doorlooptijd: '3-5 weken',
-  proces: 'Intake → Ontwerp → Implementatie → Training → Validatie',
-  extraOpties: [
-    { omschrijving: 'Cashflow forecast (13-weken rolling)', prijs: 1200 },
-    { omschrijving: 'Automatische koppeling via BI-tool (Power BI / Looker)', prijs: 2500 },
-    { omschrijving: 'Consolidatie meerdere entiteiten', prijs: 1800 },
-    { omschrijving: 'Maandelijkse begeleiding eerste kwartaal (3 × ½ dag)', prijs: 1500 },
-  ],
-  niveaus: {
-    S: { jrDagen: 0, jrTarief: 800, srDagen: 1.5, srTarief: 1200, klantDagen: 0.5, omschrijving: 'Diagnose + P&L-template' },
-    M: { jrDagen: 2, jrTarief: 800, srDagen: 2, srTarief: 1200, klantDagen: 1, omschrijving: 'Volledige implementatie + training' },
-    I: { jrDagen: 4, jrTarief: 800, srDagen: 4, srTarief: 1200, klantDagen: 2, omschrijving: 'Uitbouw + dashboard + kwartaalbegeleiding' },
-  }
-};
-
-function berekenPrijs(niv) {
-  return (niv.jrDagen * niv.jrTarief) + (niv.srDagen * niv.srTarief);
-}
-function berekenDagen(niv) {
-  return niv.jrDagen + niv.srDagen;
-}
-
-function renderCatalogus() {
-  const lijst = document.getElementById('cat-stations-lijst');
-  if (catalogus.length === 0) {
-    lijst.innerHTML = '';
+async function opslaanGesprek() {
+  const status = document.getElementById('mail-status');
+  if (!Object.keys(gesprek.scores).length && !Object.keys(gesprek.klant).length) {
+    status.innerHTML = '<span style="color:var(--red)">Niets om op te slaan — lees eerst een mail in.</span>';
     return;
   }
-  document.getElementById('cat-status').innerHTML = `<span style="color:var(--green)">✓ ${catalogus.length} station${catalogus.length>1?'s':''} in catalogus</span>`;
+  const btn = document.getElementById('btn-opslaan');
+  btn.disabled = true; btn.textContent = '⏳ Opslaan…';
+  try {
+    const r = await TNL.saveGesprek({
+      klant: gesprek.klant,
+      scores: gesprek.scores,
+      labels: gesprek.labels,
+      gemiddelde: gesprek.gemiddelde,
+      ruweMail: gesprek.ruweMail
+    });
+    gesprek.klantId = r.klant.id;
+    gesprek.scanId = r.quickscan.id;
+    status.innerHTML = `<span style="color:var(--green)">✓ Opgeslagen in dossier "${r.klant.bedrijf}" (scan ${r.quickscan.datum}).</span>`;
+  } catch (e) {
+    status.innerHTML = '<span style="color:var(--red)">✗ Opslaan mislukt: ' + (e.message || e) + '</span>';
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Opslaan in dossier';
+  }
+}
 
-  // Groepeer per lijn
-  const lijnen = {};
-  catalogus.forEach((s, i) => {
-    const g = s.lijn || 'metrolijn';
-    if (!lijnen[g]) lijnen[g] = [];
-    lijnen[g].push({ ...s, _idx: i });
+function toonKlant() {
+  const blok = document.getElementById('klant-blok');
+  const grid = document.getElementById('klant-grid');
+  const k = gesprek.klant;
+  if (!Object.keys(k).length) { blok.style.display = 'none'; return; }
+  const velden = [
+    ['👤 Naam','naam'], ['🏢 Bedrijf','bedrijf'], ['✉️ E-mail','email'],
+    ['💼 Functie','functie'], ['👥 Medewerkers','medewerkers'], ['🏭 Sector','sector'],
+    ['📞 Telefoon','tel'], ['📊 Gem. score','score'], ['📅 Datum','datum'],
+  ];
+  grid.innerHTML = velden.filter(([,key]) => k[key])
+    .map(([lbl,key]) => `<div class="klant-veld"><div class="lbl">${lbl}</div><div class="val">${k[key]}</div></div>`).join('');
+  blok.style.display = 'block';
+}
+
+function toonScores() {
+  const blok = document.getElementById('scores-blok');
+  const scores = gesprek.scores;
+  if (!Object.keys(scores).length) { blok.style.display = 'none'; return; }
+
+  const rij = (l) => {
+    const sc = scores[l.code];
+    if (sc === undefined) return '';
+    const z = zone(sc);
+    const lbl = gesprek.labels[l.code] || z.lbl;
+    const pct = Math.round(sc / 4 * 100);
+    return `<div class="score-rij">
+      <div class="naam">${l.icon || ''} ${l.naam} <small>(${l.code})</small></div>
+      <div class="bar"><div style="width:${pct}%;background:${z.kleur}"></div></div>
+      <div class="cijfer" style="color:${z.kleur}">${sc.toFixed(1)}/4</div>
+      <span class="badge" style="background:${z.bg};color:${z.kleur}">${lbl}</span>
+    </div>`;
+  };
+  const sorteer = (type) => LIJNEN
+    .filter(l => l.type === type && scores[l.code] !== undefined)
+    .sort((a,b) => scores[a.code] - scores[b.code]);
+
+  const metro = sorteer('metrolijn'), versn = sorteer('versneller');
+  document.getElementById('scores-metro').innerHTML =
+    (metro.length ? `<div class="score-titel">🚇 Metrolijnen</div>` + metro.map(rij).join('') : '');
+  document.getElementById('scores-versn').innerHTML =
+    (versn.length ? `<div class="score-titel">⚡ Versnellers</div>` + versn.map(rij).join('') : '');
+  blok.style.display = 'block';
+}
+
+function wisMail() {
+  document.getElementById('mail-tekst').value = '';
+  document.getElementById('mail-status').textContent = '';
+  document.getElementById('klant-blok').style.display = 'none';
+  document.getElementById('scores-blok').style.display = 'none';
+  document.getElementById('btn-opslaan').style.display = 'none';
+  gesprek = { klant:{}, scores:{}, labels:{} };
+}
+</script>
+
+<script>
+// ============================================================
+// TABBLAD ② — CATALOGUS-BEHEER
+// ============================================================
+var TARIEVEN = {};         // { rol: { uurprijs, halvedagprijs, heledagprijs } }
+var TARIEF_ROLLEN = [];    // [{ rol, uurprijs, halvedagprijs, heledagprijs }] geordend
+var catStations = [];
+var catArtikelen = [];
+var catGeladen = false;
+var edit = null;   // editor-state voor het open artikel
+
+function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function leegNiveau(){ return { dagen:{}, klantDagen:0, omschrijving:'' }; }
+
+// Zet een artikel-niveau om naar het rol-formaat (vangt ook oud jr/sr formaat op).
+function normaliseerNiveaus(nv) {
+  const out = {};
+  ['S','M','I'].forEach(n => {
+    const v = (nv && nv[n]) || {};
+    let dagen = v.dagen;
+    if (!dagen) { dagen = {}; if (v.jrDagen != null) dagen.Jr = v.jrDagen; if (v.srDagen != null) dagen.Sr = v.srDagen; }
+    out[n] = { dagen: Object.assign({}, dagen), klantDagen: v.klantDagen || 0, omschrijving: v.omschrijving || '' };
   });
+  return out;
+}
+
+// Laad catalogus bij eerste bezoek aan het tabblad
+document.querySelector('nav button[data-tab="catalogus"]').addEventListener('click', () => {
+  if (!catGeladen) laadCatalogus();
+});
+
+async function laadCatalogus() {
+  const st = document.getElementById('cat-status');
+  st.textContent = 'Laden…';
+  try {
+    if (!LIJNEN.length) {
+      LIJNEN = await TNL.getLijnen();
+      LIJNEN.forEach(l => { NAAM_NAAR_CODE[l.naam.toLowerCase()] = l.code; });
+    }
+    const [tarMap, tarLijst, stations, artikelen] = await Promise.all([
+      TNL.getTarieven(), TNL.getTarievenLijst(), TNL.getStations(), TNL.getCatalogus({ alleenActief:false })
+    ]);
+    TARIEVEN = tarMap; TARIEF_ROLLEN = tarLijst; catStations = stations; catArtikelen = artikelen;
+    catGeladen = true;
+    renderCatBeheer();
+    st.textContent = '';
+  } catch (e) {
+    st.innerHTML = '<span style="color:var(--red)">Laden mislukt: ' + (e.message||e) + '</span>';
+    console.error(e);
+  }
+}
+
+function renderCatBeheer() {
+  const tree = document.getElementById('cat-tree');
+  const stPerLijn = {}; catStations.forEach(s => (stPerLijn[s.lijn_code] ??= []).push(s));
+  const artPerStat = {}; catArtikelen.forEach(a => (artPerStat[a.station_id] ??= []).push(a));
 
   let html = '';
-  ['metrolijn','versneller'].forEach(lijn => {
-    if (!lijnen[lijn]) return;
-    html += `<div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin:16px 0 8px;padding-left:4px">${lijn==='metrolijn'?'🚇 Metrolijnen':'⚡ Versnellers'}</div>`;
-    lijnen[lijn].forEach(s => {
-      const prS = berekenPrijs(s.niveaus.S);
-      const prM = berekenPrijs(s.niveaus.M);
-      const prI = berekenPrijs(s.niveaus.I);
-      html += `<div class="station-kaart" id="sk-${s._idx}">
-        <div class="station-kaart-header" onclick="toggleStation(${s._idx})">
-          <div class="station-kaart-left">
-            <div style="width:38px;height:38px;background:var(--light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--navy)">${s.code}</div>
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--navy)">${s.naam}</div>
-              <div style="font-size:12px;color:var(--muted);margin-top:2px">${s.omschrijving||''}</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="text-align:right;font-size:11px;color:var(--muted)">
-              <span style="color:var(--navy);font-weight:700">€${prS.toLocaleString('nl-BE')}</span> /
-              <span style="color:var(--orange);font-weight:700">€${prM.toLocaleString('nl-BE')}</span> /
-              <span style="color:var(--green);font-weight:700">€${prI.toLocaleString('nl-BE')}</span>
-            </div>
-            <button class="btn btn-ghost" style="padding:5px 12px;font-size:12px" onclick="event.stopPropagation();bewerkStation(${s._idx})">✏️ Bewerk</button>
-            <span class="station-chevron">▼</span>
-          </div>
+  for (const type of ['metrolijn','versneller']) {
+    html += `<div class="score-titel">${type==='metrolijn'?'🚇 Metrolijnen':'⚡ Versnellers'}</div>`;
+    LIJNEN.filter(l => l.type===type).forEach(l => {
+      const sts = stPerLijn[l.code] || [];
+      html += `<div class="lijn-groep">
+        <div class="lijn-kop">
+          <span>${l.icon||''}</span>
+          <span class="titel">${l.naam} <small style="color:var(--muted);font-weight:400">(${l.code})</small></span>
+          <span class="telt">${sts.length} station(s)</span>
+          <button class="btn btn-ghost mini" onclick="nieuwStation('${l.code}')">+ Station</button>
         </div>
-        <div class="station-kaart-body">
-          <div class="scope-blok">
-            <div class="scope-item">
-              <div class="scope-item-titel">✅ Scope in</div>
-              <p>${s.scopeIn||'—'}</p>
-            </div>
-            <div class="scope-item">
-              <div class="scope-item-titel">❌ Scope out</div>
-              <p>${s.scopeUit||'—'}</p>
-            </div>
-            <div class="scope-item">
-              <div class="scope-item-titel">📥 Input</div>
-              <p>${s.input||'—'}</p>
-            </div>
-            <div class="scope-item">
-              <div class="scope-item-titel">📤 Deliverables</div>
-              <p>${s.deliverables||'—'}</p>
-            </div>
-          </div>
-          ${s.wbs && s.wbs.length ? `
-          <div style="margin-top:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">WBS</div>
-            <table class="prijs-tabel">
-              <thead><tr><th>Activiteit</th><th>Type</th><th>Consultant</th><th>Dagen</th></tr></thead>
-              <tbody>${s.wbs.map(w=>`<tr><td>${w.activiteit}</td><td>${w.type==='klant'?'👤 Klant':'🔧 Consultant'}</td><td>${w.wie||'—'}</td><td>${w.dagen}</td></tr>`).join('')}</tbody>
-            </table>
-          </div>` : ''}
-          <table class="prijs-tabel" style="margin-top:14px">
-            <thead><tr><th>Niveau</th><th>Omschrijving</th><th>Jr. dagen</th><th>Sr. dagen</th><th>Klant dagen</th><th>Prijs</th></tr></thead>
-            <tbody>
-              ${['S','M','I'].map(n => {
-                const nv = s.niveaus[n];
-                const naam = n==='S'?'🔵 Starter':n==='M'?'🟠 Standaard':'🟢 Intensief';
-                return `<tr><td><strong>${naam}</strong></td><td>${nv.omschrijving||'—'}</td><td>${nv.jrDagen}</td><td>${nv.srDagen}</td><td>${nv.klantDagen}</td><td><strong>€${berekenPrijs(nv).toLocaleString('nl-BE')}</strong></td></tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-          ${s.extraOpties && s.extraOpties.length ? `
-          <div style="margin-top:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">⭐ Extra opties</div>
-            ${s.extraOpties.map(o=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${o.omschrijving}</span><strong>€${(o.prijs||0).toLocaleString('nl-BE')}</strong></div>`).join('')}
-          </div>` : ''}
-        </div>
-      </div>`;
-    });
-  });
-  lijst.innerHTML = html;
-}
-
-function toggleStation(idx) {
-  document.getElementById('sk-'+idx).classList.toggle('open');
-}
-
-function openNieuwStation() {
-  editIdx = null;
-  wbsItems = [];
-  optieItems = [];
-  resetEditor();
-  document.getElementById('ed-verwijder-btn').style.display = 'none';
-  document.getElementById('ed-titel').textContent = 'Nieuw metrostation';
-  document.getElementById('ed-subtitel').textContent = 'Vul alle velden in';
-  document.getElementById('cat-editor').style.display = 'block';
-  herbereken('S'); herbereken('M'); herbereken('I');
-}
-
-function bewerkStation(idx) {
-  editIdx = idx;
-  const s = catalogus[idx];
-  wbsItems = s.wbs ? s.wbs.map(w=>({...w})) : [];
-  optieItems = s.extraOpties ? s.extraOpties.map(o=>({...o})) : [];
-
-  document.getElementById('ed-lijn').value = s.lijn || 'metrolijn';
-  document.getElementById('ed-code').value = s.code || 'FIN';
-  document.getElementById('ed-naam').value = s.naam || '';
-  document.getElementById('ed-omschrijving').value = s.omschrijving || '';
-  document.getElementById('ed-scope-in').value = s.scopeIn || '';
-  document.getElementById('ed-scope-uit').value = s.scopeUit || '';
-  document.getElementById('ed-beperkingen').value = s.beperkingen || '';
-  document.getElementById('ed-input').value = s.input || '';
-  document.getElementById('ed-deliverables').value = s.deliverables || '';
-  document.getElementById('ed-doelstellingen').value = s.doelstellingen || '';
-  document.getElementById('ed-doorlooptijd').value = s.doorlooptijd || '';
-  document.getElementById('ed-proces').value = s.proces || '';
-
-  ['S','M','I'].forEach(n => {
-    const nv = s.niveaus[n];
-    document.getElementById(`ed-${n}-jr-dagen`).value = nv.jrDagen;
-    document.getElementById(`ed-${n}-jr-tarief`).value = nv.jrTarief;
-    document.getElementById(`ed-${n}-sr-dagen`).value = nv.srDagen;
-    document.getElementById(`ed-${n}-sr-tarief`).value = nv.srTarief;
-    document.getElementById(`ed-${n}-klant-dagen`).value = nv.klantDagen;
-    document.getElementById(`ed-${n}-omschrijving`).value = nv.omschrijving || '';
-    herbereken(n);
-  });
-
-  renderWBSLijst();
-  renderOptiesLijst();
-  document.getElementById('ed-verwijder-btn').style.display = 'inline-flex';
-  document.getElementById('ed-titel').textContent = s.naam;
-  document.getElementById('ed-subtitel').textContent = `${s.code} — bewerken`;
-  document.getElementById('cat-editor').style.display = 'block';
-}
-
-function sluitEditor() {
-  document.getElementById('cat-editor').style.display = 'none';
-}
-
-function resetEditor() {
-  ['ed-naam','ed-omschrijving','ed-scope-in','ed-scope-uit','ed-beperkingen',
-   'ed-input','ed-deliverables','ed-doelstellingen','ed-doorlooptijd','ed-proces'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  document.getElementById('ed-code').value = 'FIN';
-  document.getElementById('ed-lijn').value = 'metrolijn';
-  // Reset niveaus naar defaults
-  const defaults = {
-    S: [0,800,1.5,1200,0.5,''],
-    M: [1,800,3,1200,1,''],
-    I: [2,800,8,1200,2,'']
-  };
-  ['S','M','I'].forEach(n => {
-    const d = defaults[n];
-    document.getElementById(`ed-${n}-jr-dagen`).value = d[0];
-    document.getElementById(`ed-${n}-jr-tarief`).value = d[1];
-    document.getElementById(`ed-${n}-sr-dagen`).value = d[2];
-    document.getElementById(`ed-${n}-sr-tarief`).value = d[3];
-    document.getElementById(`ed-${n}-klant-dagen`).value = d[4];
-    document.getElementById(`ed-${n}-omschrijving`).value = d[5];
-  });
-  renderWBSLijst();
-  renderOptiesLijst();
-}
-
-function herbereken(n) {
-  const jr = parseFloat(document.getElementById(`ed-${n}-jr-dagen`).value)||0;
-  const jrt = parseFloat(document.getElementById(`ed-${n}-jr-tarief`).value)||0;
-  const sr = parseFloat(document.getElementById(`ed-${n}-sr-dagen`).value)||0;
-  const srt = parseFloat(document.getElementById(`ed-${n}-sr-tarief`).value)||0;
-  const totaal = (jr * jrt) + (sr * srt);
-  document.getElementById(`nt-${n}`).textContent = `Totaal: €${totaal.toLocaleString('nl-BE')} (excl. BTW)  ·  ${jr+sr} consultantdagen`;
-}
-
-// WBS
-function voegWBSToe() {
-  wbsItems.push({ activiteit: '', type: 'consultant', wie: 'Sr', dagen: 1 });
-  renderWBSLijst();
-}
-function renderWBSLijst() {
-  const el = document.getElementById('ed-wbs-lijst');
-  if (wbsItems.length === 0) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0">Nog geen werkpakketten. Klik hieronder om er één toe te voegen.</div>'; return; }
-  el.innerHTML = `<div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:6px;margin-bottom:4px">
-    <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Activiteit</div>
-    <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Type</div>
-    <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Wie / Dagen</div>
-    <div></div>
-  </div>` + wbsItems.map((w,i) => `
-    <div class="wbs-rij">
-      <input value="${w.activiteit}" placeholder="Bv. Intake & analyse" oninput="wbsItems[${i}].activiteit=this.value">
-      <select onchange="wbsItems[${i}].type=this.value">
-        <option value="consultant" ${w.type==='consultant'?'selected':''}>🔧 Consultant</option>
-        <option value="klant" ${w.type==='klant'?'selected':''}>👤 Klant</option>
-      </select>
-      <div style="display:flex;gap:4px">
-        <select style="flex:1;border:1.5px solid var(--border);border-radius:7px;padding:6px;font-size:11px;background:white" onchange="wbsItems[${i}].wie=this.value">
-          <option value="Sr" ${w.wie==='Sr'?'selected':''}>Sr.</option>
-          <option value="Jr" ${w.wie==='Jr'?'selected':''}>Jr.</option>
-          <option value="" ${!w.wie?'selected':''}>/</option>
-        </select>
-        <input type="number" min="0" step="0.5" value="${w.dagen}" style="width:55px" oninput="wbsItems[${i}].dagen=parseFloat(this.value)||0">
-      </div>
-      <button class="btn-del" onclick="wbsItems.splice(${i},1);renderWBSLijst()">×</button>
-    </div>`).join('');
-}
-
-// Extra opties
-function voegOptieToe() {
-  optieItems.push({ omschrijving: '', prijs: 0 });
-  renderOptiesLijst();
-}
-function renderOptiesLijst() {
-  const el = document.getElementById('ed-opties-lijst');
-  if (optieItems.length === 0) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0">Nog geen extra opties.</div>'; return; }
-  el.innerHTML = optieItems.map((o,i) => `
-    <div class="optie-rij">
-      <input value="${o.omschrijving}" placeholder="Bv. Cashflow forecast" oninput="optieItems[${i}].omschrijving=this.value">
-      <input type="number" min="0" step="100" value="${o.prijs}" placeholder="€" oninput="optieItems[${i}].prijs=parseFloat(this.value)||0" style="max-width:100px">
-      <button class="btn-del" onclick="optieItems.splice(${i},1);renderOptiesLijst()">×</button>
-    </div>`).join('');
-}
-
-function leesNiveau(n) {
-  return {
-    jrDagen: parseFloat(document.getElementById(`ed-${n}-jr-dagen`).value)||0,
-    jrTarief: parseFloat(document.getElementById(`ed-${n}-jr-tarief`).value)||0,
-    srDagen: parseFloat(document.getElementById(`ed-${n}-sr-dagen`).value)||0,
-    srTarief: parseFloat(document.getElementById(`ed-${n}-sr-tarief`).value)||0,
-    klantDagen: parseFloat(document.getElementById(`ed-${n}-klant-dagen`).value)||0,
-    omschrijving: document.getElementById(`ed-${n}-omschrijving`).value.trim()
-  };
-}
-
-function slaStationOp() {
-  const station = {
-    code: document.getElementById('ed-code').value,
-    lijn: document.getElementById('ed-lijn').value,
-    naam: document.getElementById('ed-naam').value.trim(),
-    omschrijving: document.getElementById('ed-omschrijving').value.trim(),
-    scopeIn: document.getElementById('ed-scope-in').value.trim(),
-    scopeUit: document.getElementById('ed-scope-uit').value.trim(),
-    beperkingen: document.getElementById('ed-beperkingen').value.trim(),
-    input: document.getElementById('ed-input').value.trim(),
-    deliverables: document.getElementById('ed-deliverables').value.trim(),
-    doelstellingen: document.getElementById('ed-doelstellingen').value.trim(),
-    wbs: wbsItems.map(w=>({...w})),
-    doorlooptijd: document.getElementById('ed-doorlooptijd').value.trim(),
-    proces: document.getElementById('ed-proces').value.trim(),
-    extraOpties: optieItems.map(o=>({...o})),
-    niveaus: { S: leesNiveau('S'), M: leesNiveau('M'), I: leesNiveau('I') }
-  };
-
-  if (!station.naam) { alert('Vul minstens een naam in.'); return; }
-
-  if (editIdx === null) {
-    catalogus.push(station);
-  } else {
-    catalogus[editIdx] = station;
-  }
-
-  // Sync naar DOMEINEN voor offerte-app
-  syncCatalogusNaarDomeinen();
-  sluitEditor();
-  renderCatalogus();
-}
-
-function verwijderStation() {
-  if (editIdx === null) return;
-  if (!confirm('Station verwijderen uit catalogus?')) return;
-  catalogus.splice(editIdx, 1);
-  syncCatalogusNaarDomeinen();
-  sluitEditor();
-  renderCatalogus();
-}
-
-// Sync catalogus → DOMEINEN (zodat offerte-app live updates)
-function syncCatalogusNaarDomeinen() {
-  catalogus.forEach(s => {
-    const d = DOMEINEN.find(x => x.code === s.code);
-    if (!d) return;
-    if (s.naam) d.module = s.naam;
-    if (s.niveaus) {
-      ['S','M','I'].forEach(n => {
-        const nv = s.niveaus[n];
-        d.prijs[n] = berekenPrijs(nv);
-        d.dagen[n] = berekenDagen(nv);
-        if (nv.omschrijving) NIVEAUS[n].omschrijving = nv.omschrijving;
+        <div class="lijn-body">`;
+      if (!sts.length) html += `<div class="leeg">Nog geen stations.</div>`;
+      sts.forEach(s => {
+        const arts = artPerStat[s.id] || [];
+        html += `<div class="station-kaart">
+          <div class="station-kop">
+            <span>📍</span><span class="snaam">${s.naam}</span>
+            <button class="btn btn-ghost mini" onclick="hernoemStation('${s.id}')">✏️</button>
+            <button class="btn btn-ghost mini mini-danger" onclick="verwijderStation('${s.id}')">🗑</button>
+            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ Artikel</button>
+          </div>`;
+        if (!arts.length) html += `<div class="leeg">Nog geen artikelen.</div>`;
+        arts.forEach(a => {
+          const m = TNL.berekenNiveau(a.niveaus?.M, TARIEVEN);
+          const onb = onbekendeRollen(a);
+          html += `<div class="artikel-kaart">
+            <span class="anaam">${a.subnaam||'(naamloos)'}${a.actief===false?' <small style="color:var(--red)">· inactief</small>':''}${onb.length?` <small style="color:var(--red)">⚠ onbekende rol: ${onb.map(escAttr).join(', ')}</small>`:''}</span>
+            <span class="aprijs">M: €${m.prijs.toLocaleString('nl-BE')} · ${m.dagen}d</span>
+            <button class="btn btn-ghost mini" onclick="bewerkArtikel('${a.id}')">Bewerk</button>
+          </div>`;
+        });
+        html += `</div>`;
       });
-    }
+      html += `</div></div>`;
+    });
+  }
+  tree.innerHTML = html;
+}
+
+// ---------- STATION CRUD ----------
+async function nieuwStation(lijnCode) {
+  const naam = prompt('Naam van het nieuwe station:');
+  if (!naam || !naam.trim()) return;
+  const n = catStations.filter(s => s.lijn_code===lijnCode).length;
+  try { await TNL.upsertStation({ lijn_code:lijnCode, naam:naam.trim(), sort:(n+1)*10 }); await laadCatalogus(); }
+  catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
+async function hernoemStation(id) {
+  const s = catStations.find(x => x.id===id);
+  const naam = prompt('Nieuwe naam:', s?.naam || '');
+  if (!naam || !naam.trim()) return;
+  try { await TNL.upsertStation({ id, lijn_code:s.lijn_code, naam:naam.trim(), sort:s.sort }); await laadCatalogus(); }
+  catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
+async function verwijderStation(id) {
+  const s = catStations.find(x => x.id===id);
+  const aantal = catArtikelen.filter(a => a.station_id===id).length;
+  if (!confirm(`Station "${s?.naam}" verwijderen?` + (aantal?` Let op: ${aantal} artikel(en) worden óók verwijderd.`:''))) return;
+  try { await TNL.deleteStation(id); await laadCatalogus(); }
+  catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
+
+// ---------- ARTIKEL EDITOR ----------
+function nieuwArtikel(stationId) {
+  edit = { id:null, station_id:stationId, wbs:[], opties:[], niveaus:{ S:leegNiveau(), M:leegNiveau(), I:leegNiveau() } };
+  vulArtikelForm({});
+  document.getElementById('art-titel').textContent = 'Nieuw artikel';
+  document.getElementById('a-verwijder').style.display = 'none';
+  document.getElementById('art-modal').style.display = 'flex';
+}
+function bewerkArtikel(id) {
+  const a = catArtikelen.find(x => x.id===id); if (!a) return;
+  edit = {
+    id:a.id, station_id:a.station_id,
+    wbs: JSON.parse(JSON.stringify(a.wbs||[])),
+    opties: JSON.parse(JSON.stringify(a.opties||[])),
+    niveaus: normaliseerNiveaus(a.niveaus)
+  };
+  vulArtikelForm(a);
+  document.getElementById('art-titel').textContent = 'Artikel bewerken';
+  document.getElementById('a-verwijder').style.display = 'inline-block';
+  document.getElementById('art-modal').style.display = 'flex';
+}
+function sluitArtikel() { document.getElementById('art-modal').style.display = 'none'; edit = null; }
+
+function vulArtikelForm(a) {
+  const f = id => document.getElementById(id);
+  f('a-subnaam').value = a.subnaam || '';
+  ['omschrijving','scope_in','scope_uit','beperkingen','input','deliverables','doelstellingen','doorlooptijd','proces']
+    .forEach(k => f('a-'+k).value = a[k] || '');
+  renderVolnaam(); renderWbs(); renderOpties(); renderNiveaus();
+}
+
+function renderVolnaam() {
+  const s = catStations.find(x => x.id===edit.station_id);
+  const l = s ? LIJNEN.find(x => x.code===s.lijn_code) : null;
+  const sub = document.getElementById('a-subnaam').value.trim();
+  document.getElementById('a-volnaam').value = [l?.naam, s?.naam, sub].filter(Boolean).join(' — ');
+}
+
+function renderWbs() {
+  document.getElementById('a-wbs').innerHTML = edit.wbs.map((w,i) => {
+    const rolOpts = ['<option value="">—</option>'].concat(
+      TARIEF_ROLLEN.map(t => `<option value="${escAttr(t.rol)}"${w.rol===t.rol?' selected':''}>${escAttr(t.rol)}</option>`)
+    ).join('');
+    return `<div class="dyn-rij">
+    <input style="flex:1" placeholder="Activiteit" value="${escAttr(w.activiteit)}" oninput="edit.wbs[${i}].activiteit=this.value">
+    <select onchange="edit.wbs[${i}].type=this.value">
+      <option value="consultant"${w.type!=='klant'?' selected':''}>Consultant</option>
+      <option value="klant"${w.type==='klant'?' selected':''}>Klant</option>
+    </select>
+    <select onchange="edit.wbs[${i}].rol=this.value||null">${rolOpts}</select>
+    <input style="width:72px" type="number" step="0.5" placeholder="dagen" value="${w.dagen??''}" oninput="edit.wbs[${i}].dagen=parseFloat(this.value)||0">
+    <button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs()">×</button>
+  </div>`;
+  }).join('') || '<div class="leeg">Nog geen WBS-regels.</div>';
+}
+function wbsRij() { edit.wbs.push({ activiteit:'', type:'consultant', rol:'Sr', dagen:0 }); renderWbs(); }
+
+function renderOpties() {
+  document.getElementById('a-opties').innerHTML = edit.opties.map((o,i) => `<div class="dyn-rij">
+    <input style="flex:1" placeholder="Omschrijving" value="${escAttr(o.omschrijving)}" oninput="edit.opties[${i}].omschrijving=this.value">
+    <input style="width:120px" type="number" placeholder="prijs €" value="${o.prijs??''}" oninput="edit.opties[${i}].prijs=parseFloat(this.value)||0">
+    <button class="x" title="verwijderen" onclick="edit.opties.splice(${i},1);renderOpties()">×</button>
+  </div>`).join('') || '<div class="leeg">Nog geen opties.</div>';
+}
+function optieRij() { edit.opties.push({ omschrijving:'', prijs:0 }); renderOpties(); }
+
+function renderNiveaus() {
+  const labels = { S:'Starter', M:'Standaard', I:'Intensief' };
+  const rollenLeeg = TARIEF_ROLLEN.length === 0;
+  document.getElementById('a-niveaus').innerHTML = ['S','M','I'].map(n => {
+    const v = edit.niveaus[n] || leegNiveau();
+    const c = TNL.berekenNiveau(v, TARIEVEN);
+    const rolInputs = TARIEF_ROLLEN.map(t =>
+      `<label style="font-size:12px;color:var(--muted)">${escAttr(t.rol)} <input type="number" step="0.5" style="width:64px" value="${(v.dagen && v.dagen[t.rol]) ?? 0}" oninput="setNiveauDag('${n}','${escAttr(t.rol)}',this.value)"></label>`
+    ).join(' ');
+    return `<div class="niveau-blok">
+      <div class="nv-titel">${n} — ${labels[n]} <span class="nv-prijs" id="nvprijs-${n}">€${c.prijs.toLocaleString('nl-BE')} · ${c.dagen}d</span></div>
+      <div class="dyn-rij" style="flex-wrap:wrap">${rolInputs}
+        <label style="font-size:12px;color:var(--muted)">Klant dagen <input type="number" step="0.5" style="width:64px" value="${v.klantDagen??0}" oninput="edit.niveaus['${n}'].klantDagen=parseFloat(this.value)||0"></label>
+      </div>
+      <input style="width:100%;margin-top:6px" placeholder="Korte omschrijving van dit niveau" value="${escAttr(v.omschrijving)}" oninput="edit.niveaus['${n}'].omschrijving=this.value">
+    </div>`;
+  }).join('') + (rollenLeeg ? '<div class="leeg">Nog geen rollen — voeg ze toe in tabblad ⚙ Tarieven.</div>' : '');
+}
+function setNiveauDag(n, rol, val) {
+  if (!edit.niveaus[n].dagen) edit.niveaus[n].dagen = {};
+  edit.niveaus[n].dagen[rol] = parseFloat(val) || 0;
+  updateNiveauPrijs(n);
+}
+function updateNiveauPrijs(n) {
+  const c = TNL.berekenNiveau(edit.niveaus[n], TARIEVEN);
+  const el = document.getElementById('nvprijs-'+n);
+  if (el) el.textContent = `€${c.prijs.toLocaleString('nl-BE')} · ${c.dagen}d`;
+}
+
+// ---------- TABBLAD ④ — TARIEVEN ----------
+document.querySelector('nav button[data-tab="tarieven"]').addEventListener('click', laadTarieven);
+
+async function laadTarieven() {
+  const st = document.getElementById('tar-status');
+  st.textContent = 'Laden…';
+  try {
+    [TARIEF_ROLLEN, catArtikelen] = await Promise.all([
+      TNL.getTarievenLijst(), TNL.getCatalogus({ alleenActief:false })
+    ]);
+    TARIEVEN = Object.fromEntries(TARIEF_ROLLEN.map(t => [t.rol, {
+      uurprijs: Number(t.uurprijs)||0, halvedagprijs: Number(t.halvedagprijs)||0, heledagprijs: Number(t.heledagprijs)||0
+    }]));
+    renderTarieven();
+    st.textContent = '';
+  } catch (e) {
+    st.innerHTML = '<span style="color:var(--red)">Laden mislukt: ' + (e.message||e) + '</span>';
+  }
+}
+function renderTarieven() {
+  const kop = `<div class="dyn-rij" style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">
+    <span style="flex:1">Rol</span><span style="width:100px">€/uur</span><span style="width:100px">€ ½ dag</span><span style="width:110px">€ hele dag</span><span style="width:78px"></span>
+  </div>`;
+  document.getElementById('tar-lijst').innerHTML = kop + (TARIEF_ROLLEN.map(t => {
+    const n = artikelenMetRol(t.rol).length;
+    return `<div class="dyn-rij">
+    <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} artikel(en)</small>`:''}</span>
+    <input type="number" style="width:100px" value="${t.uurprijs??''}"      onchange="wijzigTariefVeld('${escAttr(t.rol)}','uurprijs',this.value)">
+    <input type="number" style="width:100px" value="${t.halvedagprijs??''}" onchange="wijzigTariefVeld('${escAttr(t.rol)}','halvedagprijs',this.value)">
+    <input type="number" style="width:110px" value="${t.heledagprijs??''}"  onchange="wijzigTariefVeld('${escAttr(t.rol)}','heledagprijs',this.value)">
+    <button class="btn btn-ghost mini" title="hernoemen" onclick="hernoemTarief('${escAttr(t.rol)}')">✏️</button>
+    <button class="x" title="verwijderen" onclick="verwijderTariefUI('${escAttr(t.rol)}')">×</button>
+  </div>`;
+  }).join('') || '<div class="leeg">Nog geen rollen.</div>');
+}
+
+// ---------- rol-gebruik detecteren ----------
+function artikelNaam(a) {
+  const s = a.station, l = s && s.lijn;
+  return [l && l.naam, s && s.naam, a.subnaam].filter(Boolean).join(' — ') || '(naamloos)';
+}
+function artikelenMetRol(rol) {
+  return catArtikelen.filter(a => {
+    const nv = a.niveaus || {};
+    const inNiveau = ['S','M','I'].some(n => nv[n] && nv[n].dagen && (Number(nv[n].dagen[rol]) || 0) > 0);
+    const inWbs = (a.wbs || []).some(w => w.rol === rol);
+    return inNiveau || inWbs;
   });
 }
-
-// Opslaan als JSON
-function slaatCatalogusOp() {
-  if (catalogus.length === 0) { alert('Catalogus is leeg.'); return; }
-  const json = JSON.stringify(catalogus, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'TNL_Catalogus_' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
+function onbekendeRollen(a) {
+  const set = new Set();
+  const nv = a.niveaus || {};
+  ['S','M','I'].forEach(n => {
+    const d = (nv[n] && nv[n].dagen) || {};
+    Object.keys(d).forEach(r => { if ((Number(d[r]) || 0) > 0 && !(r in TARIEVEN)) set.add(r); });
+  });
+  (a.wbs || []).forEach(w => { if (w.rol && !(w.rol in TARIEVEN)) set.add(w.rol); });
+  return [...set];
 }
 
-// Laden vanuit JSON
-function laadCatalogus(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error('Geen geldige catalogus');
-      catalogus = data;
-      syncCatalogusNaarDomeinen();
-      renderCatalogus();
-      document.getElementById('cat-status').innerHTML = `<span style="color:var(--green)">✓ Catalogus geladen: ${catalogus.length} stations</span>`;
-    } catch(err) {
-      alert('Fout bij laden: ' + err.message);
+// ---------- veilig hernoemen (cascade naar alle artikelen) ----------
+async function hernoemTarief(oud) {
+  const inv = prompt(`Nieuwe naam voor rol "${oud}":`, oud);
+  if (!inv || !inv.trim() || inv.trim() === oud) return;
+  const naam = inv.trim();
+  if (TARIEVEN[naam] != null) { alert(`Er bestaat al een rol "${naam}".`); return; }
+  const used = artikelenMetRol(oud);
+  if (!confirm(`Rol "${oud}" hernoemen naar "${naam}"?` + (used.length ? `\n${used.length} artikel(en) worden automatisch mee aangepast.` : ''))) return;
+  try {
+    await TNL.setTarief(naam, TARIEVEN[oud]);                 // 1) nieuwe rol, zelfde tarief
+    for (const a of used) {                                   // 2) artikelen omzetten
+      const nv = JSON.parse(JSON.stringify(a.niveaus || {}));
+      ['S','M','I'].forEach(n => {
+        if (nv[n] && nv[n].dagen && nv[n].dagen[oud] != null) {
+          nv[n].dagen[naam] = (Number(nv[n].dagen[naam]) || 0) + Number(nv[n].dagen[oud]);
+          delete nv[n].dagen[oud];
+        }
+      });
+      const wbs = (a.wbs || []).map(w => w.rol === oud ? { ...w, rol: naam } : w);
+      await TNL.updateArtikel(a.id, { niveaus: nv, wbs });
     }
-  };
-  reader.readAsText(file);
-  input.value = '';
+    await TNL.verwijderTarief(oud);                           // 3) oude rol weg
+    await laadTarieven();
+    alert(`Hernoemd naar "${naam}".`);
+  } catch (e) { alert('Hernoemen mislukt: ' + (e.message||e)); }
+}
+async function voegTariefToe() {
+  const naam = document.getElementById('tar-naam').value.trim();
+  if (!naam) { alert('Geef een rolnaam.'); return; }
+  const lees = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+  try {
+    await TNL.setTarief(naam, { uurprijs: lees('tar-uur'), halvedagprijs: lees('tar-half'), heledagprijs: lees('tar-heel') });
+    ['tar-naam','tar-uur','tar-half','tar-heel'].forEach(id => document.getElementById(id).value = '');
+    await laadTarieven();
+  } catch (e) { alert('Mislukt: ' + (e.message||e)); }
+}
+async function wijzigTariefVeld(rol, veld, val) {
+  const h = TARIEF_ROLLEN.find(t => t.rol === rol) || {};
+  const prijzen = { uurprijs: h.uurprijs, halvedagprijs: h.halvedagprijs, heledagprijs: h.heledagprijs };
+  const v = parseFloat(val); prijzen[veld] = isNaN(v) ? null : v;
+  try { await TNL.setTarief(rol, prijzen); await laadTarieven(); }
+  catch (e) { alert('Mislukt: ' + (e.message||e)); }
+}
+async function verwijderTariefUI(rol) {
+  const used = artikelenMetRol(rol);
+  let msg = `Rol "${rol}" verwijderen?`;
+  if (used.length) {
+    msg += `\n\n⚠ Deze rol wordt gebruikt in ${used.length} artikel(en):\n- ` +
+           used.map(artikelNaam).join('\n- ') +
+           `\n\nDie dagen vallen dan uit de prijsberekening.`;
+  }
+  if (!confirm(msg)) return;
+  try { await TNL.verwijderTarief(rol); await laadTarieven(); }
+  catch (e) { alert('Mislukt: ' + (e.message||e)); }
 }
 
-// Laad voorbeeldstation bij start
-catalogus.push(VOORBEELD_STATION);
-syncCatalogusNaarDomeinen();
+async function slaArtikelOp() {
+  const f = id => document.getElementById(id).value;
+  const artikel = {
+    station_id: edit.station_id,
+    subnaam: f('a-subnaam').trim() || null,
+    omschrijving:f('a-omschrijving'), scope_in:f('a-scope_in'), scope_uit:f('a-scope_uit'),
+    beperkingen:f('a-beperkingen'), input:f('a-input'), deliverables:f('a-deliverables'),
+    doelstellingen:f('a-doelstellingen'), doorlooptijd:f('a-doorlooptijd'), proces:f('a-proces'),
+    wbs: edit.wbs, opties: edit.opties, niveaus: edit.niveaus
+  };
+  if (edit.id) artikel.id = edit.id;
+  try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }
+  catch(e){ alert('Opslaan mislukt: '+(e.message||e)); }
+}
+async function verwijderArtikel() {
+  if (!edit.id) return;
+  if (!confirm('Dit artikel definitief verwijderen?')) return;
+  try { await TNL.deleteArtikel(edit.id); sluitArtikel(); await laadCatalogus(); }
+  catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
 
+// volledige naam live bijwerken bij typen van subnaam
+document.getElementById('a-subnaam').addEventListener('input', () => { if (edit) renderVolnaam(); });
 </script>
 </body>
 </html>

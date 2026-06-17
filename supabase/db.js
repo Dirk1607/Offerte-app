@@ -106,7 +106,7 @@ const TNL = (() => {
         basis += kost;
         perGroep[g || '(geen groep)'] = (perGroep[g || '(geen groep)'] || 0) + kost;
       }
-      const wk = Number(d.week) || 0;
+      const wk = (Number(d.aantal) > 0) ? Math.floor(Number(d.week) || 0) : 0;
       if (wk > doorlooptijd) doorlooptijd = wk;
       const ka = Number(d.klantAantal) || 0;
       if (ka) { const e = d.klantEenheid || 'dag'; klant[e] = (klant[e] || 0) + ka; }

@@ -222,7 +222,6 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="a-wbs"></div>
       <datalist id="scope-suggesties"></datalist>
       <button class="btn btn-ghost mini" onclick="wbsRij()">+ Deliverable</button>
-      <button class="btn btn-ghost mini" onclick="oosRij()">+ Maatwerk</button>
 
       <div id="a-totalen"></div>
     </div>
@@ -237,8 +236,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase/config.js?v=5"></script>
-<script src="supabase/db.js?v=5"></script>
+<script src="supabase/config.js?v=6"></script>
+<script src="supabase/db.js?v=6"></script>
 <script>
 // ============================================================
 // STATE
@@ -469,6 +468,20 @@ function clusterType(d){
   if (d.scopeGroep === 'Optioneel')  return 'optioneel';
   return 'normaal';
 }
+// Sorteren (bij openen): rijen met week eerst (oplopend), dan zonder week — optioneel vóór maatwerk.
+// Week-syntax 1.1 = eerste deliverable in week 1. Regie/maatwerk tellen als 'geen week'.
+function sorteerWbs(wbs){
+  const isRegie = d => clusterType(d)==='optioneel' && !(Number(d.aantal)>0);
+  const wk = d => (clusterType(d)==='maatwerk' || isRegie(d)) ? 0 : (Number(d.week)||0);
+  const groep = d => { const t = clusterType(d); return t==='optioneel'?0 : t==='maatwerk'?1 : 2; };
+  return wbs.slice().sort((a,b) => {
+    const wa = wk(a), wb = wk(b);
+    if (wa>0 && wb>0) return wa - wb;
+    if (wa>0) return -1;
+    if (wb>0) return 1;
+    return groep(a) - groep(b);
+  });
+}
 
 // Laad catalogus bij eerste bezoek aan het tabblad
 document.querySelector('nav button[data-tab="catalogus"]').addEventListener('click', () => {
@@ -577,10 +590,10 @@ function bewerkArtikel(id) {
   const a = catArtikelen.find(x => x.id===id); if (!a) return;
   edit = {
     id:a.id, station_id:a.station_id,
-    wbs: [
+    wbs: sorteerWbs([
       ...(JSON.parse(JSON.stringify(a.wbs||[]))).map(d => leegDeliverable(d)),
       ...(a.out_of_scope||[]).map(o => leegDeliverable({ scopeGroep:'Maatwerk', omschrijving:o.omschrijving }))
-    ]
+    ])
   };
   vulArtikelForm(a);
   document.getElementById('art-titel').textContent = 'NextStone bewerken';
@@ -604,7 +617,7 @@ function renderVolnaam() {
 }
 
 function renderScopeSuggesties() {
-  const set = new Set();
+  const set = new Set(['Optioneel','Maatwerk']);
   (catArtikelen||[]).forEach(a => (a.wbs||[]).forEach(d => { if (d.scopeGroep) set.add(d.scopeGroep); }));
   (edit && edit.wbs || []).forEach(d => { if (d.scopeGroep) set.add(d.scopeGroep); });
   document.getElementById('scope-suggesties').innerHTML =
@@ -623,10 +636,7 @@ function eenheidOptiesHtml(lijst, sel) {
 }
 
 function renderWbs() {
-  // Volgorde: normaal → vast → optioneel → maatwerk → out-of-scope.
-  const rang = { normaal:0, optioneel:2, maatwerk:3 };
-  const ordening = d => { const t = clusterType(d); return t==='normaal' && d.vast ? 1 : rang[t]; };
-  edit.wbs.sort((a,b) => ordening(a) - ordening(b));
+  // Géén sortering tijdens bewerken: nieuwe rijen komen onderaan; sorteren gebeurt bij openen (sorteerWbs).
   const head = `<div class="wbs-head">
     <span>Cluster</span><span>Deliverable — wat is af als het af is</span><span>Rol</span><span>Aantal</span><span>Eenheid</span><span>Week</span><span>Keuze</span><span></span>
   </div>`;
@@ -634,15 +644,16 @@ function renderWbs() {
   const rijen = edit.wbs.map((d,i) => {
     const t = clusterType(d);
     const regie = t==='optioneel' && !(Number(d.aantal) > 0);
+    const kDis = t==='normaal' ? ' disabled' : '';   // standaard deliverables: vinkje vergrendeld
     const cluster = `<input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderWbs();renderScopeSuggesties();renderTotalen()">`;
     const deliv = `<textarea placeholder="wat is af als het af is" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escAttr(d.omschrijving)}</textarea>`;
-    const keuze = `<div class="wbs-opt"><input type="checkbox" ${d.gekozen!==false?'checked':''} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
+    const keuze = `<div class="wbs-opt"><input type="checkbox" ${d.gekozen!==false?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
     const del = `<button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>`;
     if (t==='maatwerk') return `<div class="wbs-blok is-maatwerk">${cluster}${deliv}${leeg}${leeg}${leeg}${leeg}${keuze}${del}</div>`;
     const rol = `<select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>`;
     const aantal = `<input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()" onchange="renderWbs()">`;
     const eenheid = regie ? leeg : `<select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>`;
-    const week = regie ? leeg : `<input type="number" step="1" min="1" max="99" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseInt(this.value)||0;renderTotalen()">`;
+    const week = regie ? leeg : `<input type="number" step="0.1" min="0" placeholder="1.1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()">`;
     return `<div class="wbs-blok${t==='optioneel'?' is-optie':''}">${cluster}${deliv}${rol}${aantal}${eenheid}${week}${keuze}${del}</div>`;
   }).join('');
   document.getElementById('a-wbs').innerHTML = edit.wbs.length ? head + rijen : '<div class="leeg">Nog geen deliverables.</div>';
@@ -653,16 +664,13 @@ function oosRij() { edit.wbs.push(leegDeliverable({ scopeGroep:'Maatwerk' })); r
 
 function renderTotalen() {
   const c = TNL.berekenFix({ wbs: edit.wbs }, TARIEVEN);
-  const groepen = Object.keys(c.perGroep).sort()
-    .map(g => `<span class="gr"><b>${escAttr(g)}</b> €${c.perGroep[g].toLocaleString('nl-BE')}</span>`).join('');
   const rollenLeeg = TARIEF_ROLLEN.length === 0;
   document.getElementById('a-totalen').innerHTML =
     `<div class="tot-balk">
-       <span>In-scope: <b>€${c.basis.toLocaleString('nl-BE')}</b></span>
+       <span>Standaard: <b>€${c.basis.toLocaleString('nl-BE')}</b></span>
        <span>Opties: <b>€${c.opties.toLocaleString('nl-BE')}</b></span>
        <span>Doorlooptijd: <b>${c.doorlooptijd||0} wk</b></span>
      </div>
-     ${groepen?`<div class="groep-lijst">Per in-scope groep: ${groepen}</div>`:''}
      ${rollenLeeg?'<div class="leeg">Nog geen rollen — voeg ze toe in tabblad Tarieven om kosten te berekenen.</div>':''}`;
 }
 

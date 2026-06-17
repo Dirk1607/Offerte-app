@@ -93,7 +93,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
 .wbs-blok input, .wbs-blok select, .wbs-blok textarea { width:100%; padding:3px 5px; font-size:11.5px; border:1px solid var(--border); border-radius:5px; font-family:inherit; }
-.wbs-blok textarea { resize:none; line-height:1.4; overflow:hidden; }
+.wbs-blok textarea { height:24px; resize:none; line-height:1.4; overflow:hidden; }
+.wbs-blok textarea:focus { height:84px; overflow:auto; }
 .wbs-blok input[type=checkbox] { width:auto; justify-self:center; margin-top:4px; }
 .wbs-blok .x { align-self:start; }
 .tot-balk { display:flex; gap:20px; flex-wrap:wrap; padding:12px 14px; background:var(--light); border:1px solid var(--border); border-radius:8px; margin-top:12px; font-size:13px; }
@@ -616,7 +617,7 @@ function renderWbs() {
   </div>`;
   const rijen = edit.wbs.map((d,i) => `<div class="wbs-blok${d.optie?' is-optie':''}">
       <input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderScopeSuggesties();renderTotalen()">
-      <textarea rows="1" placeholder="wat is af als het af is" oninput="edit.wbs[${i}].omschrijving=this.value" onfocus="this.rows=4" onblur="this.rows=1" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escAttr(d.omschrijving)}</textarea>
+      <textarea placeholder="wat is af als het af is" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escAttr(d.omschrijving)}</textarea>
       <select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>
       <input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()">
       <select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>

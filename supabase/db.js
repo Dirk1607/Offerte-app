@@ -98,13 +98,13 @@ const TNL = (() => {
     const perGroep = {};          // { scopeGroep: kost }   (alleen niet-optie = in-scope)
     const klant = {};             // { dag: x, uur: y }
     wbs.forEach(d => {
-      if (d.scopeGroep === 'OutOfScope') return;   // out-of-scope: geen kost/groep
+      const g = (d.scopeGroep || '').trim();
+      if (g === 'OutOfScope' || g === 'Maatwerk') return;   // geen auto-kost
       const kost = prijsVanEenheid(d.rol, d.eenheid, d.aantal, tarieven);
-      if (d.optie) { opties += kost; }
+      if (g === 'Optioneel') { opties += kost; }
       else {
         basis += kost;
-        const g = (d.scopeGroep || '').trim() || '(geen groep)';
-        perGroep[g] = (perGroep[g] || 0) + kost;
+        perGroep[g || '(geen groep)'] = (perGroep[g || '(geen groep)'] || 0) + kost;
       }
       const wk = Number(d.week) || 0;
       if (wk > doorlooptijd) doorlooptijd = wk;

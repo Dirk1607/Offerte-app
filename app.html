@@ -87,16 +87,15 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .niveau-blok .nv-titel { font-weight:700; color:var(--orange); margin-bottom:8px; }
 .niveau-blok .nv-prijs { float:right; color:var(--navy); }
 
-/* WBS-deliverables (alles zichtbaar per regel) */
-.wbs-blok { border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:8px; background:#fff; }
+/* WBS-deliverables (alles op één regel, compact) */
+.wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; font-size:11.5px; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
-.wbs-r { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-.wbs-r + .wbs-r { margin-top:7px; }
-.wbs-blok input, .wbs-blok select { padding:6px 8px; font-size:13px; border:1px solid var(--border); border-radius:6px; }
-.wbs-blok input[type=number] { width:64px; }
-.wbs-kost { margin-left:auto; font-weight:800; color:var(--navy); white-space:nowrap; }
-.wbs-vast { font-size:10px; font-weight:800; color:var(--orange); text-transform:uppercase; letter-spacing:.5px; }
-.wbs-mini-lbl { font-size:11px; color:var(--muted); }
+.wbs-r { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.wbs-blok input, .wbs-blok select { padding:3px 5px; font-size:11.5px; border:1px solid var(--border); border-radius:5px; }
+.wbs-blok input[type=number] { width:46px; }
+.wbs-kost { margin-left:auto; font-weight:700; color:var(--navy); white-space:nowrap; }
+.wbs-vast { font-size:9px; font-weight:800; color:var(--orange); text-transform:uppercase; letter-spacing:.5px; }
+.wbs-mini-lbl { font-size:10.5px; color:var(--muted); display:inline-flex; align-items:center; gap:2px; }
 .tot-balk { display:flex; gap:20px; flex-wrap:wrap; padding:12px 14px; background:var(--light); border:1px solid var(--border); border-radius:8px; margin-top:12px; font-size:13px; }
 .tot-balk b { color:var(--navy); font-size:15px; }
 .groep-lijst { font-size:12px; color:var(--muted); margin-top:8px; }
@@ -107,28 +106,28 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </head>
 <body>
 <header>
-  <h1>🚇 TNL — Gesprek &amp; Offerte</h1>
+  <h1>TNL — Gesprek &amp; Offerte</h1>
   <div class="conn" id="conn">Verbinden met database…</div>
 </header>
 
 <nav>
   <button class="actief" data-tab="gesprek">① Gespreksvoorbereiding</button>
-  <button data-tab="catalogus">② TNL Fix Library</button>
+  <button data-tab="catalogus">② TNL NextStones</button>
   <button data-tab="offerte">③ Offerte</button>
-  <button data-tab="tarieven">⚙ Tarieven</button>
+  <button data-tab="tarieven">④ Tarieven</button>
 </nav>
 
 <main>
   <!-- TAB 1 -->
   <section class="panel actief" id="tab-gesprek">
     <h2>Gespreksvoorbereiding</h2>
-    <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden.</p>
+    <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden. <em>Welke NextStone wordt jouw volgende stap?</em></p>
 
     <div class="card">
       <textarea id="mail-tekst" placeholder="Plak hier de volledige quickscan-mail (of het rapport-blok met de scores)…"></textarea>
       <div class="btn-row">
-        <button class="btn" onclick="leesMail()">📥 Inlezen</button>
-        <button class="btn" id="btn-opslaan" onclick="opslaanGesprek()" style="display:none;background:var(--green)">💾 Opslaan in dossier</button>
+        <button class="btn" onclick="leesMail()">Inlezen</button>
+        <button class="btn" id="btn-opslaan" onclick="opslaanGesprek()" style="display:none;background:var(--green)">Opslaan in dossier</button>
         <button class="btn btn-ghost" onclick="wisMail()">Wissen</button>
       </div>
       <div class="status" id="mail-status"></div>
@@ -158,8 +157,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
   <!-- TAB 2 -->
   <section class="panel" id="tab-catalogus">
-    <h2>TNL Fix Library</h2>
-    <p class="sub">Je verbeterprojecten: lijn → station → <b>Fix</b>. Elke Fix zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en Fixes onder een station.</p>
+    <h2>TNL NextStones <small style="font-weight:400;color:var(--muted);font-size:14px">— Your stepping stones to The Next Level</small></h2>
+    <p class="sub">Je verbeterprojecten: lijn → station → <b>NextStone</b>. Elke NextStone zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en NextStones onder een station.</p>
     <div class="status" id="cat-status">Laden…</div>
     <div id="cat-tree"></div>
   </section>
@@ -194,7 +193,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <div id="art-modal" class="modal-overlay" style="display:none">
   <div class="modal">
     <div class="modal-kop">
-      <h3 id="art-titel">TNL Fix</h3>
+      <h3 id="art-titel">NextStone</h3>
       <button class="x" onclick="sluitArtikel()">×</button>
     </div>
     <div class="modal-body">
@@ -202,34 +201,34 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <div class="veld"><label>Subnaam (optioneel)</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss"></div>
         <div class="veld"><label>Volledige naam</label><input id="a-volnaam" disabled></div>
       </div>
-      <div class="veld"><label>🎯 Doel</label><textarea id="a-doel" placeholder="Wat implementeren we, en waarom? bv. Een maandelijkse P&amp;L zodat u altijd weet waar de marge naartoe gaat."></textarea></div>
-      <div class="veld"><label>📏 Meetbaar objectief</label><textarea id="a-meetbaar_objectief" placeholder="Concrete, meetbare uitkomst voor de klant."></textarea></div>
-      <div class="veld"><label>🤝 Belofte</label><textarea id="a-belofte" placeholder="Wat beloven we zodra de Fix geïnstalleerd is?"></textarea></div>
+      <div class="veld"><label>Doel</label><textarea id="a-doel" placeholder="Wat implementeren we, en waarom? bv. Een maandelijkse P&amp;L zodat u altijd weet waar de marge naartoe gaat."></textarea></div>
+      <div class="veld"><label>Meetbaar objectief</label><textarea id="a-meetbaar_objectief" placeholder="Concrete, meetbare uitkomst voor de klant."></textarea></div>
+      <div class="veld"><label>Belofte</label><textarea id="a-belofte" placeholder="Wat beloven we zodra de NextStone geïnstalleerd is?"></textarea></div>
 
       <div class="subkop">WBS — deliverables (wat is af als het af is)</div>
       <div id="a-wbs"></div>
       <datalist id="scope-suggesties"></datalist>
       <button class="btn btn-ghost mini" onclick="wbsRij()">+ Deliverable</button>
 
-      <div class="subkop">❌ Out of Scope (wat we niet doen)</div>
+      <div class="subkop">Out of Scope (wat we niet doen)</div>
       <div id="a-oos"></div>
       <button class="btn btn-ghost mini" onclick="oosRij()">+ Item</button>
 
       <div id="a-totalen"></div>
     </div>
     <div class="modal-voet">
-      <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">🗑 Verwijderen</button>
+      <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>
       <div style="display:flex;gap:10px">
         <button class="btn btn-ghost" onclick="sluitArtikel()">Annuleren</button>
-        <button class="btn" onclick="slaArtikelOp()">💾 Opslaan</button>
+        <button class="btn" onclick="slaArtikelOp()">Opslaan</button>
       </div>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase/config.js"></script>
-<script src="supabase/db.js"></script>
+<script src="supabase/config.js?v=2"></script>
+<script src="supabase/db.js?v=2"></script>
 <script>
 // ============================================================
 // STATE
@@ -360,7 +359,7 @@ async function opslaanGesprek() {
     return;
   }
   const btn = document.getElementById('btn-opslaan');
-  btn.disabled = true; btn.textContent = '⏳ Opslaan…';
+  btn.disabled = true; btn.textContent = 'Opslaan…';
   try {
     const r = await TNL.saveGesprek({
       klant: gesprek.klant,
@@ -376,7 +375,7 @@ async function opslaanGesprek() {
     status.innerHTML = '<span style="color:var(--red)">✗ Opslaan mislukt: ' + (e.message || e) + '</span>';
     console.error(e);
   } finally {
-    btn.disabled = false; btn.textContent = '💾 Opslaan in dossier';
+    btn.disabled = false; btn.textContent = 'Opslaan in dossier';
   }
 }
 
@@ -386,9 +385,9 @@ function toonKlant() {
   const k = gesprek.klant;
   if (!Object.keys(k).length) { blok.style.display = 'none'; return; }
   const velden = [
-    ['👤 Naam','naam'], ['🏢 Bedrijf','bedrijf'], ['✉️ E-mail','email'],
-    ['💼 Functie','functie'], ['👥 Medewerkers','medewerkers'], ['🏭 Sector','sector'],
-    ['📞 Telefoon','tel'], ['📊 Gem. score','score'], ['📅 Datum','datum'],
+    ['Naam','naam'], ['Bedrijf','bedrijf'], ['E-mail','email'],
+    ['Functie','functie'], ['Medewerkers','medewerkers'], ['Sector','sector'],
+    ['Telefoon','tel'], ['Gem. score','score'], ['Datum','datum'],
   ];
   grid.innerHTML = velden.filter(([,key]) => k[key])
     .map(([lbl,key]) => `<div class="klant-veld"><div class="lbl">${lbl}</div><div class="val">${k[key]}</div></div>`).join('');
@@ -407,7 +406,7 @@ function toonScores() {
     const lbl = gesprek.labels[l.code] || z.lbl;
     const pct = Math.round(sc / 4 * 100);
     return `<div class="score-rij">
-      <div class="naam">${l.icon || ''} ${l.naam} <small>(${l.code})</small></div>
+      <div class="naam">${l.naam} <small>(${l.code})</small></div>
       <div class="bar"><div style="width:${pct}%;background:${z.kleur}"></div></div>
       <div class="cijfer" style="color:${z.kleur}">${sc.toFixed(1)}/4</div>
       <span class="badge" style="background:${z.bg};color:${z.kleur}">${lbl}</span>
@@ -419,9 +418,9 @@ function toonScores() {
 
   const metro = sorteer('metrolijn'), versn = sorteer('versneller');
   document.getElementById('scores-metro').innerHTML =
-    (metro.length ? `<div class="score-titel">🚇 Metrolijnen</div>` + metro.map(rij).join('') : '');
+    (metro.length ? `<div class="score-titel">Metrolijnen</div>` + metro.map(rij).join('') : '');
   document.getElementById('scores-versn').innerHTML =
-    (versn.length ? `<div class="score-titel">⚡ Versnellers</div>` + versn.map(rij).join('') : '');
+    (versn.length ? `<div class="score-titel">Versnellers</div>` + versn.map(rij).join('') : '');
   blok.style.display = 'block';
 }
 
@@ -489,12 +488,11 @@ function renderCatBeheer() {
 
   let html = '';
   for (const type of ['metrolijn','versneller']) {
-    html += `<div class="score-titel">${type==='metrolijn'?'🚇 Metrolijnen':'⚡ Versnellers'}</div>`;
+    html += `<div class="score-titel">${type==='metrolijn'?'Metrolijnen':'Versnellers'}</div>`;
     LIJNEN.filter(l => l.type===type).forEach(l => {
       const sts = stPerLijn[l.code] || [];
       html += `<div class="lijn-groep">
         <div class="lijn-kop">
-          <span>${l.icon||''}</span>
           <span class="titel">${l.naam} <small style="color:var(--muted);font-weight:400">(${l.code})</small></span>
           <span class="telt">${sts.length} station(s)</span>
           <button class="btn btn-ghost mini" onclick="nieuwStation('${l.code}')">+ Station</button>
@@ -505,12 +503,12 @@ function renderCatBeheer() {
         const arts = artPerStat[s.id] || [];
         html += `<div class="station-kaart">
           <div class="station-kop">
-            <span>📍</span><span class="snaam">${s.naam}</span>
-            <button class="btn btn-ghost mini" onclick="hernoemStation('${s.id}')">✏️</button>
-            <button class="btn btn-ghost mini mini-danger" onclick="verwijderStation('${s.id}')">🗑</button>
-            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ Fix</button>
+            <span class="snaam">${s.naam}</span>
+            <button class="btn btn-ghost mini" onclick="hernoemStation('${s.id}')">Hernoem</button>
+            <button class="btn btn-ghost mini mini-danger" onclick="verwijderStation('${s.id}')">Verwijder</button>
+            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ NextStone</button>
           </div>`;
-        if (!arts.length) html += `<div class="leeg">Nog geen Fixes.</div>`;
+        if (!arts.length) html += `<div class="leeg">Nog geen NextStones.</div>`;
         arts.forEach(a => {
           const c = TNL.berekenFix(a, TARIEVEN);
           const onb = onbekendeRollen(a);
@@ -557,7 +555,7 @@ function nieuwArtikel(stationId) {
     wbs: VASTE_DELIVERABLES.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })),
     outOfScope: [] };
   vulArtikelForm({});
-  document.getElementById('art-titel').textContent = 'Nieuwe Fix';
+  document.getElementById('art-titel').textContent = 'Nieuwe NextStone';
   document.getElementById('a-verwijder').style.display = 'none';
   document.getElementById('art-modal').style.display = 'flex';
 }
@@ -569,7 +567,7 @@ function bewerkArtikel(id) {
     outOfScope: JSON.parse(JSON.stringify(a.out_of_scope||[]))
   };
   vulArtikelForm(a);
-  document.getElementById('art-titel').textContent = 'Fix bewerken';
+  document.getElementById('art-titel').textContent = 'NextStone bewerken';
   document.getElementById('a-verwijder').style.display = 'inline-block';
   document.getElementById('art-modal').style.display = 'flex';
 }
@@ -611,27 +609,21 @@ function eenheidOptiesHtml(lijst, sel) {
 function renderWbs() {
   document.getElementById('a-wbs').innerHTML = edit.wbs.map((d,i) => {
     const kost = TNL.prijsVanEenheid(d.rol, d.eenheid, d.aantal, TARIEVEN);
-    return `<div class="wbs-blok${d.optie?' is-optie':''}">
-      <div class="wbs-r">
-        <input style="flex:1;min-width:200px" placeholder="Deliverable — wat is af als het af is" value="${escAttr(d.omschrijving)}" oninput="edit.wbs[${i}].omschrijving=this.value">
-        ${d.vast?'<span class="wbs-vast">vast</span>':''}
-        <button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>
-      </div>
-      <div class="wbs-r">
-        <input list="scope-suggesties" style="width:150px" placeholder="Scope-groep" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderScopeSuggesties();renderTotalen()">
-        <select onchange="edit.wbs[${i}].rol=this.value;rowKost(${i})">${rolOptiesHtml(d.rol)}</select>
-        <input type="number" step="0.5" min="0" value="${d.aantal??''}" title="aantal" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;rowKost(${i})">
-        <select onchange="edit.wbs[${i}].eenheid=this.value;rowKost(${i})">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>
-        <label class="wbs-mini-lbl">wk <input type="number" step="1" min="1" style="width:52px" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseInt(this.value)||0;renderTotalen()"></label>
-        <label class="wbs-mini-lbl"><input type="checkbox" ${d.optie?'checked':''} onchange="edit.wbs[${i}].optie=this.checked;renderWbs();renderTotalen()"> optie</label>
-        <span class="wbs-kost" id="rowkost-${i}">€${kost.toLocaleString('nl-BE')}</span>
-      </div>
-      <div class="wbs-r">
-        <input style="flex:1;min-width:160px" placeholder="Input van de klant (wat levert de klant aan?)" value="${escAttr(d.klantInput)}" oninput="edit.wbs[${i}].klantInput=this.value">
-        <label class="wbs-mini-lbl">klant <input type="number" step="0.5" min="0" value="${d.klantAantal??''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;renderTotalen()"></label>
-        <select onchange="edit.wbs[${i}].klantEenheid=this.value;renderTotalen()">${eenheidOptiesHtml(KLANT_EENHEDEN, d.klantEenheid)}</select>
-      </div>
-    </div>`;
+    return `<div class="wbs-blok${d.optie?' is-optie':''}"><div class="wbs-r">
+      <input style="flex:2;min-width:150px" placeholder="Deliverable — wat is af als het af is" value="${escAttr(d.omschrijving)}" oninput="edit.wbs[${i}].omschrijving=this.value">
+      ${d.vast?'<span class="wbs-vast">vast</span>':''}
+      <input list="scope-suggesties" style="flex:1;min-width:80px" placeholder="Scope-groep" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderScopeSuggesties();renderTotalen()">
+      <select onchange="edit.wbs[${i}].rol=this.value;rowKost(${i})">${rolOptiesHtml(d.rol)}</select>
+      <input type="number" step="0.5" min="0" value="${d.aantal??''}" title="aantal" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;rowKost(${i})">
+      <select onchange="edit.wbs[${i}].eenheid=this.value;rowKost(${i})">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>
+      <label class="wbs-mini-lbl">wk<input type="number" step="1" min="1" style="width:38px" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseInt(this.value)||0;renderTotalen()"></label>
+      <label class="wbs-mini-lbl"><input type="checkbox" ${d.optie?'checked':''} onchange="edit.wbs[${i}].optie=this.checked;renderWbs();renderTotalen()">opt</label>
+      <input style="flex:1;min-width:110px" placeholder="Klant-input" value="${escAttr(d.klantInput)}" oninput="edit.wbs[${i}].klantInput=this.value">
+      <label class="wbs-mini-lbl">klant<input type="number" step="0.5" min="0" style="width:40px" value="${d.klantAantal??''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;renderTotalen()"></label>
+      <select onchange="edit.wbs[${i}].klantEenheid=this.value;renderTotalen()">${eenheidOptiesHtml(KLANT_EENHEDEN, d.klantEenheid)}</select>
+      <span class="wbs-kost" id="rowkost-${i}">€${kost.toLocaleString('nl-BE')}</span>
+      <button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>
+    </div></div>`;
   }).join('') || '<div class="leeg">Nog geen deliverables.</div>';
 }
 function wbsRij() { edit.wbs.push(leegDeliverable()); renderWbs(); renderTotalen(); }
@@ -667,7 +659,7 @@ function renderTotalen() {
        <span>Klant-inspanning: <b>${klant}</b></span>
      </div>
      ${groepen?`<div class="groep-lijst">Per in-scope groep: ${groepen}</div>`:''}
-     ${rollenLeeg?'<div class="leeg">Nog geen rollen — voeg ze toe in tabblad ⚙ Tarieven om kosten te berekenen.</div>':''}`;
+     ${rollenLeeg?'<div class="leeg">Nog geen rollen — voeg ze toe in tabblad Tarieven om kosten te berekenen.</div>':''}`;
 }
 
 // ---------- TABBLAD ④ — TARIEVEN ----------
@@ -700,7 +692,7 @@ function renderTarieven() {
     <input type="number" style="width:100px" value="${t.uurprijs??''}"      onchange="wijzigTariefVeld('${escAttr(t.rol)}','uurprijs',this.value)">
     <input type="number" style="width:100px" value="${t.halvedagprijs??''}" onchange="wijzigTariefVeld('${escAttr(t.rol)}','halvedagprijs',this.value)">
     <input type="number" style="width:110px" value="${t.heledagprijs??''}"  onchange="wijzigTariefVeld('${escAttr(t.rol)}','heledagprijs',this.value)">
-    <button class="btn btn-ghost mini" title="hernoemen" onclick="hernoemTarief('${escAttr(t.rol)}')">✏️</button>
+    <button class="btn btn-ghost mini" title="hernoemen" onclick="hernoemTarief('${escAttr(t.rol)}')">Hernoem</button>
     <button class="x" title="verwijderen" onclick="verwijderTariefUI('${escAttr(t.rol)}')">×</button>
   </div>`;
   }).join('') || '<div class="leeg">Nog geen rollen.</div>');
@@ -783,7 +775,7 @@ async function slaArtikelOp() {
 }
 async function verwijderArtikel() {
   if (!edit.id) return;
-  if (!confirm('Deze Fix definitief verwijderen?')) return;
+  if (!confirm('Deze NextStone definitief verwijderen?')) return;
   try { await TNL.deleteArtikel(edit.id); sluitArtikel(); await laadCatalogus(); }
   catch(e){ alert('Mislukt: '+(e.message||e)); }
 }

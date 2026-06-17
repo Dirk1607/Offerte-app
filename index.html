@@ -87,13 +87,15 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .niveau-blok .nv-titel { font-weight:700; color:var(--orange); margin-bottom:8px; }
 .niveau-blok .nv-prijs { float:right; color:var(--navy); }
 
-/* WBS-deliverables (uitgelijnd raster, alle kolommen gelijk) */
-.wbs-head, .wbs-blok { display:grid; grid-template-columns: repeat(6,1fr) 34px 20px; gap:5px; align-items:center; }
+/* WBS-deliverables (uitgelijnd raster; Deliverable krijgt de ruimte) */
+.wbs-head, .wbs-blok { display:grid; grid-template-columns: 90px minmax(60px,1fr) auto 46px auto 40px 26px 18px; gap:5px; align-items:start; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 8px 3px; }
 .wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
-.wbs-blok input, .wbs-blok select { width:100%; padding:3px 5px; font-size:11.5px; border:1px solid var(--border); border-radius:5px; }
-.wbs-blok input[type=checkbox] { width:auto; justify-self:center; }
+.wbs-blok input, .wbs-blok select, .wbs-blok textarea { width:100%; padding:3px 5px; font-size:11.5px; border:1px solid var(--border); border-radius:5px; font-family:inherit; }
+.wbs-blok textarea { resize:none; line-height:1.4; overflow:hidden; }
+.wbs-blok input[type=checkbox] { width:auto; justify-self:center; margin-top:4px; }
+.wbs-blok .x { align-self:start; }
 .tot-balk { display:flex; gap:20px; flex-wrap:wrap; padding:12px 14px; background:var(--light); border:1px solid var(--border); border-radius:8px; margin-top:12px; font-size:13px; }
 .tot-balk b { color:var(--navy); font-size:15px; }
 .groep-lijst { font-size:12px; color:var(--muted); margin-top:8px; }
@@ -171,7 +173,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="subkop" style="margin-top:18px">Nieuwe rol</div>
       <div class="dyn-rij" style="flex-wrap:wrap">
         <input id="tar-naam" placeholder="Rol (bv. Partner, Senior, Medior, Junior)" style="flex:1;min-width:160px">
-        <input id="tar-afk"  placeholder="afk." style="width:70px">
+        <input id="tar-afk"  maxlength="4" placeholder="afk." style="width:70px">
         <input id="tar-uur"  type="number" placeholder="€/uur" style="width:100px">
         <input id="tar-half" type="number" placeholder="€ ½ dag" style="width:100px">
         <input id="tar-heel" type="number" placeholder="€ hele dag" style="width:110px">
@@ -606,16 +608,19 @@ function eenheidOptiesHtml(lijst, sel) {
 }
 
 function renderWbs() {
+  // Volgorde: variabele deliverables → vaste → opties (stabiel binnen elke groep).
+  const ordening = d => d.optie ? 2 : (d.vast ? 1 : 0);
+  edit.wbs.sort((a,b) => ordening(a) - ordening(b));
   const head = `<div class="wbs-head">
-    <span>In-scope cluster</span><span>Deliverable</span><span>Rol</span><span>Aantal</span><span>Eenheid</span><span>Week</span><span>Optie</span><span></span>
+    <span>Cluster</span><span>Deliverable</span><span>Rol</span><span>Aantal</span><span>Eenheid</span><span>Week</span><span>Opt.</span><span></span>
   </div>`;
   const rijen = edit.wbs.map((d,i) => `<div class="wbs-blok${d.optie?' is-optie':''}">
-      <input list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderScopeSuggesties();renderTotalen()">
-      <input placeholder="wat is af als het af is" value="${escAttr(d.omschrijving)}" oninput="edit.wbs[${i}].omschrijving=this.value">
+      <input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderScopeSuggesties();renderTotalen()">
+      <textarea rows="1" placeholder="wat is af als het af is" oninput="edit.wbs[${i}].omschrijving=this.value" onfocus="this.rows=4" onblur="this.rows=1">${escAttr(d.omschrijving)}</textarea>
       <select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>
-      <input type="number" step="0.5" min="0" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()">
+      <input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()">
       <select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>
-      <input type="number" step="1" min="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseInt(this.value)||0;renderTotalen()">
+      <input type="number" step="1" min="1" max="99" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseInt(this.value)||0;renderTotalen()">
       <input type="checkbox" ${d.optie?'checked':''} onchange="edit.wbs[${i}].optie=this.checked;renderWbs();renderTotalen()">
       <button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>
     </div>`).join('');
@@ -674,7 +679,7 @@ function renderTarieven() {
     const n = artikelenMetRol(t.rol).length;
     return `<div class="dyn-rij">
     <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} NextStone(s)</small>`:''}</span>
-    <input style="width:70px" value="${escAttr(t.afkorting||'')}" placeholder="afk." onchange="wijzigTariefVeld('${escAttr(t.rol)}','afkorting',this.value)">
+    <input maxlength="4" style="width:70px" value="${escAttr(t.afkorting||'')}" placeholder="afk." onchange="wijzigTariefVeld('${escAttr(t.rol)}','afkorting',this.value)">
     <input type="number" style="width:100px" value="${t.uurprijs??''}"      onchange="wijzigTariefVeld('${escAttr(t.rol)}','uurprijs',this.value)">
     <input type="number" style="width:100px" value="${t.halvedagprijs??''}" onchange="wijzigTariefVeld('${escAttr(t.rol)}','halvedagprijs',this.value)">
     <input type="number" style="width:110px" value="${t.heledagprijs??''}"  onchange="wijzigTariefVeld('${escAttr(t.rol)}','heledagprijs',this.value)">

@@ -229,7 +229,6 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div class="modal-voet">
       <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" onclick="terugNaarLijst()">Terug</button>
         <button class="btn btn-ghost" onclick="sluitArtikel()">Annuleren</button>
         <button class="btn" onclick="slaArtikelOp()">Opslaan</button>
       </div>
@@ -646,7 +645,7 @@ function setCluster(i, val){
 function renderWbs() {
   // Géén sortering tijdens bewerken: nieuwe rijen komen onderaan; sorteren gebeurt bij openen (sorteerWbs).
   const head = `<div class="wbs-head">
-    <span>Cluster</span><span>Deliverable — wat is af als het af is</span><span>Rol</span><span>Aantal</span><span>EH</span><span>WK</span><span>KL(u)</span><span>Keuze</span><span></span>
+    <span>Cluster</span><span>Deliverable — wat is af als het af is</span><span>Rol</span><span>Aantal</span><span>EH</span><span>WK</span><span>Klant</span><span>Keuze</span><span></span>
   </div>`;
   const leeg = '<span></span>';
   const rijen = edit.wbs.map((d,i) => {
@@ -661,7 +660,7 @@ function renderWbs() {
     const rol = `<select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>`;
     const aantal = `<input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()" onchange="renderTotalen();renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const eenheid = regie ? leeg : `<select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>`;
-    const week = regie ? leeg : `<input type="text" inputmode="decimal" placeholder="1.1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()">`;
+    const week = regie ? leeg : `<input type="text" inputmode="decimal" placeholder="1.1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs();renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const klu = `<input type="number" min="0" max="999" placeholder="u" value="${d.klantAantal||''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;edit.wbs[${i}].klantEenheid='uur'">`;
     return `<div class="wbs-blok${t==='optioneel'?' is-optie':''}">${cluster}${deliv}${rol}${aantal}${eenheid}${week}${klu}${keuze}${del}</div>`;
   }).join('');
@@ -793,11 +792,8 @@ async function slaArtikelOp() {
     wbs: edit.wbs, out_of_scope: []
   };
   if (edit.id) artikel.id = edit.id;
-  try {
-    const opgeslagen = await TNL.upsertArtikel(artikel);
-    await laadCatalogus();          // ververs onderliggende lijst + data
-    bewerkArtikel(opgeslagen.id);   // blijf in deze NextStone; herlaad + sorteer op week
-  } catch(e){ alert('Opslaan mislukt: '+(e.message||e)); }
+  try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }
+  catch(e){ alert('Opslaan mislukt: '+(e.message||e)); }
 }
 async function verwijderArtikel() {
   if (!edit.id) return;

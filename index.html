@@ -636,6 +636,11 @@ function eenheidOptiesHtml(lijst, sel) {
   return lijst.map(([v,l]) => `<option value="${v}"${sel===v?' selected':''}>${l}</option>`).join('');
 }
 
+function setCluster(i, val){
+  edit.wbs[i].scopeGroep = val;
+  if (clusterType(edit.wbs[i]) === 'normaal') edit.wbs[i].gekozen = true;  // standaard = altijd gekozen (grijs vinkje)
+  renderWbs(); renderScopeSuggesties(); renderTotalen();
+}
 function renderWbs() {
   // Géén sortering tijdens bewerken: nieuwe rijen komen onderaan; sorteren gebeurt bij openen (sorteerWbs).
   const head = `<div class="wbs-head">
@@ -646,7 +651,7 @@ function renderWbs() {
     const t = clusterType(d);
     const regie = t==='optioneel' && !(Number(d.aantal) > 0);
     const kDis = t==='normaal' ? ' disabled' : '';   // standaard deliverables: vinkje vergrendeld
-    const cluster = `<input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderWbs();renderScopeSuggesties();renderTotalen()">`;
+    const cluster = `<input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value;renderTotalen()" onchange="setCluster(${i},this.value)">`;
     const deliv = `<textarea placeholder="wat is af als het af is" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escAttr(d.omschrijving)}</textarea>`;
     const keuze = `<div class="wbs-opt"><input type="checkbox" ${d.gekozen!==false?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
     const del = `<button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>`;

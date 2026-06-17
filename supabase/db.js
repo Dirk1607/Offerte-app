@@ -98,6 +98,7 @@ const TNL = (() => {
     const perGroep = {};          // { scopeGroep: kost }   (alleen niet-optie = in-scope)
     const klant = {};             // { dag: x, uur: y }
     wbs.forEach(d => {
+      if (d.scopeGroep === 'OutOfScope') return;   // out-of-scope: geen kost/groep
       const kost = prijsVanEenheid(d.rol, d.eenheid, d.aantal, tarieven);
       if (d.optie) { opties += kost; }
       else {

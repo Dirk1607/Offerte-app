@@ -212,8 +212,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
     <div class="modal-body">
       <div class="kop-grid">
-        <label>Subnaam</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
-        <label>Volledige naam</label><input id="a-volnaam" disabled>
+        <label>NextStone</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
+        <label>NextStone Path</label><input id="a-volnaam" disabled>
         <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Meetbaar objectief</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant." onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra de NextStone geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
@@ -229,6 +229,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div class="modal-voet">
       <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>
       <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="terugNaarLijst()">Terug</button>
         <button class="btn btn-ghost" onclick="sluitArtikel()">Annuleren</button>
         <button class="btn" onclick="slaArtikelOp()">Opslaan</button>
       </div>
@@ -602,6 +603,7 @@ function bewerkArtikel(id) {
   document.getElementById('art-modal').style.display = 'flex';
 }
 function sluitArtikel() { document.getElementById('art-modal').style.display = 'none'; edit = null; }
+function terugNaarLijst() { sluitArtikel(); laadCatalogus(); }   // terug naar de NextStones-lijst
 
 function vulArtikelForm(a) {
   const f = id => document.getElementById(id);
@@ -625,7 +627,7 @@ function renderScopeSuggesties() {
     [...set].sort().map(g => `<option value="${escAttr(g)}">`).join('');
 }
 
-const EENHEDEN = [['uur','u'],['halvedag','1/2d'],['heledag','d']];
+const EENHEDEN = [['uur','u'],['halvedag','hd'],['heledag','d']];
 const KLANT_EENHEDEN = [['uur','uur'],['dag','dag']];
 function rolOptiesHtml(sel) {
   return ['<option value="">— rol —</option>'].concat(
@@ -791,8 +793,11 @@ async function slaArtikelOp() {
     wbs: edit.wbs, out_of_scope: []
   };
   if (edit.id) artikel.id = edit.id;
-  try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }
-  catch(e){ alert('Opslaan mislukt: '+(e.message||e)); }
+  try {
+    const opgeslagen = await TNL.upsertArtikel(artikel);
+    await laadCatalogus();          // ververs onderliggende lijst + data
+    bewerkArtikel(opgeslagen.id);   // blijf in deze NextStone; herlaad + sorteer op week
+  } catch(e){ alert('Opslaan mislukt: '+(e.message||e)); }
 }
 async function verwijderArtikel() {
   if (!edit.id) return;

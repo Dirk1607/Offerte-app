@@ -237,8 +237,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase/config.js?v=7"></script>
-<script src="supabase/db.js?v=7"></script>
+<script src="supabase/config.js?v=8"></script>
+<script src="supabase/db.js?v=8"></script>
 <script>
 // ============================================================
 // STATE
@@ -653,7 +653,7 @@ function renderWbs() {
     const kDis = t==='normaal' ? ' disabled' : '';   // standaard deliverables: vinkje vergrendeld
     const cluster = `<input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value;renderTotalen()" onchange="setCluster(${i},this.value)">`;
     const deliv = `<textarea placeholder="wat is af als het af is" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escAttr(d.omschrijving)}</textarea>`;
-    const keuze = `<div class="wbs-opt"><input type="checkbox" ${d.gekozen!==false?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
+    const keuze = `<div class="wbs-opt"><input type="checkbox" ${(t==='normaal'||d.gekozen!==false)?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
     const del = `<button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>`;
     if (t==='maatwerk') return `<div class="wbs-blok is-maatwerk">${cluster}${deliv}${leeg}${leeg}${leeg}${leeg}${leeg}${keuze}${del}</div>`;
     const rol = `<select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>`;

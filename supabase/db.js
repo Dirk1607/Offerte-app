@@ -98,12 +98,12 @@ const TNL = (() => {
     const perGroep = {};          // { scopeGroep: kost }   (alleen niet-optie = in-scope)
     const klant = {};             // { dag: x, uur: y }
     wbs.forEach(d => {
-      if (d.gekozen === false) return;                      // niet aangevinkt: telt niet mee
       const g = (d.scopeGroep || '').trim();
-      if (g === 'OutOfScope' || g === 'Maatwerk') return;   // geen auto-kost
+      if (g === 'OutOfScope' || g === 'Maatwerk') return;        // geen auto-kost
+      if (g === 'Optioneel' && d.gekozen === false) return;      // niet-gekozen optie telt niet
       const kost = prijsVanEenheid(d.rol, d.eenheid, d.aantal, tarieven);
       if (g === 'Optioneel') { opties += kost; }
-      else {
+      else {                                                     // standaard: telt altijd mee
         basis += kost;
         perGroep[g || '(geen groep)'] = (perGroep[g || '(geen groep)'] || 0) + kost;
       }

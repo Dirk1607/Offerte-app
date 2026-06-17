@@ -66,7 +66,7 @@ const TNL = (() => {
   // Geordende lijst (duurste hele dag eerst = meest senior) — voor het beheer-scherm.
   async function getTarievenLijst() {
     return check(await client().from('tarieven')
-      .select('rol, uurprijs, halvedagprijs, heledagprijs')
+      .select('rol, afkorting, uurprijs, halvedagprijs, heledagprijs')
       .order('heledagprijs', { ascending: false, nullsFirst: false }));
   }
 

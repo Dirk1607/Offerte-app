@@ -87,15 +87,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .niveau-blok .nv-titel { font-weight:700; color:var(--orange); margin-bottom:8px; }
 .niveau-blok .nv-prijs { float:right; color:var(--navy); }
 
-/* WBS-deliverables (alles op één regel, compact) */
-.wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; font-size:11.5px; }
+/* WBS-deliverables (uitgelijnd raster, alle kolommen gelijk) */
+.wbs-head, .wbs-blok { display:grid; grid-template-columns: repeat(6,1fr) 34px 20px; gap:5px; align-items:center; }
+.wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 8px 3px; }
+.wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
-.wbs-r { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
-.wbs-blok input, .wbs-blok select { padding:3px 5px; font-size:11.5px; border:1px solid var(--border); border-radius:5px; }
-.wbs-blok input[type=number] { width:46px; }
-.wbs-kost { margin-left:auto; font-weight:700; color:var(--navy); white-space:nowrap; }
-.wbs-vast { font-size:9px; font-weight:800; color:var(--orange); text-transform:uppercase; letter-spacing:.5px; }
-.wbs-mini-lbl { font-size:10.5px; color:var(--muted); display:inline-flex; align-items:center; gap:2px; }
+.wbs-blok input, .wbs-blok select { width:100%; padding:3px 5px; font-size:11.5px; border:1px solid var(--border); border-radius:5px; }
+.wbs-blok input[type=checkbox] { width:auto; justify-self:center; }
 .tot-balk { display:flex; gap:20px; flex-wrap:wrap; padding:12px 14px; background:var(--light); border:1px solid var(--border); border-radius:8px; margin-top:12px; font-size:13px; }
 .tot-balk b { color:var(--navy); font-size:15px; }
 .groep-lijst { font-size:12px; color:var(--muted); margin-top:8px; }
@@ -172,7 +170,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="tar-lijst"></div>
       <div class="subkop" style="margin-top:18px">Nieuwe rol</div>
       <div class="dyn-rij" style="flex-wrap:wrap">
-        <input id="tar-naam" placeholder="Rol (bv. Partner, Senior, Medior, Junior)" style="flex:1;min-width:180px">
+        <input id="tar-naam" placeholder="Rol (bv. Partner, Senior, Medior, Junior)" style="flex:1;min-width:160px">
+        <input id="tar-afk"  placeholder="afk." style="width:70px">
         <input id="tar-uur"  type="number" placeholder="€/uur" style="width:100px">
         <input id="tar-half" type="number" placeholder="€ ½ dag" style="width:100px">
         <input id="tar-heel" type="number" placeholder="€ hele dag" style="width:110px">
@@ -227,8 +226,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase/config.js?v=2"></script>
-<script src="supabase/db.js?v=2"></script>
+<script src="supabase/config.js?v=3"></script>
+<script src="supabase/db.js?v=3"></script>
 <script>
 // ============================================================
 // STATE
@@ -599,7 +598,7 @@ const EENHEDEN = [['uur','uur'],['halvedag','½ dag'],['heledag','dag']];
 const KLANT_EENHEDEN = [['uur','uur'],['dag','dag']];
 function rolOptiesHtml(sel) {
   return ['<option value="">— rol —</option>'].concat(
-    TARIEF_ROLLEN.map(t => `<option value="${escAttr(t.rol)}"${sel===t.rol?' selected':''}>${escAttr(t.rol)}</option>`)
+    TARIEF_ROLLEN.map(t => `<option value="${escAttr(t.rol)}"${sel===t.rol?' selected':''}>${escAttr(t.afkorting||t.rol)}</option>`)
   ).join('');
 }
 function eenheidOptiesHtml(lijst, sel) {
@@ -607,32 +606,22 @@ function eenheidOptiesHtml(lijst, sel) {
 }
 
 function renderWbs() {
-  document.getElementById('a-wbs').innerHTML = edit.wbs.map((d,i) => {
-    const kost = TNL.prijsVanEenheid(d.rol, d.eenheid, d.aantal, TARIEVEN);
-    return `<div class="wbs-blok${d.optie?' is-optie':''}"><div class="wbs-r">
-      <input style="flex:2;min-width:150px" placeholder="Deliverable — wat is af als het af is" value="${escAttr(d.omschrijving)}" oninput="edit.wbs[${i}].omschrijving=this.value">
-      ${d.vast?'<span class="wbs-vast">vast</span>':''}
-      <input list="scope-suggesties" style="flex:1;min-width:80px" placeholder="Scope-groep" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderScopeSuggesties();renderTotalen()">
-      <select onchange="edit.wbs[${i}].rol=this.value;rowKost(${i})">${rolOptiesHtml(d.rol)}</select>
-      <input type="number" step="0.5" min="0" value="${d.aantal??''}" title="aantal" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;rowKost(${i})">
-      <select onchange="edit.wbs[${i}].eenheid=this.value;rowKost(${i})">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>
-      <label class="wbs-mini-lbl">wk<input type="number" step="1" min="1" style="width:38px" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseInt(this.value)||0;renderTotalen()"></label>
-      <label class="wbs-mini-lbl"><input type="checkbox" ${d.optie?'checked':''} onchange="edit.wbs[${i}].optie=this.checked;renderWbs();renderTotalen()">opt</label>
-      <input style="flex:1;min-width:110px" placeholder="Klant-input" value="${escAttr(d.klantInput)}" oninput="edit.wbs[${i}].klantInput=this.value">
-      <label class="wbs-mini-lbl">klant<input type="number" step="0.5" min="0" style="width:40px" value="${d.klantAantal??''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;renderTotalen()"></label>
-      <select onchange="edit.wbs[${i}].klantEenheid=this.value;renderTotalen()">${eenheidOptiesHtml(KLANT_EENHEDEN, d.klantEenheid)}</select>
-      <span class="wbs-kost" id="rowkost-${i}">€${kost.toLocaleString('nl-BE')}</span>
+  const head = `<div class="wbs-head">
+    <span>In-scope cluster</span><span>Deliverable</span><span>Rol</span><span>Aantal</span><span>Eenheid</span><span>Week</span><span>Optie</span><span></span>
+  </div>`;
+  const rijen = edit.wbs.map((d,i) => `<div class="wbs-blok${d.optie?' is-optie':''}">
+      <input list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderScopeSuggesties();renderTotalen()">
+      <input placeholder="wat is af als het af is" value="${escAttr(d.omschrijving)}" oninput="edit.wbs[${i}].omschrijving=this.value">
+      <select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>
+      <input type="number" step="0.5" min="0" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()">
+      <select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>
+      <input type="number" step="1" min="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseInt(this.value)||0;renderTotalen()">
+      <input type="checkbox" ${d.optie?'checked':''} onchange="edit.wbs[${i}].optie=this.checked;renderWbs();renderTotalen()">
       <button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>
-    </div></div>`;
-  }).join('') || '<div class="leeg">Nog geen deliverables.</div>';
+    </div>`).join('');
+  document.getElementById('a-wbs').innerHTML = edit.wbs.length ? head + rijen : '<div class="leeg">Nog geen deliverables.</div>';
 }
 function wbsRij() { edit.wbs.push(leegDeliverable()); renderWbs(); renderTotalen(); }
-function rowKost(i) {
-  const d = edit.wbs[i];
-  const el = document.getElementById('rowkost-'+i);
-  if (el) el.textContent = '€' + TNL.prijsVanEenheid(d.rol, d.eenheid, d.aantal, TARIEVEN).toLocaleString('nl-BE');
-  renderTotalen();
-}
 
 function renderOos() {
   document.getElementById('a-oos').innerHTML = edit.outOfScope.map((o,i) => `<div class="oos-rij">
@@ -647,16 +636,12 @@ function renderTotalen() {
   const c = TNL.berekenFix({ wbs: edit.wbs }, TARIEVEN);
   const groepen = Object.keys(c.perGroep).sort()
     .map(g => `<span class="gr"><b>${escAttr(g)}</b> €${c.perGroep[g].toLocaleString('nl-BE')}</span>`).join('');
-  const klant = Object.keys(c.klant).length
-    ? Object.entries(c.klant).map(([e,v]) => `${v} ${e==='uur'?'u':'d'}`).join(' + ')
-    : '—';
   const rollenLeeg = TARIEF_ROLLEN.length === 0;
   document.getElementById('a-totalen').innerHTML =
     `<div class="tot-balk">
        <span>In-scope: <b>€${c.basis.toLocaleString('nl-BE')}</b></span>
        <span>Opties: <b>€${c.opties.toLocaleString('nl-BE')}</b></span>
        <span>Doorlooptijd: <b>${c.doorlooptijd||0} wk</b></span>
-       <span>Klant-inspanning: <b>${klant}</b></span>
      </div>
      ${groepen?`<div class="groep-lijst">Per in-scope groep: ${groepen}</div>`:''}
      ${rollenLeeg?'<div class="leeg">Nog geen rollen — voeg ze toe in tabblad Tarieven om kosten te berekenen.</div>':''}`;
@@ -683,12 +668,13 @@ async function laadTarieven() {
 }
 function renderTarieven() {
   const kop = `<div class="dyn-rij" style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">
-    <span style="flex:1">Rol</span><span style="width:100px">€/uur</span><span style="width:100px">€ ½ dag</span><span style="width:110px">€ hele dag</span><span style="width:78px"></span>
+    <span style="flex:1">Rol</span><span style="width:70px">Afk.</span><span style="width:100px">€/uur</span><span style="width:100px">€ ½ dag</span><span style="width:110px">€ hele dag</span><span style="width:78px"></span>
   </div>`;
   document.getElementById('tar-lijst').innerHTML = kop + (TARIEF_ROLLEN.map(t => {
     const n = artikelenMetRol(t.rol).length;
     return `<div class="dyn-rij">
-    <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} artikel(en)</small>`:''}</span>
+    <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} NextStone(s)</small>`:''}</span>
+    <input style="width:70px" value="${escAttr(t.afkorting||'')}" placeholder="afk." onchange="wijzigTariefVeld('${escAttr(t.rol)}','afkorting',this.value)">
     <input type="number" style="width:100px" value="${t.uurprijs??''}"      onchange="wijzigTariefVeld('${escAttr(t.rol)}','uurprijs',this.value)">
     <input type="number" style="width:100px" value="${t.halvedagprijs??''}" onchange="wijzigTariefVeld('${escAttr(t.rol)}','halvedagprijs',this.value)">
     <input type="number" style="width:110px" value="${t.heledagprijs??''}"  onchange="wijzigTariefVeld('${escAttr(t.rol)}','heledagprijs',this.value)">
@@ -736,15 +722,16 @@ async function voegTariefToe() {
   if (!naam) { alert('Geef een rolnaam.'); return; }
   const lees = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
   try {
-    await TNL.setTarief(naam, { uurprijs: lees('tar-uur'), halvedagprijs: lees('tar-half'), heledagprijs: lees('tar-heel') });
-    ['tar-naam','tar-uur','tar-half','tar-heel'].forEach(id => document.getElementById(id).value = '');
+    await TNL.setTarief(naam, { afkorting: document.getElementById('tar-afk').value.trim() || null, uurprijs: lees('tar-uur'), halvedagprijs: lees('tar-half'), heledagprijs: lees('tar-heel') });
+    ['tar-naam','tar-afk','tar-uur','tar-half','tar-heel'].forEach(id => document.getElementById(id).value = '');
     await laadTarieven();
   } catch (e) { alert('Mislukt: ' + (e.message||e)); }
 }
 async function wijzigTariefVeld(rol, veld, val) {
   const h = TARIEF_ROLLEN.find(t => t.rol === rol) || {};
-  const prijzen = { uurprijs: h.uurprijs, halvedagprijs: h.halvedagprijs, heledagprijs: h.heledagprijs };
-  const v = parseFloat(val); prijzen[veld] = isNaN(v) ? null : v;
+  const prijzen = { afkorting: h.afkorting, uurprijs: h.uurprijs, halvedagprijs: h.halvedagprijs, heledagprijs: h.heledagprijs };
+  if (veld === 'afkorting') prijzen.afkorting = val.trim() || null;
+  else { const v = parseFloat(val); prijzen[veld] = isNaN(v) ? null : v; }
   try { await TNL.setTarief(rol, prijzen); await laadTarieven(); }
   catch (e) { alert('Mislukt: ' + (e.message||e)); }
 }

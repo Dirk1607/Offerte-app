@@ -86,6 +86,23 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .niveau-blok { border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; }
 .niveau-blok .nv-titel { font-weight:700; color:var(--orange); margin-bottom:8px; }
 .niveau-blok .nv-prijs { float:right; color:var(--navy); }
+
+/* WBS-deliverables (alles zichtbaar per regel) */
+.wbs-blok { border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:8px; background:#fff; }
+.wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
+.wbs-r { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.wbs-r + .wbs-r { margin-top:7px; }
+.wbs-blok input, .wbs-blok select { padding:6px 8px; font-size:13px; border:1px solid var(--border); border-radius:6px; }
+.wbs-blok input[type=number] { width:64px; }
+.wbs-kost { margin-left:auto; font-weight:800; color:var(--navy); white-space:nowrap; }
+.wbs-vast { font-size:10px; font-weight:800; color:var(--orange); text-transform:uppercase; letter-spacing:.5px; }
+.wbs-mini-lbl { font-size:11px; color:var(--muted); }
+.tot-balk { display:flex; gap:20px; flex-wrap:wrap; padding:12px 14px; background:var(--light); border:1px solid var(--border); border-radius:8px; margin-top:12px; font-size:13px; }
+.tot-balk b { color:var(--navy); font-size:15px; }
+.groep-lijst { font-size:12px; color:var(--muted); margin-top:8px; }
+.groep-lijst .gr { display:inline-flex; gap:6px; margin-right:14px; }
+.oos-rij { display:flex; gap:8px; align-items:center; margin-bottom:7px; }
+.oos-rij input, .oos-rij select { padding:6px 8px; font-size:13px; border:1px solid var(--border); border-radius:6px; }
 </style>
 </head>
 <body>
@@ -96,7 +113,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
 <nav>
   <button class="actief" data-tab="gesprek">① Gespreksvoorbereiding</button>
-  <button data-tab="catalogus">② Catalogus</button>
+  <button data-tab="catalogus">② TNL Fix Library</button>
   <button data-tab="offerte">③ Offerte</button>
   <button data-tab="tarieven">⚙ Tarieven</button>
 </nav>
@@ -141,8 +158,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
   <!-- TAB 2 -->
   <section class="panel" id="tab-catalogus">
-    <h2>Catalogus — beheer</h2>
-    <p class="sub">Je productaanbod: lijn → station → artikel. Voeg stations toe onder een lijn, en artikelen onder een station.</p>
+    <h2>TNL Fix Library</h2>
+    <p class="sub">Je verbeterprojecten: lijn → station → <b>Fix</b>. Elke Fix zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en Fixes onder een station.</p>
     <div class="status" id="cat-status">Laden…</div>
     <div id="cat-tree"></div>
   </section>
@@ -173,11 +190,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   </section>
 </main>
 
-<!-- Artikel-editor -->
+<!-- Fix-editor -->
 <div id="art-modal" class="modal-overlay" style="display:none">
   <div class="modal">
     <div class="modal-kop">
-      <h3 id="art-titel">Artikel</h3>
+      <h3 id="art-titel">TNL Fix</h3>
       <button class="x" onclick="sluitArtikel()">×</button>
     </div>
     <div class="modal-body">
@@ -185,34 +202,20 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <div class="veld"><label>Subnaam (optioneel)</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss"></div>
         <div class="veld"><label>Volledige naam</label><input id="a-volnaam" disabled></div>
       </div>
-      <div class="veld"><label>Omschrijving</label><textarea id="a-omschrijving"></textarea></div>
+      <div class="veld"><label>🎯 Doel</label><textarea id="a-doel" placeholder="Wat implementeren we, en waarom? bv. Een maandelijkse P&amp;L zodat u altijd weet waar de marge naartoe gaat."></textarea></div>
+      <div class="veld"><label>📏 Meetbaar objectief</label><textarea id="a-meetbaar_objectief" placeholder="Concrete, meetbare uitkomst voor de klant."></textarea></div>
+      <div class="veld"><label>🤝 Belofte</label><textarea id="a-belofte" placeholder="Wat beloven we zodra de Fix geïnstalleerd is?"></textarea></div>
 
-      <div class="subkop">Scope</div>
-      <div class="rij2">
-        <div class="veld"><label>✅ Scope in</label><textarea id="a-scope_in"></textarea></div>
-        <div class="veld"><label>❌ Scope out</label><textarea id="a-scope_uit"></textarea></div>
-      </div>
-      <div class="veld"><label>⚠ Beperkingen</label><textarea id="a-beperkingen"></textarea></div>
-      <div class="rij2">
-        <div class="veld"><label>📥 Input (van klant)</label><textarea id="a-input"></textarea></div>
-        <div class="veld"><label>📤 Deliverables</label><textarea id="a-deliverables"></textarea></div>
-      </div>
-      <div class="veld"><label>🎯 Doelstellingen</label><textarea id="a-doelstellingen"></textarea></div>
-      <div class="rij2">
-        <div class="veld"><label>⏱ Doorlooptijd</label><input id="a-doorlooptijd" placeholder="bv. 3-5 weken"></div>
-        <div class="veld"><label>🔄 Proces</label><input id="a-proces" placeholder="Intake → Ontwerp → …"></div>
-      </div>
-
-      <div class="subkop">WBS — werkpakketten</div>
+      <div class="subkop">WBS — deliverables (wat is af als het af is)</div>
       <div id="a-wbs"></div>
-      <button class="btn btn-ghost mini" onclick="wbsRij()">+ Regel</button>
+      <datalist id="scope-suggesties"></datalist>
+      <button class="btn btn-ghost mini" onclick="wbsRij()">+ Deliverable</button>
 
-      <div class="subkop">Extra opties</div>
-      <div id="a-opties"></div>
-      <button class="btn btn-ghost mini" onclick="optieRij()">+ Optie</button>
+      <div class="subkop">❌ Out of Scope (wat we niet doen)</div>
+      <div id="a-oos"></div>
+      <button class="btn btn-ghost mini" onclick="oosRij()">+ Item</button>
 
-      <div class="subkop">Niveaus &amp; prijs (dagen → prijs via tarieven)</div>
-      <div id="a-niveaus"></div>
+      <div id="a-totalen"></div>
     </div>
     <div class="modal-voet">
       <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">🗑 Verwijderen</button>
@@ -441,21 +444,16 @@ var TARIEF_ROLLEN = [];    // [{ rol, uurprijs, halvedagprijs, heledagprijs }] g
 var catStations = [];
 var catArtikelen = [];
 var catGeladen = false;
-var edit = null;   // editor-state voor het open artikel
+var edit = null;   // editor-state voor de open Fix
 
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
-function leegNiveau(){ return { dagen:{}, klantDagen:0, omschrijving:'' }; }
 
-// Zet een artikel-niveau om naar het rol-formaat (vangt ook oud jr/sr formaat op).
-function normaliseerNiveaus(nv) {
-  const out = {};
-  ['S','M','I'].forEach(n => {
-    const v = (nv && nv[n]) || {};
-    let dagen = v.dagen;
-    if (!dagen) { dagen = {}; if (v.jrDagen != null) dagen.Jr = v.jrDagen; if (v.srDagen != null) dagen.Sr = v.srDagen; }
-    out[n] = { dagen: Object.assign({}, dagen), klantDagen: v.klantDagen || 0, omschrijving: v.omschrijving || '' };
-  });
-  return out;
+// Vaste deliverables die in elke nieuwe Fix horen.
+const VASTE_DELIVERABLES = ['Beschreven proces', 'Gecoördineerd project'];
+function eersteRol(){ return (TARIEF_ROLLEN[0] && TARIEF_ROLLEN[0].rol) || 'Sr'; }
+function leegDeliverable(extra){
+  return Object.assign({ omschrijving:'', scopeGroep:'', rol:eersteRol(), eenheid:'heledag',
+    aantal:1, optie:false, klantInput:'', klantAantal:0, klantEenheid:'dag', week:1, vast:false }, extra||{});
 }
 
 // Laad catalogus bij eerste bezoek aan het tabblad
@@ -510,15 +508,15 @@ function renderCatBeheer() {
             <span>📍</span><span class="snaam">${s.naam}</span>
             <button class="btn btn-ghost mini" onclick="hernoemStation('${s.id}')">✏️</button>
             <button class="btn btn-ghost mini mini-danger" onclick="verwijderStation('${s.id}')">🗑</button>
-            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ Artikel</button>
+            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ Fix</button>
           </div>`;
-        if (!arts.length) html += `<div class="leeg">Nog geen artikelen.</div>`;
+        if (!arts.length) html += `<div class="leeg">Nog geen Fixes.</div>`;
         arts.forEach(a => {
-          const m = TNL.berekenNiveau(a.niveaus?.M, TARIEVEN);
+          const c = TNL.berekenFix(a, TARIEVEN);
           const onb = onbekendeRollen(a);
           html += `<div class="artikel-kaart">
             <span class="anaam">${a.subnaam||'(naamloos)'}${a.actief===false?' <small style="color:var(--red)">· inactief</small>':''}${onb.length?` <small style="color:var(--red)">⚠ onbekende rol: ${onb.map(escAttr).join(', ')}</small>`:''}</span>
-            <span class="aprijs">M: €${m.prijs.toLocaleString('nl-BE')} · ${m.dagen}d</span>
+            <span class="aprijs">€${c.basis.toLocaleString('nl-BE')}${c.opties?` <small>+ €${c.opties.toLocaleString('nl-BE')} opt.</small>`:''} · ${c.doorlooptijd||0} wk</span>
             <button class="btn btn-ghost mini" onclick="bewerkArtikel('${a.id}')">Bewerk</button>
           </div>`;
         });
@@ -555,9 +553,11 @@ async function verwijderStation(id) {
 
 // ---------- ARTIKEL EDITOR ----------
 function nieuwArtikel(stationId) {
-  edit = { id:null, station_id:stationId, wbs:[], opties:[], niveaus:{ S:leegNiveau(), M:leegNiveau(), I:leegNiveau() } };
+  edit = { id:null, station_id:stationId,
+    wbs: VASTE_DELIVERABLES.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })),
+    outOfScope: [] };
   vulArtikelForm({});
-  document.getElementById('art-titel').textContent = 'Nieuw artikel';
+  document.getElementById('art-titel').textContent = 'Nieuwe Fix';
   document.getElementById('a-verwijder').style.display = 'none';
   document.getElementById('art-modal').style.display = 'flex';
 }
@@ -565,12 +565,11 @@ function bewerkArtikel(id) {
   const a = catArtikelen.find(x => x.id===id); if (!a) return;
   edit = {
     id:a.id, station_id:a.station_id,
-    wbs: JSON.parse(JSON.stringify(a.wbs||[])),
-    opties: JSON.parse(JSON.stringify(a.opties||[])),
-    niveaus: normaliseerNiveaus(a.niveaus)
+    wbs: (JSON.parse(JSON.stringify(a.wbs||[]))).map(d => leegDeliverable(d)),
+    outOfScope: JSON.parse(JSON.stringify(a.out_of_scope||[]))
   };
   vulArtikelForm(a);
-  document.getElementById('art-titel').textContent = 'Artikel bewerken';
+  document.getElementById('art-titel').textContent = 'Fix bewerken';
   document.getElementById('a-verwijder').style.display = 'inline-block';
   document.getElementById('art-modal').style.display = 'flex';
 }
@@ -579,9 +578,8 @@ function sluitArtikel() { document.getElementById('art-modal').style.display = '
 function vulArtikelForm(a) {
   const f = id => document.getElementById(id);
   f('a-subnaam').value = a.subnaam || '';
-  ['omschrijving','scope_in','scope_uit','beperkingen','input','deliverables','doelstellingen','doorlooptijd','proces']
-    .forEach(k => f('a-'+k).value = a[k] || '');
-  renderVolnaam(); renderWbs(); renderOpties(); renderNiveaus();
+  ['doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
+  renderVolnaam(); renderScopeSuggesties(); renderWbs(); renderOos(); renderTotalen();
 }
 
 function renderVolnaam() {
@@ -591,61 +589,85 @@ function renderVolnaam() {
   document.getElementById('a-volnaam').value = [l?.naam, s?.naam, sub].filter(Boolean).join(' — ');
 }
 
+function renderScopeSuggesties() {
+  const set = new Set();
+  (catArtikelen||[]).forEach(a => (a.wbs||[]).forEach(d => { if (d.scopeGroep) set.add(d.scopeGroep); }));
+  (edit && edit.wbs || []).forEach(d => { if (d.scopeGroep) set.add(d.scopeGroep); });
+  document.getElementById('scope-suggesties').innerHTML =
+    [...set].sort().map(g => `<option value="${escAttr(g)}">`).join('');
+}
+
+const EENHEDEN = [['uur','uur'],['halvedag','½ dag'],['heledag','dag']];
+const KLANT_EENHEDEN = [['uur','uur'],['dag','dag']];
+function rolOptiesHtml(sel) {
+  return ['<option value="">— rol —</option>'].concat(
+    TARIEF_ROLLEN.map(t => `<option value="${escAttr(t.rol)}"${sel===t.rol?' selected':''}>${escAttr(t.rol)}</option>`)
+  ).join('');
+}
+function eenheidOptiesHtml(lijst, sel) {
+  return lijst.map(([v,l]) => `<option value="${v}"${sel===v?' selected':''}>${l}</option>`).join('');
+}
+
 function renderWbs() {
-  document.getElementById('a-wbs').innerHTML = edit.wbs.map((w,i) => {
-    const rolOpts = ['<option value="">—</option>'].concat(
-      TARIEF_ROLLEN.map(t => `<option value="${escAttr(t.rol)}"${w.rol===t.rol?' selected':''}>${escAttr(t.rol)}</option>`)
-    ).join('');
-    return `<div class="dyn-rij">
-    <input style="flex:1" placeholder="Activiteit" value="${escAttr(w.activiteit)}" oninput="edit.wbs[${i}].activiteit=this.value">
-    <select onchange="edit.wbs[${i}].type=this.value">
-      <option value="consultant"${w.type!=='klant'?' selected':''}>Consultant</option>
-      <option value="klant"${w.type==='klant'?' selected':''}>Klant</option>
-    </select>
-    <select onchange="edit.wbs[${i}].rol=this.value||null">${rolOpts}</select>
-    <input style="width:72px" type="number" step="0.5" placeholder="dagen" value="${w.dagen??''}" oninput="edit.wbs[${i}].dagen=parseFloat(this.value)||0">
-    <button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs()">×</button>
-  </div>`;
-  }).join('') || '<div class="leeg">Nog geen WBS-regels.</div>';
-}
-function wbsRij() { edit.wbs.push({ activiteit:'', type:'consultant', rol:'Sr', dagen:0 }); renderWbs(); }
-
-function renderOpties() {
-  document.getElementById('a-opties').innerHTML = edit.opties.map((o,i) => `<div class="dyn-rij">
-    <input style="flex:1" placeholder="Omschrijving" value="${escAttr(o.omschrijving)}" oninput="edit.opties[${i}].omschrijving=this.value">
-    <input style="width:120px" type="number" placeholder="prijs €" value="${o.prijs??''}" oninput="edit.opties[${i}].prijs=parseFloat(this.value)||0">
-    <button class="x" title="verwijderen" onclick="edit.opties.splice(${i},1);renderOpties()">×</button>
-  </div>`).join('') || '<div class="leeg">Nog geen opties.</div>';
-}
-function optieRij() { edit.opties.push({ omschrijving:'', prijs:0 }); renderOpties(); }
-
-function renderNiveaus() {
-  const labels = { S:'Starter', M:'Standaard', I:'Intensief' };
-  const rollenLeeg = TARIEF_ROLLEN.length === 0;
-  document.getElementById('a-niveaus').innerHTML = ['S','M','I'].map(n => {
-    const v = edit.niveaus[n] || leegNiveau();
-    const c = TNL.berekenNiveau(v, TARIEVEN);
-    const rolInputs = TARIEF_ROLLEN.map(t =>
-      `<label style="font-size:12px;color:var(--muted)">${escAttr(t.rol)} <input type="number" step="0.5" style="width:64px" value="${(v.dagen && v.dagen[t.rol]) ?? 0}" oninput="setNiveauDag('${n}','${escAttr(t.rol)}',this.value)"></label>`
-    ).join(' ');
-    return `<div class="niveau-blok">
-      <div class="nv-titel">${n} — ${labels[n]} <span class="nv-prijs" id="nvprijs-${n}">€${c.prijs.toLocaleString('nl-BE')} · ${c.dagen}d</span></div>
-      <div class="dyn-rij" style="flex-wrap:wrap">${rolInputs}
-        <label style="font-size:12px;color:var(--muted)">Klant dagen <input type="number" step="0.5" style="width:64px" value="${v.klantDagen??0}" oninput="edit.niveaus['${n}'].klantDagen=parseFloat(this.value)||0"></label>
+  document.getElementById('a-wbs').innerHTML = edit.wbs.map((d,i) => {
+    const kost = TNL.prijsVanEenheid(d.rol, d.eenheid, d.aantal, TARIEVEN);
+    return `<div class="wbs-blok${d.optie?' is-optie':''}">
+      <div class="wbs-r">
+        <input style="flex:1;min-width:200px" placeholder="Deliverable — wat is af als het af is" value="${escAttr(d.omschrijving)}" oninput="edit.wbs[${i}].omschrijving=this.value">
+        ${d.vast?'<span class="wbs-vast">vast</span>':''}
+        <button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>
       </div>
-      <input style="width:100%;margin-top:6px" placeholder="Korte omschrijving van dit niveau" value="${escAttr(v.omschrijving)}" oninput="edit.niveaus['${n}'].omschrijving=this.value">
+      <div class="wbs-r">
+        <input list="scope-suggesties" style="width:150px" placeholder="Scope-groep" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value" onchange="renderScopeSuggesties();renderTotalen()">
+        <select onchange="edit.wbs[${i}].rol=this.value;rowKost(${i})">${rolOptiesHtml(d.rol)}</select>
+        <input type="number" step="0.5" min="0" value="${d.aantal??''}" title="aantal" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;rowKost(${i})">
+        <select onchange="edit.wbs[${i}].eenheid=this.value;rowKost(${i})">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>
+        <label class="wbs-mini-lbl">wk <input type="number" step="1" min="1" style="width:52px" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseInt(this.value)||0;renderTotalen()"></label>
+        <label class="wbs-mini-lbl"><input type="checkbox" ${d.optie?'checked':''} onchange="edit.wbs[${i}].optie=this.checked;renderWbs();renderTotalen()"> optie</label>
+        <span class="wbs-kost" id="rowkost-${i}">€${kost.toLocaleString('nl-BE')}</span>
+      </div>
+      <div class="wbs-r">
+        <input style="flex:1;min-width:160px" placeholder="Input van de klant (wat levert de klant aan?)" value="${escAttr(d.klantInput)}" oninput="edit.wbs[${i}].klantInput=this.value">
+        <label class="wbs-mini-lbl">klant <input type="number" step="0.5" min="0" value="${d.klantAantal??''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;renderTotalen()"></label>
+        <select onchange="edit.wbs[${i}].klantEenheid=this.value;renderTotalen()">${eenheidOptiesHtml(KLANT_EENHEDEN, d.klantEenheid)}</select>
+      </div>
     </div>`;
-  }).join('') + (rollenLeeg ? '<div class="leeg">Nog geen rollen — voeg ze toe in tabblad ⚙ Tarieven.</div>' : '');
+  }).join('') || '<div class="leeg">Nog geen deliverables.</div>';
 }
-function setNiveauDag(n, rol, val) {
-  if (!edit.niveaus[n].dagen) edit.niveaus[n].dagen = {};
-  edit.niveaus[n].dagen[rol] = parseFloat(val) || 0;
-  updateNiveauPrijs(n);
+function wbsRij() { edit.wbs.push(leegDeliverable()); renderWbs(); renderTotalen(); }
+function rowKost(i) {
+  const d = edit.wbs[i];
+  const el = document.getElementById('rowkost-'+i);
+  if (el) el.textContent = '€' + TNL.prijsVanEenheid(d.rol, d.eenheid, d.aantal, TARIEVEN).toLocaleString('nl-BE');
+  renderTotalen();
 }
-function updateNiveauPrijs(n) {
-  const c = TNL.berekenNiveau(edit.niveaus[n], TARIEVEN);
-  const el = document.getElementById('nvprijs-'+n);
-  if (el) el.textContent = `€${c.prijs.toLocaleString('nl-BE')} · ${c.dagen}d`;
+
+function renderOos() {
+  document.getElementById('a-oos').innerHTML = edit.outOfScope.map((o,i) => `<div class="oos-rij">
+    <input list="scope-suggesties" style="width:150px" placeholder="Groep" value="${escAttr(o.groep)}" oninput="edit.outOfScope[${i}].groep=this.value">
+    <input style="flex:1" placeholder="Wat doen we niet?" value="${escAttr(o.omschrijving)}" oninput="edit.outOfScope[${i}].omschrijving=this.value">
+    <button class="x" title="verwijderen" onclick="edit.outOfScope.splice(${i},1);renderOos()">×</button>
+  </div>`).join('') || '<div class="leeg">Nog geen out-of-scope items.</div>';
+}
+function oosRij() { edit.outOfScope.push({ groep:'', omschrijving:'' }); renderOos(); }
+
+function renderTotalen() {
+  const c = TNL.berekenFix({ wbs: edit.wbs }, TARIEVEN);
+  const groepen = Object.keys(c.perGroep).sort()
+    .map(g => `<span class="gr"><b>${escAttr(g)}</b> €${c.perGroep[g].toLocaleString('nl-BE')}</span>`).join('');
+  const klant = Object.keys(c.klant).length
+    ? Object.entries(c.klant).map(([e,v]) => `${v} ${e==='uur'?'u':'d'}`).join(' + ')
+    : '—';
+  const rollenLeeg = TARIEF_ROLLEN.length === 0;
+  document.getElementById('a-totalen').innerHTML =
+    `<div class="tot-balk">
+       <span>In-scope: <b>€${c.basis.toLocaleString('nl-BE')}</b></span>
+       <span>Opties: <b>€${c.opties.toLocaleString('nl-BE')}</b></span>
+       <span>Doorlooptijd: <b>${c.doorlooptijd||0} wk</b></span>
+       <span>Klant-inspanning: <b>${klant}</b></span>
+     </div>
+     ${groepen?`<div class="groep-lijst">Per in-scope groep: ${groepen}</div>`:''}
+     ${rollenLeeg?'<div class="leeg">Nog geen rollen — voeg ze toe in tabblad ⚙ Tarieven om kosten te berekenen.</div>':''}`;
 }
 
 // ---------- TABBLAD ④ — TARIEVEN ----------
@@ -690,20 +712,10 @@ function artikelNaam(a) {
   return [l && l.naam, s && s.naam, a.subnaam].filter(Boolean).join(' — ') || '(naamloos)';
 }
 function artikelenMetRol(rol) {
-  return catArtikelen.filter(a => {
-    const nv = a.niveaus || {};
-    const inNiveau = ['S','M','I'].some(n => nv[n] && nv[n].dagen && (Number(nv[n].dagen[rol]) || 0) > 0);
-    const inWbs = (a.wbs || []).some(w => w.rol === rol);
-    return inNiveau || inWbs;
-  });
+  return catArtikelen.filter(a => (a.wbs || []).some(w => w.rol === rol));
 }
 function onbekendeRollen(a) {
   const set = new Set();
-  const nv = a.niveaus || {};
-  ['S','M','I'].forEach(n => {
-    const d = (nv[n] && nv[n].dagen) || {};
-    Object.keys(d).forEach(r => { if ((Number(d[r]) || 0) > 0 && !(r in TARIEVEN)) set.add(r); });
-  });
   (a.wbs || []).forEach(w => { if (w.rol && !(w.rol in TARIEVEN)) set.add(w.rol); });
   return [...set];
 }
@@ -718,16 +730,9 @@ async function hernoemTarief(oud) {
   if (!confirm(`Rol "${oud}" hernoemen naar "${naam}"?` + (used.length ? `\n${used.length} artikel(en) worden automatisch mee aangepast.` : ''))) return;
   try {
     await TNL.setTarief(naam, TARIEVEN[oud]);                 // 1) nieuwe rol, zelfde tarief
-    for (const a of used) {                                   // 2) artikelen omzetten
-      const nv = JSON.parse(JSON.stringify(a.niveaus || {}));
-      ['S','M','I'].forEach(n => {
-        if (nv[n] && nv[n].dagen && nv[n].dagen[oud] != null) {
-          nv[n].dagen[naam] = (Number(nv[n].dagen[naam]) || 0) + Number(nv[n].dagen[oud]);
-          delete nv[n].dagen[oud];
-        }
-      });
+    for (const a of used) {                                   // 2) Fixes omzetten
       const wbs = (a.wbs || []).map(w => w.rol === oud ? { ...w, rol: naam } : w);
-      await TNL.updateArtikel(a.id, { niveaus: nv, wbs });
+      await TNL.updateArtikel(a.id, { wbs });
     }
     await TNL.verwijderTarief(oud);                           // 3) oude rol weg
     await laadTarieven();
@@ -769,10 +774,8 @@ async function slaArtikelOp() {
   const artikel = {
     station_id: edit.station_id,
     subnaam: f('a-subnaam').trim() || null,
-    omschrijving:f('a-omschrijving'), scope_in:f('a-scope_in'), scope_uit:f('a-scope_uit'),
-    beperkingen:f('a-beperkingen'), input:f('a-input'), deliverables:f('a-deliverables'),
-    doelstellingen:f('a-doelstellingen'), doorlooptijd:f('a-doorlooptijd'), proces:f('a-proces'),
-    wbs: edit.wbs, opties: edit.opties, niveaus: edit.niveaus
+    doel: f('a-doel'), meetbaar_objectief: f('a-meetbaar_objectief'), belofte: f('a-belofte'),
+    wbs: edit.wbs, out_of_scope: edit.outOfScope
   };
   if (edit.id) artikel.id = edit.id;
   try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }
@@ -780,7 +783,7 @@ async function slaArtikelOp() {
 }
 async function verwijderArtikel() {
   if (!edit.id) return;
-  if (!confirm('Dit artikel definitief verwijderen?')) return;
+  if (!confirm('Deze Fix definitief verwijderen?')) return;
   try { await TNL.deleteArtikel(edit.id); sluitArtikel(); await laadCatalogus(); }
   catch(e){ alert('Mislukt: '+(e.message||e)); }
 }

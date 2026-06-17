@@ -89,6 +89,30 @@ const TNL = (() => {
     return check(await client().from('tarieven').delete().eq('rol', rol));
   }
 
+  // Rekenkern van een TNL Fix: kost per scope-groep, totalen, doorlooptijd
+  // en klant-inspanning. Deliverables met optie=true tellen apart (niet in basis).
+  //   fix.wbs = [{ rol, eenheid, aantal, scopeGroep, optie, week, klantAantal, klantEenheid }]
+  function berekenFix(fix, tarieven) {
+    const wbs = (fix && fix.wbs) || [];
+    let basis = 0, opties = 0, doorlooptijd = 0;
+    const perGroep = {};          // { scopeGroep: kost }   (alleen niet-optie = in-scope)
+    const klant = {};             // { dag: x, uur: y }
+    wbs.forEach(d => {
+      const kost = prijsVanEenheid(d.rol, d.eenheid, d.aantal, tarieven);
+      if (d.optie) { opties += kost; }
+      else {
+        basis += kost;
+        const g = (d.scopeGroep || '').trim() || '(geen groep)';
+        perGroep[g] = (perGroep[g] || 0) + kost;
+      }
+      const wk = Number(d.week) || 0;
+      if (wk > doorlooptijd) doorlooptijd = wk;
+      const ka = Number(d.klantAantal) || 0;
+      if (ka) { const e = d.klantEenheid || 'dag'; klant[e] = (klant[e] || 0) + ka; }
+    });
+    return { basis, opties, totaal: basis + opties, doorlooptijd, perGroep, klant };
+  }
+
   // ---------- lijnen ----------
   async function getLijnen() {
     return check(await client().from('lijn')
@@ -240,7 +264,7 @@ const TNL = (() => {
   }
 
   return {
-    client, berekenNiveau,
+    client, berekenNiveau, berekenFix,
     getTarieven, getTarievenLijst, setTarief, verwijderTarief, prijsVanEenheid,
     getLijnen,
     getStations, upsertStation, deleteStation,

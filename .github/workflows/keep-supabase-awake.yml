@@ -23,5 +23,5 @@ jobs:
             fi
           }
           ping_project "https://sphmxlfpzzowsekzjltd.supabase.co/rest/v1/tarieven?select=rol&limit=1" "sb_publishable_5-6NPQpNMh3pIhmDysO2Ug_6URRIwCc" "Offerte"
-          ping_project "https://pylfvfcieyrwegcvlwwa.supabase.co/rest/v1/" "sb_publishable_jINc1spJu3sUcltJSABpLQ_r_jBNBud" "Prospectie"
+          ping_project "https://pylfvfcieyrwegcvlwwa.supabase.co/rest/v1/prospects?select=id&limit=1" "sb_publishable_jINc1spJu3sUcltJSABpLQ_r_jBNBud" "Prospectie"
           echo "Keep-alive klaar."

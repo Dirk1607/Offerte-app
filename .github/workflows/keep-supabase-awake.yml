@@ -2,6 +2,7 @@ name: Keep Supabase awake
 
 # Houdt de gratis Supabase-projecten actief zodat ze niet pauzeren na ~7 dagen inactiviteit.
 # Draait 2x per week (ma + do, 06:00 UTC) en kan ook handmatig gestart worden.
+# Fouttolerant: een onbereikbaar/gepauzeerd project laat de run niet falen.
 on:
   schedule:
     - cron: '0 6 * * 1,4'
@@ -11,13 +12,16 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Offerte (TNL-offertetool)
+      - name: Ping Supabase projects
         run: |
-          curl -sS -o /dev/null -w "Offerte: HTTP %{http_code}\n" \
-            "https://sphmxlfpzzowsekzjltd.supabase.co/rest/v1/tarieven?select=rol&limit=1" \
-            -H "apikey: sb_publishable_5-6NPQpNMh3pIhmDysO2Ug_6URRIwCc"
-      - name: Ping Prospectie
-        run: |
-          curl -sS -o /dev/null -w "Prospectie: HTTP %{http_code}\n" \
-            "https://pylfvfcieyrwegcvlwwa.supabase.co/rest/v1/" \
-            -H "apikey: sb_publishable_jINc1spJu3sUcltJSABpLQ_r_jBNBud"
+          ping_project () {
+            code=$(curl -sS -o /dev/null -m 30 -w "%{http_code}" "$1" -H "apikey: $2" || echo "000")
+            if [ "$code" = "200" ]; then
+              echo "$3: HTTP 200 (actief)"
+            else
+              echo "$3: onbereikbaar (HTTP $code) - mogelijk gepauzeerd; herstel via het Supabase-dashboard."
+            fi
+          }
+          ping_project "https://sphmxlfpzzowsekzjltd.supabase.co/rest/v1/tarieven?select=rol&limit=1" "sb_publishable_5-6NPQpNMh3pIhmDysO2Ug_6URRIwCc" "Offerte"
+          ping_project "https://pylfvfcieyrwegcvlwwa.supabase.co/rest/v1/" "sb_publishable_jINc1spJu3sUcltJSABpLQ_r_jBNBud" "Prospectie"
+          echo "Keep-alive klaar."

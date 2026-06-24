@@ -1,0 +1,23 @@
+name: Keep Supabase awake
+
+# Houdt de gratis Supabase-projecten actief zodat ze niet pauzeren na ~7 dagen inactiviteit.
+# Draait 2x per week (ma + do, 06:00 UTC) en kan ook handmatig gestart worden.
+on:
+  schedule:
+    - cron: '0 6 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Offerte (TNL-offertetool)
+        run: |
+          curl -sS -o /dev/null -w "Offerte: HTTP %{http_code}\n" \
+            "https://sphmxlfpzzowsekzjltd.supabase.co/rest/v1/tarieven?select=rol&limit=1" \
+            -H "apikey: sb_publishable_5-6NPQpNMh3pIhmDysO2Ug_6URRIwCc"
+      - name: Ping Prospectie
+        run: |
+          curl -sS -o /dev/null -w "Prospectie: HTTP %{http_code}\n" \
+            "https://pylfvfcieyrwegcvlwwa.supabase.co/rest/v1/" \
+            -H "apikey: sb_publishable_jINc1spJu3sUcltJSABpLQ_r_jBNBud"

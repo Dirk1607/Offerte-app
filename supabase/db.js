@@ -276,6 +276,10 @@ const TNL = (() => {
     return check(await client().from('tools')
       .upsert({ ...tool, updated_at: new Date().toISOString() }).select().single());
   }
+  async function updateTool(id, patch) {
+    return check(await client().from('tools')
+      .update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id).select().single());
+  }
   async function deleteTool(id) {
     return check(await client().from('tools').delete().eq('id', id));
   }
@@ -291,7 +295,7 @@ const TNL = (() => {
 
   return {
     client, berekenNiveau, berekenFix,
-    getTools, getTool, upsertTool, deleteTool, uploadToolPdf,
+    getTools, getTool, upsertTool, updateTool, deleteTool, uploadToolPdf,
     getTarieven, getTarievenLijst, setTarief, verwijderTarief, prijsVanEenheid,
     getLijnen,
     getStations, upsertStation, deleteStation,

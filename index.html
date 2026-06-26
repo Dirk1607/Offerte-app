@@ -178,7 +178,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.4</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.5</div>
   </section>
 
   <!-- TAB 2 -->
@@ -359,7 +359,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=9"></script>
+<script src="supabase/db.js?v=10"></script>
 <script>
 // ============================================================
 // STATE
@@ -1030,7 +1030,7 @@ async function genereerFiche(tool) {
     }).from(cont).outputPdf('blob');
   } finally { document.body.removeChild(cont); }
   const { url } = await TNL.uploadToolPdf(tool.id, blob);
-  await TNL.upsertTool({ id: tool.id, pdf_url: url, pdf_naam: naam });
+  await TNL.updateTool(tool.id, { pdf_url: url, pdf_naam: naam });
   return { url, naam };
 }
 function buildFicheHtml(t) {

@@ -170,7 +170,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.0</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.1</div>
   </section>
 
   <!-- TAB 2 -->
@@ -667,7 +667,7 @@ function renderWbs() {
     const regie = t==='optioneel' && !(Number(d.aantal) > 0);
     const kDis = t==='normaal' ? ' disabled' : '';   // standaard deliverables: vinkje vergrendeld
     const cluster = `<input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value;renderTotalen()" onchange="setCluster(${i},this.value)">`;
-    const deliv = `<textarea placeholder="werkwoord + van + … (bv. Opmaken van het projectplan)" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="checkProcesstap(this.value)">${escAttr(d.omschrijving)}</textarea>`;
+    const deliv = `<textarea id="pt-${i}" placeholder="werkwoord + van + … (bv. Opmaken van het projectplan)" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();checkProcesstap(${i});this.blur();}" onblur="checkProcesstap(${i})">${escAttr(d.omschrijving)}</textarea>`;
     const keuze = `<div class="wbs-opt"><input type="checkbox" ${(t==='normaal'||d.gekozen!==false)?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
     const del = `<button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>`;
     if (t==='maatwerk') return `<div class="wbs-blok is-maatwerk">${cluster}${deliv}${leeg}${leeg}${leeg}${leeg}${leeg}${keuze}${del}</div>`;
@@ -683,13 +683,15 @@ function renderWbs() {
 function wbsRij() { edit.wbs.push(leegDeliverable()); renderWbs(); renderTotalen(); }
 
 // Syntaxtip voor een processtap: "werkwoord + van + zelfstandig naamwoord".
-function checkProcesstap(txt) {
+function checkProcesstap(i) {
   const el = document.getElementById('wbs-syntax');
-  if (!el) return;
-  const t = (txt||'').trim();
-  el.textContent = (t && !/\bvan\b/i.test(t))
-    ? '⚠ Schrijf een processtap als "werkwoord + van + zelfstandig naamwoord", bv. "Opmaken van het projectplan".'
-    : '';
+  const ta = document.getElementById('pt-'+i);
+  const txt = ((edit.wbs[i] && edit.wbs[i].omschrijving) || '').trim();
+  // Juist = werkwoord + van + zelfstandig nw: er staat minstens één woord vóór 'van'.
+  const ok = !txt || /^\S+\s+.*\bvan\b/i.test(txt);
+  if (ta) ta.style.borderColor = ok ? '' : 'var(--orange)';
+  if (el) el.textContent = ok ? ''
+    : '⚠ Processtap "' + txt + '" — schrijf als "werkwoord + van + zelfstandig naamwoord", bv. "Opmaken van het projectplan".';
 }
 
 // Deliverables = vrije lijst "wat is af als het af is".

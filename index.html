@@ -178,7 +178,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.5</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.6</div>
   </section>
 
   <!-- TAB 2 -->
@@ -1017,7 +1017,7 @@ async function regenereerFiche(id) {
 async function genereerFiche(tool) {
   const html = buildFicheHtml(tool);
   const cont = document.createElement('div');
-  cont.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;padding:24px;';
+  cont.style.cssText = 'position:absolute;left:0;top:0;z-index:-1;width:794px;background:#fff;padding:24px;';
   cont.innerHTML = html;
   document.body.appendChild(cont);
   const naam = (tool.afkorting || tool.naam || 'tool') + ' - productfiche.pdf';
@@ -1025,7 +1025,8 @@ async function genereerFiche(tool) {
   try {
     blob = await html2pdf().set({
       margin:[10,10,14,10], image:{type:'jpeg',quality:0.96},
-      html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      html2canvas:{ scale:2, backgroundColor:'#ffffff', windowWidth:900, scrollX:0, scrollY:0 },
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
       pagebreak:{mode:['css','legacy','avoid-all']}
     }).from(cont).outputPdf('blob');
   } finally { document.body.removeChild(cont); }

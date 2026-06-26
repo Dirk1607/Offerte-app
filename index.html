@@ -111,6 +111,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .wbs-syntax { font-size:10.5px; color:var(--red); margin:3px 2px 0; line-height:1.4; }
 .deliv-rij { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
 .deliv-rij input { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
+.cluster-rij { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
+.cluster-rij .c-naam { width:120px; flex:none; }
+.cluster-rij input { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
+.proces-rij { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
+.proces-rij .proces-nr { width:20px; flex:none; text-align:center; font-size:11px; font-weight:700; color:var(--muted); }
+.proces-rij select { width:92px; flex:none; padding:5px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
+.proces-rij input { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
 #a-totalen { position:sticky; bottom:0; background:#fff; padding-top:8px; z-index:2; }
 .tot-balk { display:flex; gap:20px; flex-wrap:wrap; padding:12px 14px; background:var(--light); border:1px solid var(--border); border-radius:8px; margin-top:0; font-size:13px; }
 .tot-balk b { color:var(--navy); font-size:15px; }
@@ -170,7 +177,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.2</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.3</div>
   </section>
 
   <!-- TAB 2 -->
@@ -219,10 +226,15 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="kop-grid">
         <label>NextStone</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
         <label>NextStone Path</label><input id="a-volnaam" disabled>
+        <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze NextStone relevant voor de klant?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Meetbaar objectief</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant." onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra de NextStone geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
       </div>
+
+      <div class="subkop">Clusters</div>
+      <div id="a-clusters"></div>
+      <button class="btn btn-ghost mini" onclick="clusterRij()">+ Cluster</button>
 
       <div class="subkop">WBS — Work Breakdown Structure</div>
       <div id="a-wbs"></div>
@@ -230,9 +242,17 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="wbs-syntax" class="wbs-syntax"></div>
       <button class="btn btn-ghost mini" onclick="wbsRij()">+ Processtap</button>
 
-      <div class="subkop">Deliverables — wat is af als het af is</div>
+      <div class="subkop">Wat krijgt u hiervoor?</div>
       <div id="a-deliverables"></div>
       <button class="btn btn-ghost mini" onclick="delivRij()">+ Deliverable</button>
+
+      <div class="subkop">Implementatieproces</div>
+      <div id="a-impl"></div>
+      <button class="btn btn-ghost mini" onclick="procesRij('implementatieproces','a-impl')">+ Stap</button>
+
+      <div class="subkop">Maandelijks gebruiksproces</div>
+      <div id="a-gebruik"></div>
+      <button class="btn btn-ghost mini" onclick="procesRij('gebruiksproces','a-gebruik')">+ Stap</button>
 
       <div id="a-totalen"></div>
     </div>
@@ -593,7 +613,9 @@ async function verwijderStation(id) {
 // ---------- ARTIKEL EDITOR ----------
 function nieuwArtikel(stationId) {
   edit = { id:null, station_id:stationId,
+    clusters: [{ naam:'Fundament', omschrijving:'' }],
     deliverables: STANDAARD_DELIVERABLES.slice(),
+    implementatieproces: [], gebruiksproces: [],
     wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
   vulArtikelForm({});
   document.getElementById('art-titel').textContent = 'Nieuwe NextStone';
@@ -604,7 +626,10 @@ function bewerkArtikel(id) {
   const a = catArtikelen.find(x => x.id===id); if (!a) return;
   edit = {
     id:a.id, station_id:a.station_id,
+    clusters: (a.clusters || []).map(c => ({ ...c })),
     deliverables: (a.deliverables || []).slice(),
+    implementatieproces: (a.implementatieproces || []).map(r => ({ ...r })),
+    gebruiksproces: (a.gebruiksproces || []).map(r => ({ ...r })),
     wbs: sorteerWbs([
       ...(JSON.parse(JSON.stringify(a.wbs||[]))).map(d => leegDeliverable(d)),
       ...(a.out_of_scope||[]).map(o => leegDeliverable({ scopeGroep:'Maatwerk', omschrijving:o.omschrijving }))
@@ -621,8 +646,9 @@ function terugNaarLijst() { sluitArtikel(); laadCatalogus(); }   // terug naar d
 function vulArtikelForm(a) {
   const f = id => document.getElementById(id);
   f('a-subnaam').value = a.subnaam || '';
-  ['doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
-  renderVolnaam(); renderScopeSuggesties(); renderWbs(); renderDeliverables(); renderTotalen();
+  ['waarom','doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
+  renderVolnaam(); renderScopeSuggesties(); renderClusters(); renderWbs(); renderDeliverables();
+  renderProces('implementatieproces','a-impl'); renderProces('gebruiksproces','a-gebruik'); renderTotalen();
 }
 
 function renderVolnaam() {
@@ -666,7 +692,7 @@ function renderWbs() {
     const t = clusterType(d);
     const regie = t==='optioneel' && !(Number(d.aantal) > 0);
     const kDis = t==='normaal' ? ' disabled' : '';   // standaard deliverables: vinkje vergrendeld
-    const cluster = `<input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value;renderTotalen()" onchange="setCluster(${i},this.value)">`;
+    const cluster = `<select onchange="setCluster(${i},this.value)">${clusterOptiesHtml(d.scopeGroep)}</select>`;
     const deliv = `<textarea id="pt-${i}" placeholder="werkwoord + van + … (bv. Opmaken van het projectplan)" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();checkProcesstap(${i});this.blur();}" onblur="checkProcesstap(${i})">${escAttr(d.omschrijving)}</textarea>`;
     const keuze = `<div class="wbs-opt"><input type="checkbox" ${(t==='normaal'||d.gekozen!==false)?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
     const del = `<button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>`;
@@ -703,6 +729,48 @@ function renderDeliverables() {
   document.getElementById('a-deliverables').innerHTML = lijst.length ? rijen : '<div class="leeg">Nog geen deliverables.</div>';
 }
 function delivRij() { (edit.deliverables || (edit.deliverables = [])).push(''); renderDeliverables(); }
+
+// ---- Clusters (gedefinieerd boven de WBS; bron voor de WBS-dropdown) ----
+const SPECIALE_CLUSTERS = ['Optioneel','Maatwerk','OutOfScope'];
+function clusterOptiesHtml(sel) {
+  const namen = [...new Set((edit.clusters||[]).map(c=>(c.naam||'').trim()).filter(Boolean))];
+  let opts = `<option value=""${!sel?' selected':''}>— cluster —</option>`;
+  opts += namen.map(n=>`<option value="${escAttr(n)}"${sel===n?' selected':''}>${escAttr(n)}</option>`).join('');
+  if (sel && !namen.includes(sel) && !SPECIALE_CLUSTERS.includes(sel))
+    opts += `<option value="${escAttr(sel)}" selected>${escAttr(sel)}</option>`;
+  opts += '<optgroup label="Speciaal">' + SPECIALE_CLUSTERS.map(s=>`<option value="${s}"${sel===s?' selected':''}>${s}</option>`).join('') + '</optgroup>';
+  return opts;
+}
+function renderClusters() {
+  const lijst = edit.clusters || (edit.clusters = []);
+  const rijen = lijst.map((c,i) =>
+    `<div class="cluster-rij"><input class="c-naam" maxlength="10" placeholder="cluster" value="${escAttr(c.naam||'')}" oninput="edit.clusters[${i}].naam=this.value" onchange="renderWbs()"><input placeholder="omschrijving van dit cluster (voor de klant)" value="${escAttr(c.omschrijving||'')}" oninput="edit.clusters[${i}].omschrijving=this.value"><button class="x" title="verwijderen" onclick="edit.clusters.splice(${i},1);renderClusters();renderWbs()">×</button></div>`
+  ).join('');
+  document.getElementById('a-clusters').innerHTML = lijst.length ? rijen : '<div class="leeg">Nog geen clusters.</div>';
+}
+function clusterRij() { (edit.clusters || (edit.clusters = [])).push({ naam:'', omschrijving:'' }); renderClusters(); }
+
+// ---- Implementatie- en gebruiksproces (tabel: stap | wie | actie) ----
+const WIE_OPTIES = ['TNL','Klant','Derde'];
+function renderProces(veld, containerId) {
+  const lijst = edit[veld] || (edit[veld] = []);
+  const rijen = lijst.map((r,i) => {
+    const opts = WIE_OPTIES.map(w=>`<option${ (r.wie===w || (!r.wie && w==='TNL')) ? ' selected':''}>${w}</option>`).join('');
+    return `<div class="proces-rij"><span class="proces-nr">${i+1}</span>`
+      + `<select onchange="edit.${veld}[${i}].wie=this.value">${opts}</select>`
+      + `<input id="${veld}-${i}" value="${escAttr(r.actie||'')}" placeholder="werkwoord + van + … (bv. Opmaken van het projectplan)" oninput="edit.${veld}[${i}].actie=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();checkActie('${veld}',${i});this.blur();}" onblur="checkActie('${veld}',${i})">`
+      + `<button class="x" title="verwijderen" onclick="edit.${veld}.splice(${i},1);renderProces('${veld}','${containerId}')">×</button></div>`;
+  }).join('');
+  document.getElementById(containerId).innerHTML = lijst.length ? rijen : '<div class="leeg">Nog geen stappen.</div>';
+}
+function procesRij(veld, containerId) { (edit[veld] || (edit[veld] = [])).push({ wie:'TNL', actie:'' }); renderProces(veld, containerId); }
+function checkActie(veld, i) {
+  const r = edit[veld] && edit[veld][i]; if (!r) return;
+  const el = document.getElementById(veld+'-'+i);
+  const txt = (r.actie||'').trim();
+  const ok = !txt || /^\S+\s+.*\bvan\b/i.test(txt);
+  if (el) el.style.borderColor = ok ? '' : 'var(--red)';
+}
 
 function oosRij() { edit.wbs.push(leegDeliverable({ scopeGroep:'Maatwerk' })); renderWbs(); renderTotalen(); }
 
@@ -824,9 +892,13 @@ async function slaArtikelOp() {
   const artikel = {
     station_id: edit.station_id,
     subnaam: f('a-subnaam').trim() || null,
+    waarom: f('a-waarom'),
     doel: f('a-doel'), meetbaar_objectief: f('a-meetbaar_objectief'), belofte: f('a-belofte'),
     wbs: edit.wbs, out_of_scope: [],
-    deliverables: (edit.deliverables || []).map(d => (d||'').trim()).filter(Boolean)
+    deliverables: (edit.deliverables || []).map(d => (d||'').trim()).filter(Boolean),
+    clusters: (edit.clusters || []).filter(c => (c.naam||'').trim()).map(c => ({ naam:c.naam.trim(), omschrijving:(c.omschrijving||'').trim() })),
+    implementatieproces: (edit.implementatieproces || []).filter(r => (r.actie||'').trim()).map(r => ({ wie:r.wie||'TNL', actie:r.actie.trim() })),
+    gebruiksproces: (edit.gebruiksproces || []).filter(r => (r.actie||'').trim()).map(r => ({ wie:r.wie||'TNL', actie:r.actie.trim() }))
   };
   if (edit.id) artikel.id = edit.id;
   try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }

@@ -265,8 +265,33 @@ const TNL = (() => {
     return { ...offerte, lijnen };
   }
 
+  // ---------- tools ----------
+  async function getTools() {
+    return check(await client().from('tools').select('*').order('naam'));
+  }
+  async function getTool(id) {
+    return check(await client().from('tools').select('*').eq('id', id).single());
+  }
+  async function upsertTool(tool) {
+    return check(await client().from('tools')
+      .upsert({ ...tool, updated_at: new Date().toISOString() }).select().single());
+  }
+  async function deleteTool(id) {
+    return check(await client().from('tools').delete().eq('id', id));
+  }
+  // PDF-productfiche naar Storage (zelfde pad -> overschrijven bij regeneratie).
+  async function uploadToolPdf(toolId, blob) {
+    const pad = toolId + '/productfiche.pdf';
+    const { error } = await client().storage.from('tool-fiches')
+      .upload(pad, blob, { upsert: true, contentType: 'application/pdf' });
+    if (error) throw error;
+    const { data } = client().storage.from('tool-fiches').getPublicUrl(pad);
+    return { pad, url: data.publicUrl + '?t=' + Date.now() };
+  }
+
   return {
     client, berekenNiveau, berekenFix,
+    getTools, getTool, upsertTool, deleteTool, uploadToolPdf,
     getTarieven, getTarievenLijst, setTarief, verwijderTarief, prijsVanEenheid,
     getLijnen,
     getStations, upsertStation, deleteStation,

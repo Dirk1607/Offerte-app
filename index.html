@@ -138,6 +138,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   <button data-tab="catalogus">② TNL NextStones</button>
   <button data-tab="offerte">③ Offerte</button>
   <button data-tab="tarieven">④ Tarieven</button>
+  <button data-tab="tools">⑤ Tools</button>
 </nav>
 
 <main>
@@ -177,7 +178,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.3</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.4</div>
   </section>
 
   <!-- TAB 2 -->
@@ -212,6 +213,17 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <h2>Offerte</h2>
     <p class="sub">Geselecteerde producten → offerte met snapshot. (Volgende stap.)</p>
     <div class="card"><div class="placeholder">Offerte wordt in de volgende stap gebouwd.</div></div>
+  </section>
+
+  <!-- TAB 5 — Tools -->
+  <section class="panel" id="tab-tools">
+    <h2>Tools <small style="font-weight:400;color:var(--muted);font-size:14px">— productfiches</small></h2>
+    <p class="sub">Beheer de TNL-tools en genereer per tool een productfiche (PDF).</p>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn" onclick="nieuwTool()">+ Nieuwe tool</button>
+    </div>
+    <div id="tools-status" class="status"></div>
+    <div id="tools-lijst"></div>
   </section>
 </main>
 
@@ -254,6 +266,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="a-gebruik"></div>
       <button class="btn btn-ghost mini" onclick="procesRij('gebruiksproces','a-gebruik')">+ Stap</button>
 
+      <div class="subkop">Gebruikte tool(s)</div>
+      <div id="a-tools"></div>
+
       <div id="a-totalen"></div>
     </div>
     <div class="modal-voet">
@@ -266,9 +281,85 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   </div>
 </div>
 
+<!-- Tool-editor -->
+<div id="tool-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-kop">
+      <h3 id="tool-titel">Tool</h3>
+      <button class="x" onclick="sluitTool()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="subkop">Identificatie</div>
+      <div class="kop-grid">
+        <label>Naam *</label><input id="t-naam" placeholder="bv. TNL P&amp;L Tool">
+        <label>Afkorting</label><input id="t-afkorting" placeholder="bv. P&amp;L Tool">
+        <label>Type</label>
+        <select id="t-type"><option>Webapplicatie</option><option>Excel</option><option>Power BI</option><option>Google Sheets</option><option>Ander</option></select>
+        <label>URL</label><input id="t-url" placeholder="bv. finance.kmo-apps.be">
+        <label>Toegang</label><input id="t-toegang" placeholder="bv. Via uitnodiging door TNL-beheerder">
+        <label>Versie</label><input id="t-versie" placeholder="bv. 1.0">
+      </div>
+
+      <div class="subkop">Beschrijving</div>
+      <textarea id="t-kernwaarde" class="kop-uit" style="width:100%" placeholder="Kernwaarde — waarvoor dient deze tool?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:12px 2px 4px">Unieke kenmerken</div>
+      <div id="t-kenmerken"></div>
+      <button class="btn btn-ghost mini" onclick="lijstRij('unieke_kenmerken','t-kenmerken')">+ Kenmerk</button>
+
+      <div class="subkop">Modules</div>
+      <div id="t-modules"></div>
+      <button class="btn btn-ghost mini" onclick="moduleRij()">+ Module</button>
+
+      <div class="subkop">Input &amp; Output</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:0 2px 4px">Input</div>
+      <div id="t-input"></div>
+      <button class="btn btn-ghost mini" onclick="lijstRij('input','t-input')">+ Input</button>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Output</div>
+      <div id="t-output"></div>
+      <button class="btn btn-ghost mini" onclick="lijstRij('output','t-output')">+ Output</button>
+
+      <div class="subkop">Setup &amp; Beheer</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:0 2px 4px">Wat stelt TNL eenmalig in?</div>
+      <div id="t-setup"></div>
+      <button class="btn btn-ghost mini" onclick="labelRij('tnl_setup','t-setup')">+ Item</button>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Wat beheert de klant zelf?</div>
+      <div id="t-klant"></div>
+      <button class="btn btn-ghost mini" onclick="labelRij('klant_beheert','t-klant')">+ Item</button>
+
+      <div class="subkop">Maatwerk &amp; Beperkingen</div>
+      <div id="t-maatwerk"></div>
+      <button class="btn btn-ghost mini" onclick="maatwerkRij()">+ Maatwerk</button>
+
+      <div class="subkop">Rekeningstructuur (optioneel)</div>
+      <div id="t-rekening"></div>
+      <button class="btn btn-ghost mini" onclick="rekeningRij()">+ Rij</button>
+
+      <div class="subkop">Gerelateerde NextStones</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:0 2px 4px">Huidige</div>
+      <div id="t-gerelateerd"></div>
+      <button class="btn btn-ghost mini" onclick="lijstRij('gerelateerde_nextstones','t-gerelateerd')">+ NextStone</button>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Toekomstige</div>
+      <div id="t-toekomstig"></div>
+      <button class="btn btn-ghost mini" onclick="lijstRij('toekomstige_nextstones','t-toekomstig')">+ NextStone</button>
+
+      <div class="subkop">Notities</div>
+      <textarea id="t-notities" style="width:100%;min-height:80px" placeholder="Vrije notities (intern)"></textarea>
+    </div>
+    <div class="modal-voet">
+      <button class="btn mini-danger btn-ghost" id="t-verwijder" onclick="verwijderTool()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="sluitTool()">Annuleren</button>
+        <button class="btn" onclick="slaToolOp(false)">Opslaan</button>
+        <button class="btn" style="background:var(--green)" onclick="slaToolOp(true)">Opslaan &amp; Genereer productfiche</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=8"></script>
+<script src="supabase/db.js?v=9"></script>
 <script>
 // ============================================================
 // STATE
@@ -615,7 +706,7 @@ function nieuwArtikel(stationId) {
   edit = { id:null, station_id:stationId,
     clusters: [{ naam:'Fundament', omschrijving:'' }],
     deliverables: STANDAARD_DELIVERABLES.slice(),
-    implementatieproces: [], gebruiksproces: [],
+    implementatieproces: [], gebruiksproces: [], tool_ids: [],
     wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
   vulArtikelForm({});
   document.getElementById('art-titel').textContent = 'Nieuwe NextStone';
@@ -630,6 +721,7 @@ function bewerkArtikel(id) {
     deliverables: (a.deliverables || []).slice(),
     implementatieproces: (a.implementatieproces || []).map(r => ({ ...r })),
     gebruiksproces: (a.gebruiksproces || []).map(r => ({ ...r })),
+    tool_ids: (a.tool_ids || []).slice(),
     wbs: sorteerWbs([
       ...(JSON.parse(JSON.stringify(a.wbs||[]))).map(d => leegDeliverable(d)),
       ...(a.out_of_scope||[]).map(o => leegDeliverable({ scopeGroep:'Maatwerk', omschrijving:o.omschrijving }))
@@ -648,7 +740,8 @@ function vulArtikelForm(a) {
   f('a-subnaam').value = a.subnaam || '';
   ['waarom','doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
   renderVolnaam(); renderScopeSuggesties(); renderClusters(); renderWbs(); renderDeliverables();
-  renderProces('implementatieproces','a-impl'); renderProces('gebruiksproces','a-gebruik'); renderTotalen();
+  renderProces('implementatieproces','a-impl'); renderProces('gebruiksproces','a-gebruik');
+  renderNextstoneTools(); renderTotalen();
 }
 
 function renderVolnaam() {
@@ -789,6 +882,224 @@ function renderTotalen() {
 // ---------- TABBLAD ④ — TARIEVEN ----------
 document.querySelector('nav button[data-tab="tarieven"]').addEventListener('click', laadTarieven);
 
+// ========== TABBLAD ⑤ — TOOLS ==========
+let toolsCache = [];
+let toolEdit = null;
+const MODULE_WIE = ['TNL','Klant','Beide'];
+const MAATWERK_AANPAK = ['Aparte offerte','In regie','Niet mogelijk'];
+document.querySelector('nav button[data-tab="tools"]').addEventListener('click', laadTools);
+
+async function laadTools() {
+  const st = document.getElementById('tools-status'); st.textContent = 'Laden…';
+  try { toolsCache = await TNL.getTools(); renderToolsLijst(); st.textContent = ''; }
+  catch (e) { st.innerHTML = '<span style="color:var(--red)">Laden mislukt: ' + (e.message||e) + '</span>'; }
+}
+function renderToolsLijst() {
+  const el = document.getElementById('tools-lijst');
+  if (!toolsCache.length) { el.innerHTML = '<div class="leeg">Nog geen tools.</div>'; return; }
+  el.innerHTML = toolsCache.map(t => `<div class="artikel-kaart" style="margin-left:0">
+    <span class="anaam">${escAttr(t.naam)}${t.afkorting?` <small style="color:var(--muted);font-weight:400">(${escAttr(t.afkorting)})</small>`:''}</span>
+    <span class="aprijs">${escAttr(t.type||'')}${t.versie?' · v'+escAttr(t.versie):''}</span>
+    <button class="btn btn-ghost mini" onclick="bewerkTool('${t.id}')">Bewerken</button>
+    ${t.pdf_url?`<button class="btn btn-ghost mini" onclick="window.open('${escAttr(t.pdf_url)}','_blank')">Productfiche</button>`:''}
+    <button class="btn btn-ghost mini" onclick="regenereerFiche('${t.id}')">Regenereren</button>
+  </div>`).join('');
+}
+
+function nieuwTool() {
+  toolEdit = { id:null, taal:'Nederlands', unieke_kenmerken:[], modules:[], input:[], output:[],
+    tnl_setup:[], klant_beheert:[], maatwerk:[], rekeningstructuur:[], gerelateerde_nextstones:[], toekomstige_nextstones:[] };
+  vulToolForm({});
+  document.getElementById('tool-titel').textContent = 'Nieuwe tool';
+  document.getElementById('t-verwijder').style.display = 'none';
+  document.getElementById('tool-modal').style.display = 'flex';
+}
+function bewerkTool(id) {
+  const t = toolsCache.find(x => x.id===id); if (!t) return;
+  toolEdit = JSON.parse(JSON.stringify(t));
+  ['unieke_kenmerken','modules','input','output','tnl_setup','klant_beheert','maatwerk','rekeningstructuur','gerelateerde_nextstones','toekomstige_nextstones']
+    .forEach(k => { if (!Array.isArray(toolEdit[k])) toolEdit[k] = []; });
+  vulToolForm(t);
+  document.getElementById('tool-titel').textContent = 'Tool bewerken';
+  document.getElementById('t-verwijder').style.display = 'inline-block';
+  document.getElementById('tool-modal').style.display = 'flex';
+}
+function sluitTool() { document.getElementById('tool-modal').style.display = 'none'; toolEdit = null; }
+function vulToolForm(t) {
+  const f = id => document.getElementById(id);
+  f('t-naam').value = t.naam||''; f('t-afkorting').value = t.afkorting||''; f('t-type').value = t.type||'Webapplicatie';
+  f('t-url').value = t.url||''; f('t-toegang').value = t.toegang||''; f('t-versie').value = t.versie||'';
+  f('t-kernwaarde').value = t.kernwaarde||''; f('t-notities').value = t.notities||'';
+  renderLijst('unieke_kenmerken','t-kenmerken'); renderModules();
+  renderLijst('input','t-input'); renderLijst('output','t-output');
+  renderLabelLijst('tnl_setup','t-setup'); renderLabelLijst('klant_beheert','t-klant');
+  renderMaatwerk(); renderRekening();
+  renderLijst('gerelateerde_nextstones','t-gerelateerd'); renderLijst('toekomstige_nextstones','t-toekomstig');
+}
+
+// generieke lijst-editors voor toolEdit
+function renderLijst(veld, cid) {
+  const l = toolEdit[veld] || (toolEdit[veld]=[]);
+  document.getElementById(cid).innerHTML = l.length ? l.map((v,i) =>
+    `<div class="deliv-rij"><input value="${escAttr(v||'')}" oninput="toolEdit.${veld}[${i}]=this.value"><button class="x" onclick="toolEdit.${veld}.splice(${i},1);renderLijst('${veld}','${cid}')">×</button></div>`
+  ).join('') : '<div class="leeg">Niets toegevoegd.</div>';
+}
+function lijstRij(veld, cid) { (toolEdit[veld]||(toolEdit[veld]=[])).push(''); renderLijst(veld,cid); }
+function renderLabelLijst(veld, cid) {
+  const l = toolEdit[veld] || (toolEdit[veld]=[]);
+  document.getElementById(cid).innerHTML = l.length ? l.map((o,i) =>
+    `<div class="cluster-rij"><input class="c-naam" placeholder="label" value="${escAttr(o.label||'')}" oninput="toolEdit.${veld}[${i}].label=this.value"><input placeholder="omschrijving" value="${escAttr(o.omschrijving||'')}" oninput="toolEdit.${veld}[${i}].omschrijving=this.value"><button class="x" onclick="toolEdit.${veld}.splice(${i},1);renderLabelLijst('${veld}','${cid}')">×</button></div>`
+  ).join('') : '<div class="leeg">Niets toegevoegd.</div>';
+}
+function labelRij(veld, cid) { (toolEdit[veld]||(toolEdit[veld]=[])).push({label:'',omschrijving:''}); renderLabelLijst(veld,cid); }
+function renderModules() {
+  const l = toolEdit.modules || (toolEdit.modules=[]);
+  document.getElementById('t-modules').innerHTML = l.length ? l.map((m,i) => {
+    const opts = `<option value=""${!m.wie_beheert?' selected':''}>— wie —</option>` + MODULE_WIE.map(w=>`<option${m.wie_beheert===w?' selected':''}>${w}</option>`).join('');
+    return `<div class="proces-rij"><input style="flex:none;width:130px" placeholder="module" value="${escAttr(m.naam||'')}" oninput="toolEdit.modules[${i}].naam=this.value"><input placeholder="omschrijving" value="${escAttr(m.omschrijving||'')}" oninput="toolEdit.modules[${i}].omschrijving=this.value"><select onchange="toolEdit.modules[${i}].wie_beheert=this.value">${opts}</select><button class="x" onclick="toolEdit.modules.splice(${i},1);renderModules()">×</button></div>`;
+  }).join('') : '<div class="leeg">Geen modules.</div>';
+}
+function moduleRij() { (toolEdit.modules||(toolEdit.modules=[])).push({naam:'',omschrijving:'',wie_beheert:''}); renderModules(); }
+function renderMaatwerk() {
+  const l = toolEdit.maatwerk || (toolEdit.maatwerk=[]);
+  document.getElementById('t-maatwerk').innerHTML = l.length ? l.map((m,i) => {
+    const opts = `<option value=""${!m.aanpak?' selected':''}>— aanpak —</option>` + MAATWERK_AANPAK.map(a=>`<option${m.aanpak===a?' selected':''}>${a}</option>`).join('');
+    return `<div class="proces-rij"><input style="flex:none;width:130px" placeholder="item" value="${escAttr(m.item||'')}" oninput="toolEdit.maatwerk[${i}].item=this.value"><input placeholder="omschrijving" value="${escAttr(m.omschrijving||'')}" oninput="toolEdit.maatwerk[${i}].omschrijving=this.value"><select style="width:124px" onchange="toolEdit.maatwerk[${i}].aanpak=this.value">${opts}</select><button class="x" onclick="toolEdit.maatwerk.splice(${i},1);renderMaatwerk()">×</button></div>`;
+  }).join('') : '<div class="leeg">Geen maatwerk.</div>';
+}
+function maatwerkRij() { (toolEdit.maatwerk||(toolEdit.maatwerk=[])).push({item:'',omschrijving:'',aanpak:''}); renderMaatwerk(); }
+function renderRekening() {
+  const l = toolEdit.rekeningstructuur || (toolEdit.rekeningstructuur=[]);
+  document.getElementById('t-rekening').innerHTML = l.length ? l.map((x,i) =>
+    `<div class="proces-rij"><input style="flex:none;width:120px" placeholder="rubriek" value="${escAttr(x.rubriek||'')}" oninput="toolEdit.rekeningstructuur[${i}].rubriek=this.value"><input style="flex:none;width:110px" placeholder="cluster" value="${escAttr(x.cluster||'')}" oninput="toolEdit.rekeningstructuur[${i}].cluster=this.value"><input placeholder="voorbeeldrekeningen" value="${escAttr(x.voorbeeldrekeningen||'')}" oninput="toolEdit.rekeningstructuur[${i}].voorbeeldrekeningen=this.value"><button class="x" onclick="toolEdit.rekeningstructuur.splice(${i},1);renderRekening()">×</button></div>`
+  ).join('') : '<div class="leeg">Geen rijen.</div>';
+}
+function rekeningRij() { (toolEdit.rekeningstructuur||(toolEdit.rekeningstructuur=[])).push({rubriek:'',cluster:'',voorbeeldrekeningen:''}); renderRekening(); }
+
+async function slaToolOp(genereer) {
+  const f = id => document.getElementById(id).value;
+  const naam = f('t-naam').trim();
+  if (!naam) { alert('Naam is verplicht.'); return; }
+  const tool = {
+    naam, afkorting:f('t-afkorting').trim()||null, type:f('t-type'), url:f('t-url').trim()||null,
+    toegang:f('t-toegang').trim()||null, taal:'Nederlands', versie:f('t-versie').trim()||null,
+    kernwaarde:f('t-kernwaarde'), notities:f('t-notities'),
+    unieke_kenmerken:(toolEdit.unieke_kenmerken||[]).map(s=>(s||'').trim()).filter(Boolean),
+    modules:(toolEdit.modules||[]).filter(m=>(m.naam||'').trim()),
+    input:(toolEdit.input||[]).map(s=>(s||'').trim()).filter(Boolean),
+    output:(toolEdit.output||[]).map(s=>(s||'').trim()).filter(Boolean),
+    tnl_setup:(toolEdit.tnl_setup||[]).filter(o=>(o.label||'').trim()),
+    klant_beheert:(toolEdit.klant_beheert||[]).filter(o=>(o.label||'').trim()),
+    maatwerk:(toolEdit.maatwerk||[]).filter(m=>(m.item||'').trim()),
+    rekeningstructuur:(toolEdit.rekeningstructuur||[]).filter(x=>(x.rubriek||'').trim()),
+    gerelateerde_nextstones:(toolEdit.gerelateerde_nextstones||[]).map(s=>(s||'').trim()).filter(Boolean),
+    toekomstige_nextstones:(toolEdit.toekomstige_nextstones||[]).map(s=>(s||'').trim()).filter(Boolean)
+  };
+  if (toolEdit.id) tool.id = toolEdit.id;
+  try {
+    const opgeslagen = await TNL.upsertTool(tool);
+    if (genereer) { const r = await genereerFiche(opgeslagen); window.open(r.url, '_blank'); }
+    sluitTool(); await laadTools();
+  } catch (e) { alert('Opslaan mislukt: ' + (e.message||e)); }
+}
+async function verwijderTool() {
+  if (!toolEdit.id) return;
+  if (!confirm('Deze tool definitief verwijderen?')) return;
+  try { await TNL.deleteTool(toolEdit.id); sluitTool(); await laadTools(); }
+  catch (e) { alert('Mislukt: ' + (e.message||e)); }
+}
+async function regenereerFiche(id) {
+  const t = toolsCache.find(x => x.id===id); if (!t) return;
+  const st = document.getElementById('tools-status'); st.textContent = 'Productfiche genereren…';
+  try { const r = await genereerFiche(t); st.textContent = 'Productfiche bijgewerkt.'; await laadTools(); window.open(r.url, '_blank'); }
+  catch (e) { st.innerHTML = '<span style="color:var(--red)">Genereren mislukt: ' + (e.message||e) + '</span>'; }
+}
+async function genereerFiche(tool) {
+  const html = buildFicheHtml(tool);
+  const cont = document.createElement('div');
+  cont.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;padding:24px;';
+  cont.innerHTML = html;
+  document.body.appendChild(cont);
+  const naam = (tool.afkorting || tool.naam || 'tool') + ' - productfiche.pdf';
+  let blob;
+  try {
+    blob = await html2pdf().set({
+      margin:[10,10,14,10], image:{type:'jpeg',quality:0.96},
+      html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['css','legacy','avoid-all']}
+    }).from(cont).outputPdf('blob');
+  } finally { document.body.removeChild(cont); }
+  const { url } = await TNL.uploadToolPdf(tool.id, blob);
+  await TNL.upsertTool({ id: tool.id, pdf_url: url, pdf_naam: naam });
+  return { url, naam };
+}
+function buildFicheHtml(t) {
+  const e = escAttr;
+  const ul = a => (a&&a.length) ? '<ul>'+a.map(x=>`<li>${e(x)}</li>`).join('')+'</ul>' : '<p class="leeg2">—</p>';
+  const rij = c => '<tr>'+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
+  const modT = (t.modules&&t.modules.length) ? `<table><thead><tr><th>Module</th><th>Omschrijving</th><th>Wie beheert</th></tr></thead><tbody>${t.modules.map(m=>rij([e(m.naam||''),e(m.omschrijving||''),e(m.wie_beheert||'')])).join('')}</tbody></table>` : '<p class="leeg2">—</p>';
+  const lblL = a => (a&&a.length) ? '<ul>'+a.map(o=>`<li><b>${e(o.label||'')}</b>${o.omschrijving?' — '+e(o.omschrijving):''}</li>`).join('')+'</ul>' : '<p class="leeg2">—</p>';
+  const maatT = (t.maatwerk&&t.maatwerk.length) ? `<table><thead><tr><th>Item</th><th>Omschrijving</th><th>Aanpak</th></tr></thead><tbody>${t.maatwerk.map(m=>rij([e(m.item||''),e(m.omschrijving||''),e(m.aanpak||'')])).join('')}</tbody></table>` : '<p class="leeg2">—</p>';
+  const heeftRek = t.rekeningstructuur && t.rekeningstructuur.length;
+  const rekS = heeftRek ? `<h2>8. Rekeningstructuur</h2><table><thead><tr><th>Rubriek</th><th>Cluster</th><th>Voorbeeldrekeningen</th></tr></thead><tbody>${t.rekeningstructuur.map(x=>rij([e(x.rubriek||''),e(x.cluster||''),e(x.voorbeeldrekeningen||'')])).join('')}</tbody></table>` : '';
+  const ns = ((t.gerelateerde_nextstones&&t.gerelateerde_nextstones.length)?'<p><b>Huidige:</b></p>'+ul(t.gerelateerde_nextstones):'')
+    + ((t.toekomstige_nextstones&&t.toekomstige_nextstones.length)?'<p><b>Toekomstige:</b></p>'+ul(t.toekomstige_nextstones):'') || '<p class="leeg2">—</p>';
+  return `<style>
+    .fiche{font-family:Arial,Helvetica,sans-serif;color:#1a1a2e;font-size:12px;line-height:1.5;}
+    .fiche h1{color:#185FA5;font-size:22px;margin:0 0 2px;}
+    .fiche .sub{color:#0F6E56;font-weight:bold;margin:0 0 14px;font-size:13px;}
+    .fiche h2{color:#185FA5;font-size:14px;margin:16px 0 6px;border-bottom:2px solid #185FA5;padding-bottom:3px;}
+    .fiche table{width:100%;border-collapse:collapse;margin:4px 0;}
+    .fiche th{background:#185FA5;color:#fff;text-align:left;padding:5px 7px;font-size:11px;}
+    .fiche td{border:1px solid #cdd8ea;padding:5px 7px;vertical-align:top;}
+    .fiche ul{margin:4px 0 4px 18px;padding:0;} .fiche li{margin:2px 0;}
+    .fiche .id{background:#f1f6fc;border:1px solid #cdd8ea;border-radius:6px;padding:8px 12px;}
+    .fiche .id span{display:block;margin:1px 0;}
+    .fiche .leeg2{color:#999;font-style:italic;margin:4px 0;}
+    .fiche .foot{margin-top:22px;border-top:1px solid #cdd8ea;padding-top:6px;color:#888;font-size:10px;text-align:center;}
+  </style>
+  <div class="fiche">
+    <h1>${e(t.naam||'')}</h1>
+    <div class="sub">${e(t.afkorting||'')}${t.versie?' · versie '+e(t.versie):''}</div>
+    <h2>1. Identificatie</h2>
+    <div class="id"><span><b>Naam:</b> ${e(t.naam||'')}</span><span><b>Type:</b> ${e(t.type||'')}</span><span><b>URL:</b> ${e(t.url||'')}</span><span><b>Toegang:</b> ${e(t.toegang||'')}</span><span><b>Versie:</b> ${e(t.versie||'')}</span></div>
+    <h2>2. Waarvoor dient deze tool?</h2>
+    <p>${e(t.kernwaarde||'')}</p>
+    ${ul(t.unieke_kenmerken)}
+    <h2>3. Modules</h2>
+    ${modT}
+    <h2>4. Input en output</h2>
+    <p><b>Input</b></p>${ul(t.input)}
+    <p><b>Output</b></p>${ul(t.output)}
+    <h2>5. Wat stelt TNL eenmalig in?</h2>
+    ${lblL(t.tnl_setup)}
+    <h2>6. Wat beheert de klant zelf?</h2>
+    ${lblL(t.klant_beheert)}
+    <h2>7. Maatwerk en beperkingen</h2>
+    ${maatT}
+    ${rekS}
+    <h2>${heeftRek?'9':'8'}. Gebruik in NextStones</h2>
+    ${ns}
+    <div class="foot">The Next Level · TNL Toolcatalogus · Vertrouwelijk</div>
+  </div>`;
+}
+
+// koppeling tools <-> NextStone (multi-select in de NextStone-editor)
+async function renderNextstoneTools() {
+  const cont = document.getElementById('a-tools'); if (!cont) return;
+  if (!toolsCache.length) { try { toolsCache = await TNL.getTools(); } catch (e) {} }
+  if (!toolsCache.length) { cont.innerHTML = '<div class="leeg">Nog geen tools aangemaakt (tabblad Tools).</div>'; return; }
+  const sel = new Set(edit.tool_ids || []);
+  cont.innerHTML = toolsCache.map(t =>
+    `<label class="deliv-rij" style="cursor:pointer"><input type="checkbox" style="flex:none;width:auto" ${sel.has(t.id)?'checked':''} onchange="toggleNextstoneTool('${t.id}',this.checked)"> ${escAttr(t.naam)}${t.afkorting?' ('+escAttr(t.afkorting)+')':''}</label>`
+  ).join('');
+}
+function toggleNextstoneTool(id, on) {
+  edit.tool_ids = edit.tool_ids || [];
+  if (on) { if (!edit.tool_ids.includes(id)) edit.tool_ids.push(id); }
+  else { edit.tool_ids = edit.tool_ids.filter(x => x!==id); }
+}
+
 async function laadTarieven() {
   const st = document.getElementById('tar-status');
   st.textContent = 'Laden…';
@@ -898,7 +1209,8 @@ async function slaArtikelOp() {
     deliverables: (edit.deliverables || []).map(d => (d||'').trim()).filter(Boolean),
     clusters: (edit.clusters || []).filter(c => (c.naam||'').trim()).map(c => ({ naam:c.naam.trim(), omschrijving:(c.omschrijving||'').trim() })),
     implementatieproces: (edit.implementatieproces || []).filter(r => (r.actie||'').trim()).map(r => ({ wie:r.wie||'TNL', actie:r.actie.trim() })),
-    gebruiksproces: (edit.gebruiksproces || []).filter(r => (r.actie||'').trim()).map(r => ({ wie:r.wie||'TNL', actie:r.actie.trim() }))
+    gebruiksproces: (edit.gebruiksproces || []).filter(r => (r.actie||'').trim()).map(r => ({ wie:r.wie||'TNL', actie:r.actie.trim() })),
+    tool_ids: edit.tool_ids || []
   };
   if (edit.id) artikel.id = edit.id;
   try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }

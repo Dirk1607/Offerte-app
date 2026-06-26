@@ -108,6 +108,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .wbs-opt input[type=checkbox] { width:auto; margin-top:3px; }
 .wbs-regie { font-size:8px; font-weight:800; color:var(--orange); text-transform:uppercase; }
 .wbs-blok .x { align-self:start; }
+.wbs-syntax { font-size:10.5px; color:var(--orange); margin:3px 2px 0; line-height:1.4; }
+.deliv-rij { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
+.deliv-rij input { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
 #a-totalen { position:sticky; bottom:0; background:#fff; padding-top:8px; z-index:2; }
 .tot-balk { display:flex; gap:20px; flex-wrap:wrap; padding:12px 14px; background:var(--light); border:1px solid var(--border); border-radius:8px; margin-top:0; font-size:13px; }
 .tot-balk b { color:var(--navy); font-size:15px; }
@@ -222,7 +225,12 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="subkop">WBS — Work Breakdown Structure</div>
       <div id="a-wbs"></div>
       <datalist id="scope-suggesties"></datalist>
-      <button class="btn btn-ghost mini" onclick="wbsRij()">+ Deliverable</button>
+      <div id="wbs-syntax" class="wbs-syntax"></div>
+      <button class="btn btn-ghost mini" onclick="wbsRij()">+ Processtap</button>
+
+      <div class="subkop">Deliverables — wat is af als het af is</div>
+      <div id="a-deliverables"></div>
+      <button class="btn btn-ghost mini" onclick="delivRij()">+ Deliverable</button>
 
       <div id="a-totalen"></div>
     </div>
@@ -457,8 +465,10 @@ var edit = null;   // editor-state voor de open Fix
 
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
-// Vaste deliverables die in elke nieuwe Fix horen.
-const VASTE_DELIVERABLES = ['Beschreven proces', 'Gecoördineerd project'];
+// Vaste processtappen die in elke nieuwe NextStone horen (werkwoord + van + …).
+const VASTE_PROCESSTAPPEN = ['Beschrijven van het proces', 'Coördineren van het project'];
+// Standaard-deliverables ("wat is af als het af is") voor een nieuwe NextStone.
+const STANDAARD_DELIVERABLES = ['Een beschreven proces', 'Een gecoördineerd project'];
 function eersteRol(){ return (TARIEF_ROLLEN[0] && TARIEF_ROLLEN[0].rol) || 'Sr'; }
 function leegDeliverable(extra){
   return Object.assign({ omschrijving:'', scopeGroep:'', rol:eersteRol(), eenheid:'heledag',
@@ -581,7 +591,8 @@ async function verwijderStation(id) {
 // ---------- ARTIKEL EDITOR ----------
 function nieuwArtikel(stationId) {
   edit = { id:null, station_id:stationId,
-    wbs: VASTE_DELIVERABLES.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
+    deliverables: STANDAARD_DELIVERABLES.slice(),
+    wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
   vulArtikelForm({});
   document.getElementById('art-titel').textContent = 'Nieuwe NextStone';
   document.getElementById('a-verwijder').style.display = 'none';
@@ -591,6 +602,7 @@ function bewerkArtikel(id) {
   const a = catArtikelen.find(x => x.id===id); if (!a) return;
   edit = {
     id:a.id, station_id:a.station_id,
+    deliverables: (a.deliverables || []).slice(),
     wbs: sorteerWbs([
       ...(JSON.parse(JSON.stringify(a.wbs||[]))).map(d => leegDeliverable(d)),
       ...(a.out_of_scope||[]).map(o => leegDeliverable({ scopeGroep:'Maatwerk', omschrijving:o.omschrijving }))
@@ -608,7 +620,7 @@ function vulArtikelForm(a) {
   const f = id => document.getElementById(id);
   f('a-subnaam').value = a.subnaam || '';
   ['doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
-  renderVolnaam(); renderScopeSuggesties(); renderWbs(); renderTotalen();
+  renderVolnaam(); renderScopeSuggesties(); renderWbs(); renderDeliverables(); renderTotalen();
 }
 
 function renderVolnaam() {
@@ -645,7 +657,7 @@ function setCluster(i, val){
 function renderWbs() {
   // Géén sortering tijdens bewerken: nieuwe rijen komen onderaan; sorteren gebeurt bij openen (sorteerWbs).
   const head = `<div class="wbs-head">
-    <span>Cluster</span><span>Deliverable — wat is af als het af is</span><span>Rol</span><span>Aantal</span><span>EH</span><span>WK</span><span>Klant</span><span>Keuze</span><span></span>
+    <span>Cluster</span><span>Processtap</span><span>Rol</span><span>Aantal</span><span>EH</span><span>WK</span><span>Klant</span><span>Keuze</span><span></span>
   </div>`;
   const leeg = '<span></span>';
   const rijen = edit.wbs.map((d,i) => {
@@ -653,7 +665,7 @@ function renderWbs() {
     const regie = t==='optioneel' && !(Number(d.aantal) > 0);
     const kDis = t==='normaal' ? ' disabled' : '';   // standaard deliverables: vinkje vergrendeld
     const cluster = `<input maxlength="10" list="scope-suggesties" placeholder="cluster" value="${escAttr(d.scopeGroep)}" oninput="edit.wbs[${i}].scopeGroep=this.value;renderTotalen()" onchange="setCluster(${i},this.value)">`;
-    const deliv = `<textarea placeholder="wat is af als het af is" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escAttr(d.omschrijving)}</textarea>`;
+    const deliv = `<textarea placeholder="werkwoord + van + … (bv. Opmaken van het projectplan)" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="checkProcesstap(this.value)">${escAttr(d.omschrijving)}</textarea>`;
     const keuze = `<div class="wbs-opt"><input type="checkbox" ${(t==='normaal'||d.gekozen!==false)?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
     const del = `<button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>`;
     if (t==='maatwerk') return `<div class="wbs-blok is-maatwerk">${cluster}${deliv}${leeg}${leeg}${leeg}${leeg}${leeg}${keuze}${del}</div>`;
@@ -667,6 +679,26 @@ function renderWbs() {
   document.getElementById('a-wbs').innerHTML = edit.wbs.length ? head + rijen : '<div class="leeg">Nog geen deliverables.</div>';
 }
 function wbsRij() { edit.wbs.push(leegDeliverable()); renderWbs(); renderTotalen(); }
+
+// Syntaxtip voor een processtap: "werkwoord + van + zelfstandig naamwoord".
+function checkProcesstap(txt) {
+  const el = document.getElementById('wbs-syntax');
+  if (!el) return;
+  const t = (txt||'').trim();
+  el.textContent = (t && !/\bvan\b/i.test(t))
+    ? '⚠ Schrijf een processtap als "werkwoord + van + zelfstandig naamwoord", bv. "Opmaken van het projectplan".'
+    : '';
+}
+
+// Deliverables = vrije lijst "wat is af als het af is".
+function renderDeliverables() {
+  const lijst = edit.deliverables || (edit.deliverables = []);
+  const rijen = lijst.map((d,i) =>
+    `<div class="deliv-rij"><input value="${escAttr(d)}" placeholder="wat is af als het af is — bv. Een gevalideerd projectplan" oninput="edit.deliverables[${i}]=this.value" onkeydown="if(event.key==='Enter'){this.blur();}"><button class="x" title="verwijderen" onclick="edit.deliverables.splice(${i},1);renderDeliverables()">×</button></div>`
+  ).join('');
+  document.getElementById('a-deliverables').innerHTML = lijst.length ? rijen : '<div class="leeg">Nog geen deliverables.</div>';
+}
+function delivRij() { (edit.deliverables || (edit.deliverables = [])).push(''); renderDeliverables(); }
 
 function oosRij() { edit.wbs.push(leegDeliverable({ scopeGroep:'Maatwerk' })); renderWbs(); renderTotalen(); }
 
@@ -789,7 +821,8 @@ async function slaArtikelOp() {
     station_id: edit.station_id,
     subnaam: f('a-subnaam').trim() || null,
     doel: f('a-doel'), meetbaar_objectief: f('a-meetbaar_objectief'), belofte: f('a-belofte'),
-    wbs: edit.wbs, out_of_scope: []
+    wbs: edit.wbs, out_of_scope: [],
+    deliverables: (edit.deliverables || []).map(d => (d||'').trim()).filter(Boolean)
   };
   if (edit.id) artikel.id = edit.id;
   try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }

@@ -108,7 +108,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .wbs-opt input[type=checkbox] { width:auto; margin-top:3px; }
 .wbs-regie { font-size:8px; font-weight:800; color:var(--orange); text-transform:uppercase; }
 .wbs-blok .x { align-self:start; }
-.wbs-syntax { font-size:10.5px; color:var(--orange); margin:3px 2px 0; line-height:1.4; }
+.wbs-syntax { font-size:10.5px; color:var(--red); margin:3px 2px 0; line-height:1.4; }
 .deliv-rij { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
 .deliv-rij input { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
 #a-totalen { position:sticky; bottom:0; background:#fff; padding-top:8px; z-index:2; }
@@ -170,7 +170,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.1</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.2</div>
   </section>
 
   <!-- TAB 2 -->
@@ -689,7 +689,7 @@ function checkProcesstap(i) {
   const txt = ((edit.wbs[i] && edit.wbs[i].omschrijving) || '').trim();
   // Juist = werkwoord + van + zelfstandig nw: er staat minstens één woord vóór 'van'.
   const ok = !txt || /^\S+\s+.*\bvan\b/i.test(txt);
-  if (ta) ta.style.borderColor = ok ? '' : 'var(--orange)';
+  if (ta) ta.style.borderColor = ok ? '' : 'var(--red)';
   if (el) el.textContent = ok ? ''
     : '⚠ Processtap "' + txt + '" — schrijf als "werkwoord + van + zelfstandig naamwoord", bv. "Opmaken van het projectplan".';
 }

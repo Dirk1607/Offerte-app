@@ -178,7 +178,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.6</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.7</div>
   </section>
 
   <!-- TAB 2 -->
@@ -357,7 +357,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
 <script src="supabase/db.js?v=10"></script>
 <script>
@@ -1015,24 +1015,76 @@ async function regenereerFiche(id) {
   catch (e) { st.innerHTML = '<span style="color:var(--red)">Genereren mislukt: ' + (e.message||e) + '</span>'; }
 }
 async function genereerFiche(tool) {
-  const html = buildFicheHtml(tool);
-  const cont = document.createElement('div');
-  cont.style.cssText = 'position:absolute;left:0;top:0;z-index:-1;width:794px;background:#fff;padding:24px;';
-  cont.innerHTML = html;
-  document.body.appendChild(cont);
+  const blob = buildFichePdf(tool);
   const naam = (tool.afkorting || tool.naam || 'tool') + ' - productfiche.pdf';
-  let blob;
-  try {
-    blob = await html2pdf().set({
-      margin:[10,10,14,10], image:{type:'jpeg',quality:0.96},
-      html2canvas:{ scale:2, backgroundColor:'#ffffff', windowWidth:900, scrollX:0, scrollY:0 },
-      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-      pagebreak:{mode:['css','legacy','avoid-all']}
-    }).from(cont).outputPdf('blob');
-  } finally { document.body.removeChild(cont); }
   const { url } = await TNL.uploadToolPdf(tool.id, blob);
   await TNL.updateTool(tool.id, { pdf_url: url, pdf_naam: naam });
   return { url, naam };
+}
+// Productfiche als vector-PDF (jsPDF, geen screenshot) — betrouwbaar gevuld.
+function buildFichePdf(tool) {
+  const JS = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  const doc = new JS({ unit:'mm', format:'a4' });
+  const M=14, W=210, RIGHT=W-M, BOT=282;
+  const BLUE=[24,95,165], GREEN=[15,110,86], GREY=[120,120,120], LINE=[205,216,234], TXT=[40,40,46];
+  let y=18;
+  const footer=()=>{ doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GREY);
+    doc.text('The Next Level  ·  TNL Toolcatalogus  ·  Vertrouwelijk', W/2, 290, {align:'center'}); };
+  const ensure=h=>{ if(y+h>BOT){ footer(); doc.addPage(); y=18; } };
+  const para=(t,opt)=>{ if(t==null||t==='') return; opt=opt||{}; doc.setFont('helvetica',opt.bold?'bold':'normal'); doc.setFontSize(opt.size||10); doc.setTextColor(...(opt.color||TXT));
+    doc.splitTextToSize(String(t), RIGHT-M).forEach(ln=>{ ensure(5); doc.text(ln,M,y); y+=5; }); };
+  const h2=t=>{ ensure(14); y+=3; doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...BLUE); doc.text(t,M,y); y+=1.5;
+    doc.setDrawColor(...BLUE); doc.setLineWidth(0.4); doc.line(M,y,RIGHT,y); y+=5; };
+  const bullets=arr=>{ if(!arr||!arr.length){ para('—'); return; } doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...TXT);
+    arr.forEach(it=>{ doc.splitTextToSize(String(it), RIGHT-M-4).forEach((ln,i)=>{ ensure(5); doc.text((i===0?'•  ':'   ')+ln, M, y); y+=5; }); }); };
+  const labels=arr=>{ if(!arr||!arr.length){ para('—'); return; } doc.setFontSize(10);
+    arr.forEach(o=>{ const txt='•  '+(o.label||'')+(o.omschrijving?(': '+o.omschrijving):'');
+      doc.splitTextToSize(txt, RIGHT-M-4).forEach(ln=>{ ensure(5); doc.setFont('helvetica','normal'); doc.setTextColor(...TXT); doc.text(ln,M,y); y+=5; }); }); };
+  const table=(headers,rows,widths)=>{
+    const drawRow=(cells,isHead)=>{
+      doc.setFontSize(9);
+      const cl=cells.map((c,ci)=>doc.splitTextToSize(String(c==null?'':c), widths[ci]-3));
+      const rowH=Math.max(1,...cl.map(l=>l.length))*4.4+3;
+      ensure(rowH);
+      let x=M;
+      if(isHead){ doc.setFillColor(...BLUE); doc.rect(M,y,RIGHT-M,rowH,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); }
+      else { doc.setTextColor(...TXT); doc.setFont('helvetica','normal'); doc.setDrawColor(...LINE); doc.setLineWidth(0.2); }
+      cells.forEach((c,ci)=>{ if(!isHead) doc.rect(x,y,widths[ci],rowH); cl[ci].forEach((ln,li)=>doc.text(ln,x+1.5,y+4.4+li*4.4)); x+=widths[ci]; });
+      y+=rowH;
+    };
+    drawRow(headers,true); rows.forEach(r=>drawRow(r,false)); y+=1;
+  };
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(...BLUE);
+  doc.text(tool.naam||'', M, y); y+=7;
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...GREEN);
+  doc.text((tool.afkorting||'')+(tool.versie?'  ·  versie '+tool.versie:''), M, y); y+=3;
+
+  h2('1. Identificatie');
+  [['Naam',tool.naam],['Type',tool.type],['URL',tool.url],['Toegang',tool.toegang],['Versie',tool.versie]].forEach(([k,v])=>{
+    const lines = doc.splitTextToSize(String(v||'—'), RIGHT-M-30);
+    const rh = Math.max(1,lines.length)*5;
+    ensure(rh);
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...TXT); doc.text(k+':',M,y);
+    doc.setFont('helvetica','normal'); lines.forEach((ln,i)=>doc.text(ln, M+30, y+i*5));
+    y += rh; });
+
+  h2('2. Waarvoor dient deze tool?'); para(tool.kernwaarde); y+=1; bullets(tool.unieke_kenmerken);
+  h2('3. Modules'); table(['Module','Omschrijving','Wie beheert'], (tool.modules||[]).map(m=>[m.naam,m.omschrijving,m.wie_beheert]), [38,108,36]);
+  h2('4. Input en output'); para('Input',{bold:true}); bullets(tool.input); y+=1; para('Output',{bold:true}); bullets(tool.output);
+  h2('5. Wat stelt TNL eenmalig in?'); labels(tool.tnl_setup);
+  h2('6. Wat beheert de klant zelf?'); labels(tool.klant_beheert);
+  h2('7. Maatwerk en beperkingen'); table(['Item','Omschrijving','Aanpak'], (tool.maatwerk||[]).map(m=>[m.item,m.omschrijving,m.aanpak]), [40,108,34]);
+  let nr=8;
+  if(tool.rekeningstructuur&&tool.rekeningstructuur.length){ h2('8. Rekeningstructuur'); table(['Rubriek','Cluster','Voorbeeldrekeningen'], tool.rekeningstructuur.map(r=>[r.rubriek,r.cluster,r.voorbeeldrekeningen]), [34,44,104]); nr=9; }
+  h2(nr+'. Gebruik in NextStones');
+  const g=tool.gerelateerde_nextstones||[], tk=tool.toekomstige_nextstones||[];
+  if(g.length){ para('Huidige:',{bold:true}); bullets(g); }
+  if(tk.length){ para('Toekomstige:',{bold:true}); bullets(tk); }
+  if(!g.length && !tk.length) para('—');
+
+  footer();
+  return doc.output('blob');
 }
 function buildFicheHtml(t) {
   const e = escAttr;

@@ -283,6 +283,15 @@ const TNL = (() => {
   async function deleteTool(id) {
     return check(await client().from('tools').delete().eq('id', id));
   }
+  // Los document bij een tool-proces naar Storage (tool-fiches/{id}/docs/...).
+  async function uploadToolDoc(toolId, file) {
+    const safe = (file.name || 'document').replace(/[^\w.\-]+/g, '_');
+    const pad = toolId + '/docs/' + Date.now() + '-' + safe;
+    const { error } = await client().storage.from('tool-fiches').upload(pad, file, { upsert: true });
+    if (error) throw error;
+    const { data } = client().storage.from('tool-fiches').getPublicUrl(pad);
+    return { url: data.publicUrl, naam: file.name };
+  }
   // PDF-productfiche naar Storage (zelfde pad -> overschrijven bij regeneratie).
   async function uploadToolPdf(toolId, blob) {
     const pad = toolId + '/productfiche.pdf';
@@ -295,7 +304,7 @@ const TNL = (() => {
 
   return {
     client, berekenNiveau, berekenFix,
-    getTools, getTool, upsertTool, updateTool, deleteTool, uploadToolPdf,
+    getTools, getTool, upsertTool, updateTool, deleteTool, uploadToolPdf, uploadToolDoc,
     getTarieven, getTarievenLijst, setTarief, verwijderTarief, prijsVanEenheid,
     getLijnen,
     getStations, upsertStation, deleteStation,

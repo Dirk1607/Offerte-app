@@ -178,7 +178,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.7</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.8</div>
   </section>
 
   <!-- TAB 2 -->
@@ -258,14 +258,6 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="a-deliverables"></div>
       <button class="btn btn-ghost mini" onclick="delivRij()">+ Deliverable</button>
 
-      <div class="subkop">Implementatieproces</div>
-      <div id="a-impl"></div>
-      <button class="btn btn-ghost mini" onclick="procesRij('implementatieproces','a-impl')">+ Stap</button>
-
-      <div class="subkop">Maandelijks gebruiksproces</div>
-      <div id="a-gebruik"></div>
-      <button class="btn btn-ghost mini" onclick="procesRij('gebruiksproces','a-gebruik')">+ Stap</button>
-
       <div class="subkop">Gebruikte tool(s)</div>
       <div id="a-tools"></div>
 
@@ -342,6 +334,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="t-toekomstig"></div>
       <button class="btn btn-ghost mini" onclick="lijstRij('toekomstige_nextstones','t-toekomstig')">+ NextStone</button>
 
+      <div class="subkop">Gebruikte processen</div>
+      <div id="t-processen"></div>
+      <button class="btn btn-ghost mini" onclick="procesToevoegen()">+ Proces</button>
+
       <div class="subkop">Notities</div>
       <textarea id="t-notities" style="width:100%;min-height:80px" placeholder="Vrije notities (intern)"></textarea>
     </div>
@@ -359,7 +355,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=10"></script>
+<script src="supabase/db.js?v=11"></script>
 <script>
 // ============================================================
 // STATE
@@ -706,7 +702,7 @@ function nieuwArtikel(stationId) {
   edit = { id:null, station_id:stationId,
     clusters: [{ naam:'Fundament', omschrijving:'' }],
     deliverables: STANDAARD_DELIVERABLES.slice(),
-    implementatieproces: [], gebruiksproces: [], tool_ids: [],
+    tool_ids: [],
     wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
   vulArtikelForm({});
   document.getElementById('art-titel').textContent = 'Nieuwe NextStone';
@@ -719,8 +715,6 @@ function bewerkArtikel(id) {
     id:a.id, station_id:a.station_id,
     clusters: (a.clusters || []).map(c => ({ ...c })),
     deliverables: (a.deliverables || []).slice(),
-    implementatieproces: (a.implementatieproces || []).map(r => ({ ...r })),
-    gebruiksproces: (a.gebruiksproces || []).map(r => ({ ...r })),
     tool_ids: (a.tool_ids || []).slice(),
     wbs: sorteerWbs([
       ...(JSON.parse(JSON.stringify(a.wbs||[]))).map(d => leegDeliverable(d)),
@@ -740,7 +734,6 @@ function vulArtikelForm(a) {
   f('a-subnaam').value = a.subnaam || '';
   ['waarom','doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
   renderVolnaam(); renderScopeSuggesties(); renderClusters(); renderWbs(); renderDeliverables();
-  renderProces('implementatieproces','a-impl'); renderProces('gebruiksproces','a-gebruik');
   renderNextstoneTools(); renderTotalen();
 }
 
@@ -908,7 +901,7 @@ function renderToolsLijst() {
 
 function nieuwTool() {
   toolEdit = { id:null, taal:'Nederlands', unieke_kenmerken:[], modules:[], input:[], output:[],
-    tnl_setup:[], klant_beheert:[], maatwerk:[], rekeningstructuur:[], gerelateerde_nextstones:[], toekomstige_nextstones:[] };
+    tnl_setup:[], klant_beheert:[], maatwerk:[], rekeningstructuur:[], gerelateerde_nextstones:[], toekomstige_nextstones:[], processen:[] };
   vulToolForm({});
   document.getElementById('tool-titel').textContent = 'Nieuwe tool';
   document.getElementById('t-verwijder').style.display = 'none';
@@ -917,7 +910,7 @@ function nieuwTool() {
 function bewerkTool(id) {
   const t = toolsCache.find(x => x.id===id); if (!t) return;
   toolEdit = JSON.parse(JSON.stringify(t));
-  ['unieke_kenmerken','modules','input','output','tnl_setup','klant_beheert','maatwerk','rekeningstructuur','gerelateerde_nextstones','toekomstige_nextstones']
+  ['unieke_kenmerken','modules','input','output','tnl_setup','klant_beheert','maatwerk','rekeningstructuur','gerelateerde_nextstones','toekomstige_nextstones','processen']
     .forEach(k => { if (!Array.isArray(toolEdit[k])) toolEdit[k] = []; });
   vulToolForm(t);
   document.getElementById('tool-titel').textContent = 'Tool bewerken';
@@ -935,6 +928,7 @@ function vulToolForm(t) {
   renderLabelLijst('tnl_setup','t-setup'); renderLabelLijst('klant_beheert','t-klant');
   renderMaatwerk(); renderRekening();
   renderLijst('gerelateerde_nextstones','t-gerelateerd'); renderLijst('toekomstige_nextstones','t-toekomstig');
+  renderProcessen();
 }
 
 // generieke lijst-editors voor toolEdit
@@ -975,6 +969,28 @@ function renderRekening() {
   ).join('') : '<div class="leeg">Geen rijen.</div>';
 }
 function rekeningRij() { (toolEdit.rekeningstructuur||(toolEdit.rekeningstructuur=[])).push({rubriek:'',cluster:'',voorbeeldrekeningen:''}); renderRekening(); }
+function renderProcessen() {
+  const l = toolEdit.processen || (toolEdit.processen=[]);
+  document.getElementById('t-processen').innerHTML = l.length ? l.map((p,i) =>
+    `<div class="proces-rij">
+      <input style="flex:1" placeholder="proces" value="${escAttr(p.naam||'')}" oninput="toolEdit.processen[${i}].naam=this.value">
+      ${p.doc_url ? `<a href="${escAttr(p.doc_url)}" target="_blank" style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escAttr(p.doc_naam||'document')}</a>` : ''}
+      <label class="btn btn-ghost mini" style="cursor:pointer;margin:0">${p.doc_url?'Vervang':'Upload'}<input type="file" style="display:none" onchange="uploadProcesDoc(${i}, this.files[0])"></label>
+      <button class="x" onclick="toolEdit.processen.splice(${i},1);renderProcessen()">×</button>
+    </div>`
+  ).join('') : '<div class="leeg">Geen processen.</div>';
+}
+function procesToevoegen() { (toolEdit.processen||(toolEdit.processen=[])).push({naam:'',doc_url:'',doc_naam:''}); renderProcessen(); }
+async function uploadProcesDoc(i, file) {
+  if (!file) return;
+  if (!toolEdit.id) { alert('Sla de tool eerst op (knop Opslaan) voordat je documenten uploadt.'); return; }
+  try {
+    const r = await TNL.uploadToolDoc(toolEdit.id, file);
+    toolEdit.processen[i].doc_url = r.url; toolEdit.processen[i].doc_naam = r.naam;
+    await TNL.updateTool(toolEdit.id, { processen: toolEdit.processen });
+    renderProcessen();
+  } catch (e) { alert('Upload mislukt: ' + (e.message||e)); }
+}
 
 async function slaToolOp(genereer) {
   const f = id => document.getElementById(id).value;
@@ -993,7 +1009,8 @@ async function slaToolOp(genereer) {
     maatwerk:(toolEdit.maatwerk||[]).filter(m=>(m.item||'').trim()),
     rekeningstructuur:(toolEdit.rekeningstructuur||[]).filter(x=>(x.rubriek||'').trim()),
     gerelateerde_nextstones:(toolEdit.gerelateerde_nextstones||[]).map(s=>(s||'').trim()).filter(Boolean),
-    toekomstige_nextstones:(toolEdit.toekomstige_nextstones||[]).map(s=>(s||'').trim()).filter(Boolean)
+    toekomstige_nextstones:(toolEdit.toekomstige_nextstones||[]).map(s=>(s||'').trim()).filter(Boolean),
+    processen:(toolEdit.processen||[]).filter(p=>(p.naam||'').trim()||p.doc_url)
   };
   if (toolEdit.id) tool.id = toolEdit.id;
   try {
@@ -1261,8 +1278,6 @@ async function slaArtikelOp() {
     wbs: edit.wbs, out_of_scope: [],
     deliverables: (edit.deliverables || []).map(d => (d||'').trim()).filter(Boolean),
     clusters: (edit.clusters || []).filter(c => (c.naam||'').trim()).map(c => ({ naam:c.naam.trim(), omschrijving:(c.omschrijving||'').trim() })),
-    implementatieproces: (edit.implementatieproces || []).filter(r => (r.actie||'').trim()).map(r => ({ wie:r.wie||'TNL', actie:r.actie.trim() })),
-    gebruiksproces: (edit.gebruiksproces || []).filter(r => (r.actie||'').trim()).map(r => ({ wie:r.wie||'TNL', actie:r.actie.trim() })),
     tool_ids: edit.tool_ids || []
   };
   if (edit.id) artikel.id = edit.id;

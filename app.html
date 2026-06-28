@@ -72,7 +72,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .modal-kop { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); position:sticky; top:0; background:#fff; border-radius:14px 14px 0 0; }
 .modal-kop h3 { color:var(--navy); font-size:17px; }
 .modal-kop .x { background:none; border:none; font-size:22px; color:var(--muted); cursor:pointer; line-height:1; }
-.modal-body { padding:22px; overflow-y:auto; min-height:0; flex:1 1 auto; }
+.modal-body { padding:22px; overflow-y:auto; min-height:0; flex:1 1 auto; overscroll-behavior:contain; }
 .modal-voet { display:flex; gap:10px; justify-content:space-between; padding:16px 22px; border-top:1px solid var(--border); position:sticky; bottom:0; background:#fff; border-radius:0 0 14px 14px; }
 .veld { margin-bottom:14px; }
 .veld label { display:block; font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:5px; }
@@ -118,7 +118,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .proces-rij .proces-nr { width:20px; flex:none; text-align:center; font-size:11px; font-weight:700; color:var(--muted); }
 .proces-rij select { width:92px; flex:none; padding:5px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
 .proces-rij input { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
-#a-totalen { position:sticky; bottom:0; background:#fff; padding-top:8px; z-index:2; }
+#a-totalen { background:#fff; margin:6px 0 4px; }
 .tot-balk { display:flex; gap:20px; flex-wrap:wrap; padding:12px 14px; background:var(--light); border:1px solid var(--border); border-radius:8px; margin-top:0; font-size:13px; }
 .tot-balk b { color:var(--navy); font-size:15px; }
 .groep-lijst { font-size:12px; color:var(--muted); margin-top:8px; }
@@ -178,7 +178,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.8</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.9</div>
   </section>
 
   <!-- TAB 2 -->
@@ -254,14 +254,14 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="wbs-syntax" class="wbs-syntax"></div>
       <button class="btn btn-ghost mini" onclick="wbsRij()">+ Processtap</button>
 
+      <div id="a-totalen"></div>
+
       <div class="subkop">Wat krijgt u hiervoor?</div>
       <div id="a-deliverables"></div>
       <button class="btn btn-ghost mini" onclick="delivRij()">+ Deliverable</button>
 
       <div class="subkop">Gebruikte tool(s)</div>
       <div id="a-tools"></div>
-
-      <div id="a-totalen"></div>
     </div>
     <div class="modal-voet">
       <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>

@@ -178,7 +178,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v1.9</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.0</div>
   </section>
 
   <!-- TAB 2 -->
@@ -325,14 +325,6 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="subkop">Rekeningstructuur (optioneel)</div>
       <div id="t-rekening"></div>
       <button class="btn btn-ghost mini" onclick="rekeningRij()">+ Rij</button>
-
-      <div class="subkop">Gerelateerde NextStones</div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:0 2px 4px">Huidige</div>
-      <div id="t-gerelateerd"></div>
-      <button class="btn btn-ghost mini" onclick="lijstRij('gerelateerde_nextstones','t-gerelateerd')">+ NextStone</button>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Toekomstige</div>
-      <div id="t-toekomstig"></div>
-      <button class="btn btn-ghost mini" onclick="lijstRij('toekomstige_nextstones','t-toekomstig')">+ NextStone</button>
 
       <div class="subkop">Gebruikte processen</div>
       <div id="t-processen"></div>
@@ -927,7 +919,6 @@ function vulToolForm(t) {
   renderLijst('input','t-input'); renderLijst('output','t-output');
   renderLabelLijst('tnl_setup','t-setup'); renderLabelLijst('klant_beheert','t-klant');
   renderMaatwerk(); renderRekening();
-  renderLijst('gerelateerde_nextstones','t-gerelateerd'); renderLijst('toekomstige_nextstones','t-toekomstig');
   renderProcessen();
 }
 
@@ -973,8 +964,9 @@ function renderProcessen() {
   const l = toolEdit.processen || (toolEdit.processen=[]);
   document.getElementById('t-processen').innerHTML = l.length ? l.map((p,i) =>
     `<div class="proces-rij">
-      <input style="flex:1" placeholder="proces" value="${escAttr(p.naam||'')}" oninput="toolEdit.processen[${i}].naam=this.value">
-      ${p.doc_url ? `<a href="${escAttr(p.doc_url)}" target="_blank" style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escAttr(p.doc_naam||'document')}</a>` : ''}
+      ${p.doc_url
+        ? `<a href="${escAttr(p.doc_url)}" target="_blank" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escAttr(p.doc_naam||'document')}</a>`
+        : `<span style="flex:1;color:var(--muted)">Geen document</span>`}
       <label class="btn btn-ghost mini" style="cursor:pointer;margin:0">${p.doc_url?'Vervang':'Upload'}<input type="file" style="display:none" onchange="uploadProcesDoc(${i}, this.files[0])"></label>
       <button class="x" onclick="toolEdit.processen.splice(${i},1);renderProcessen()">×</button>
     </div>`
@@ -1092,13 +1084,7 @@ function buildFichePdf(tool) {
   h2('5. Wat stelt TNL eenmalig in?'); labels(tool.tnl_setup);
   h2('6. Wat beheert de klant zelf?'); labels(tool.klant_beheert);
   h2('7. Maatwerk en beperkingen'); table(['Item','Omschrijving','Aanpak'], (tool.maatwerk||[]).map(m=>[m.item,m.omschrijving,m.aanpak]), [40,108,34]);
-  let nr=8;
-  if(tool.rekeningstructuur&&tool.rekeningstructuur.length){ h2('8. Rekeningstructuur'); table(['Rubriek','Cluster','Voorbeeldrekeningen'], tool.rekeningstructuur.map(r=>[r.rubriek,r.cluster,r.voorbeeldrekeningen]), [34,44,104]); nr=9; }
-  h2(nr+'. Gebruik in NextStones');
-  const g=tool.gerelateerde_nextstones||[], tk=tool.toekomstige_nextstones||[];
-  if(g.length){ para('Huidige:',{bold:true}); bullets(g); }
-  if(tk.length){ para('Toekomstige:',{bold:true}); bullets(tk); }
-  if(!g.length && !tk.length) para('—');
+  if(tool.rekeningstructuur&&tool.rekeningstructuur.length){ h2('8. Rekeningstructuur'); table(['Rubriek','Cluster','Voorbeeldrekeningen'], tool.rekeningstructuur.map(r=>[r.rubriek,r.cluster,r.voorbeeldrekeningen]), [34,44,104]); }
 
   footer();
   return doc.output('blob');
@@ -1112,8 +1098,6 @@ function buildFicheHtml(t) {
   const maatT = (t.maatwerk&&t.maatwerk.length) ? `<table><thead><tr><th>Item</th><th>Omschrijving</th><th>Aanpak</th></tr></thead><tbody>${t.maatwerk.map(m=>rij([e(m.item||''),e(m.omschrijving||''),e(m.aanpak||'')])).join('')}</tbody></table>` : '<p class="leeg2">—</p>';
   const heeftRek = t.rekeningstructuur && t.rekeningstructuur.length;
   const rekS = heeftRek ? `<h2>8. Rekeningstructuur</h2><table><thead><tr><th>Rubriek</th><th>Cluster</th><th>Voorbeeldrekeningen</th></tr></thead><tbody>${t.rekeningstructuur.map(x=>rij([e(x.rubriek||''),e(x.cluster||''),e(x.voorbeeldrekeningen||'')])).join('')}</tbody></table>` : '';
-  const ns = ((t.gerelateerde_nextstones&&t.gerelateerde_nextstones.length)?'<p><b>Huidige:</b></p>'+ul(t.gerelateerde_nextstones):'')
-    + ((t.toekomstige_nextstones&&t.toekomstige_nextstones.length)?'<p><b>Toekomstige:</b></p>'+ul(t.toekomstige_nextstones):'') || '<p class="leeg2">—</p>';
   return `<style>
     .fiche{font-family:Arial,Helvetica,sans-serif;color:#1a1a2e;font-size:12px;line-height:1.5;}
     .fiche h1{color:#185FA5;font-size:22px;margin:0 0 2px;}
@@ -1148,8 +1132,6 @@ function buildFicheHtml(t) {
     <h2>7. Maatwerk en beperkingen</h2>
     ${maatT}
     ${rekS}
-    <h2>${heeftRek?'9':'8'}. Gebruik in NextStones</h2>
-    ${ns}
     <div class="foot">The Next Level · TNL Toolcatalogus · Vertrouwelijk</div>
   </div>`;
 }

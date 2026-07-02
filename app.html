@@ -95,7 +95,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .kop-grid textarea.kop-uit:focus { height:120px; overflow:auto; }
 
 /* WBS-deliverables (uitgelijnd raster; vaste kolombreedtes = kop lijnt uit) */
-.wbs-head, .wbs-blok { display:grid; grid-template-columns: 86px minmax(50px,1fr) 54px 42px 42px 42px 46px 32px 16px; gap:4px; align-items:start; }
+.wbs-head, .wbs-blok { display:grid; grid-template-columns: 86px minmax(50px,1fr) 54px 42px 42px 40px 40px 34px 32px 16px; gap:4px; align-items:start; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 9px 3px; }
 .wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
@@ -178,7 +178,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.1</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.2</div>
   </section>
 
   <!-- TAB 2 -->
@@ -573,7 +573,7 @@ const STANDAARD_DELIVERABLES = ['Een beschreven proces', 'Een gecoördineerd pro
 function eersteRol(){ return (TARIEF_ROLLEN[0] && TARIEF_ROLLEN[0].rol) || 'Sr'; }
 function leegDeliverable(extra){
   return Object.assign({ omschrijving:'', scopeGroep:'', rol:eersteRol(), eenheid:'heledag',
-    aantal:1, gekozen:true, klantInput:'', klantAantal:0, klantEenheid:'dag', week:1, vast:false }, extra||{});
+    aantal:1, gekozen:true, klantInput:'', klantAantal:0, klantEenheid:'dag', week:1, volgorde:1, klant:false, vast:false }, extra||{});
 }
 function clusterType(d){
   if (d.scopeGroep === 'Maatwerk' || d.scopeGroep === 'OutOfScope') return 'maatwerk';
@@ -585,10 +585,11 @@ function clusterType(d){
 function sorteerWbs(wbs){
   const isRegie = d => clusterType(d)==='optioneel' && !(Number(d.aantal)>0);
   const wk = d => (clusterType(d)==='maatwerk' || isRegie(d)) ? 0 : (Number(d.week)||0);
+  const vlg = d => Number(d.volgorde)||0;
   const groep = d => { const t = clusterType(d); return t==='optioneel'?0 : t==='maatwerk'?1 : 2; };
   return wbs.slice().sort((a,b) => {
     const wa = wk(a), wb = wk(b);
-    if (wa>0 && wb>0) return wa - wb;
+    if (wa>0 && wb>0) return (wa - wb) || (vlg(a) - vlg(b));
     if (wa>0) return -1;
     if (wb>0) return 1;
     return groep(a) - groep(b);
@@ -763,7 +764,7 @@ function setCluster(i, val){
 function renderWbs() {
   // Géén sortering tijdens bewerken: nieuwe rijen komen onderaan; sorteren gebeurt bij openen (sorteerWbs).
   const head = `<div class="wbs-head">
-    <span>Cluster</span><span>Processtap</span><span>Rol</span><span>Aantal</span><span>EH</span><span>WK</span><span>Klant</span><span>Keuze</span><span></span>
+    <span>Cluster</span><span>Processtap</span><span>Rol</span><span>Aantal</span><span>EH</span><span>VLG</span><span>WK</span><span>KM</span><span>Keuze</span><span></span>
   </div>`;
   const leeg = '<span></span>';
   const rijen = edit.wbs.map((d,i) => {
@@ -774,13 +775,14 @@ function renderWbs() {
     const deliv = `<textarea id="pt-${i}" placeholder="werkwoord + van + … (bv. Opmaken van het projectplan)" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();checkProcesstap(${i});this.blur();}" onblur="checkProcesstap(${i})">${escAttr(d.omschrijving)}</textarea>`;
     const keuze = `<div class="wbs-opt"><input type="checkbox" ${(t==='normaal'||d.gekozen!==false)?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
     const del = `<button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>`;
-    if (t==='maatwerk') return `<div class="wbs-blok is-maatwerk">${cluster}${deliv}${leeg}${leeg}${leeg}${leeg}${leeg}${keuze}${del}</div>`;
+    if (t==='maatwerk') return `<div class="wbs-blok is-maatwerk">${cluster}${deliv}${leeg}${leeg}${leeg}${leeg}${leeg}${leeg}${keuze}${del}</div>`;
     const rol = `<select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>`;
     const aantal = `<input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()" onchange="renderTotalen();renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const eenheid = regie ? leeg : `<select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>`;
-    const week = regie ? leeg : `<input type="text" inputmode="decimal" placeholder="1.1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs();renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
-    const klu = `<input type="number" min="0" max="999" placeholder="u" value="${d.klantAantal||''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;edit.wbs[${i}].klantEenheid='uur'">`;
-    return `<div class="wbs-blok${t==='optioneel'?' is-optie':''}">${cluster}${deliv}${rol}${aantal}${eenheid}${week}${klu}${keuze}${del}</div>`;
+    const vlg = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.volgorde??''}" oninput="edit.wbs[${i}].volgorde=parseFloat(this.value)||0" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
+    const week = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs();renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
+    const km = `<div class="wbs-opt"><input type="checkbox" ${d.klant?'checked':''} title="Stap gebeurt bij de klant (verplaatsing meerekenen)" onchange="edit.wbs[${i}].klant=this.checked"></div>`;
+    return `<div class="wbs-blok${t==='optioneel'?' is-optie':''}">${cluster}${deliv}${rol}${aantal}${eenheid}${vlg}${week}${km}${keuze}${del}</div>`;
   }).join('');
   document.getElementById('a-wbs').innerHTML = edit.wbs.length ? head + rijen : '<div class="leeg">Nog geen deliverables.</div>';
 }

@@ -102,6 +102,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .tool-add { font-size:12px; padding:5px 8px; border:1px solid var(--border,#dfe3ea); border-radius:7px; background:#fff; cursor:pointer; }
 .off-lbl { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); }
 .off-lbl input, .off-lbl textarea { width:100%; }
+.off-ta { height:30px; min-height:30px; resize:none; overflow:hidden; line-height:1.4; transition:height .12s ease; }
+.off-ta:focus { height:96px; overflow:auto; }
 /* ---- Offerte-afdruk ---- */
 #offerte-print { display:none; }
 @media print {
@@ -109,7 +111,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   #offerte-print { display:block !important; }
   @page { margin:0; }
 }
-#offerte-print { font-family:'Segoe UI',system-ui,sans-serif; color:#1e2a4a; font-size:13px; line-height:1.5; padding:15mm 16mm; }
+#offerte-print { font-family:'Segoe UI',system-ui,sans-serif; color:#1e2a4a; font-size:13px; line-height:1.5; padding:0; }
+#offerte-print .psheet { width:100%; border-collapse:collapse; }
+#offerte-print .psheet > thead > tr > td, #offerte-print .psheet > tbody > tr > td, #offerte-print .psheet > tfoot > tr > td { padding:0 16mm; }
+#offerte-print .psheet > thead > tr > td { padding-top:14mm; }
+#offerte-print .psheet > tfoot > tr > td { padding:0; }
+#offerte-print .ptop { height:0; }
+#offerte-print .fspace { height:18mm; }
 #offerte-print .kop { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #1e2a4a; padding-bottom:14px; margin-bottom:22px; }
 #offerte-print .merk { font-size:22px; font-weight:800; }
 #offerte-print .merk-logo { height:48px; display:block; margin-bottom:4px; }
@@ -127,7 +135,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .ns-blok { margin:0 0 12px; }
 #offerte-print .ns-blok-t { font-weight:700; margin-bottom:2px; }
 #offerte-print .cl-rij { display:flex; gap:10px; }
-#offerte-print .cl-naam { font-weight:600; white-space:nowrap; }
+#offerte-print .cl-naam { font-weight:600; white-space:nowrap; flex:0 0 92px; }
 #offerte-print .waarom { color:#374151; margin:0 0 8px; }
 #offerte-print .belofte { margin:8px 0 12px; color:#4b5563; }
 #offerte-print table.clusters tr.grp td { font-weight:700; color:#1e2a4a; padding-top:9px; }
@@ -136,7 +144,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .bedrag { text-align:right; white-space:nowrap; width:130px; font-variant-numeric:tabular-nums; }
 #offerte-print .cl-oms { color:#6b7686; font-size:12px; }
 #offerte-print table.clusters tr.subtot td { border-top:1px solid #1e2a4a; font-weight:700; }
-#offerte-print .krijgt { margin:6px 0; font-size:12px; }
+#offerte-print .krijgt { margin:6px 0; font-size:12px; page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .krijgt ul { margin:4px 0 0; padding-left:18px; }
 #offerte-print .krijgt li { margin:1px 0; }
 #offerte-print .proc { font-size:12px; color:#374151; margin:6px 0 0; }
@@ -146,7 +154,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .voorw { margin-top:26px; font-size:12px; color:#374151; }
 #offerte-print .voorw b { color:#1e2a4a; }
 #offerte-print .voorw p { margin:0 0 6px; }
-#offerte-print .foot { margin-top:34px; border-top:1px solid #e5e7eb; padding-top:10px; font-size:11px; color:#6b7686; text-align:center; }
+#offerte-print .foot { position:fixed; bottom:0; left:0; right:0; margin:0; background:#fff; border-top:1px solid #e5e7eb; padding:5px 16mm 8mm; font-size:10.5px; color:#6b7686; text-align:center; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 9px 3px; }
 .wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
@@ -229,7 +237,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.20</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.21</div>
   </section>
 
   <!-- TAB 2 -->
@@ -297,7 +305,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <label class="off-lbl">Geldig tot<input id="off-geldig" type="date" oninput="offMeta.geldig=this.value"></label>
         <label class="off-lbl">Opsteller<input id="off-opsteller" oninput="offMeta.opsteller=this.value"></label>
       </div>
-      <label class="off-lbl" style="margin-top:12px">Inleiding (optioneel)<textarea id="off-intro" rows="3" oninput="offMeta.intro=this.value"></textarea></label>
+      <label class="off-lbl" style="margin-top:12px">Inleiding (optioneel)<textarea id="off-intro" class="off-ta" rows="1" oninput="offMeta.intro=this.value"></textarea></label>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -311,13 +319,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <label class="off-lbl">Korting (%)<input id="off-korting" type="number" step="1" min="0" max="100" oninput="offMeta.korting=parseFloat(this.value)||0;renderOffTotalen()"></label>
         <label class="off-lbl">BTW (%)<input id="off-btw" type="number" step="1" min="0" oninput="offMeta.btw=parseFloat(this.value)||0;renderOffTotalen()"></label>
       </div>
-      <label class="off-lbl" style="margin-top:12px">Verplaatsing (algemene omschrijving)<textarea id="off-verpl-tekst" rows="2" oninput="offMeta.verplaatsingTekst=this.value"></textarea></label>
-      <label class="off-lbl" style="margin-top:12px">Betalingsvoorwaarden<textarea id="off-betaling" rows="2" oninput="offMeta.betaling=this.value"></textarea></label>
+      <label class="off-lbl" style="margin-top:12px">Verplaatsing (algemene omschrijving)<textarea id="off-verpl-tekst" class="off-ta" rows="1" oninput="offMeta.verplaatsingTekst=this.value"></textarea></label>
+      <label class="off-lbl" style="margin-top:12px">Betalingsvoorwaarden<textarea id="off-betaling" class="off-ta" rows="1" oninput="offMeta.betaling=this.value"></textarea></label>
       <div id="off-totalen" style="margin-top:14px"></div>
       <div style="margin-top:14px;display:flex;gap:10px">
         <button class="btn primary" onclick="toonOfferte()">📄 Offerte in PDF aanmaken</button>
       </div>
-      <div class="hint" style="margin-top:6px">Opent een nette offerte in een nieuw venster; kies daar "Opslaan als PDF" om ze te versturen.</div>
+      <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Opent een nette offerte in een nieuw tabblad; kies daar "Opslaan als PDF" om ze te versturen.</div>
     </div>
   </section>
 
@@ -1445,11 +1453,14 @@ function renderOffTotalen(){
   const el=document.getElementById('off-totalen'); if(!el) return;
   const t=offBerekenTotaal();
   const rij=(l,v,groot)=>`<div style="display:flex;justify-content:space-between;padding:2px 0;${groot?'font-weight:700;font-size:15px;border-top:2px solid var(--navy,#1e2a4a);padding-top:6px;margin-top:4px':''}"><span>${l}</span><span>${euro(v)}</span></div>`;
-  let h=rij('Subtotaal Stepping Stones', t.sub);
-  if(t.kortingPct) h+=rij('Korting ('+t.kortingPct+'%)', -t.korting);
-  h+=rij('Subtotaal excl. btw', t.naKorting);
+  let h='';
+  if(t.kortingPct){
+    h+=rij('Subtotaal', t.sub);
+    h+=rij('Korting ('+t.kortingPct+'%)', -t.korting);
+  }
+  h+=rij('Totaal excl. btw', t.naKorting, true);
   h+=rij('Btw ('+t.btwPct+'%)', t.btw);
-  h+=rij('Totaal incl. btw', t.totaal, true);
+  h+=rij('Totaal incl. btw', t.totaal);
   el.innerHTML=h;
 }
 function buildKmClause(){
@@ -1496,13 +1507,12 @@ function toonOfferte(){
     let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div></td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
     if(opties && optie.length){
       cr+=`<tr class="grp"><td>Opties</td><td></td></tr>`;
-      cr+=optie.map(o=>`<tr><td>${esc(o.oms||'Optie')}</td><td class="bedrag"${o.regie?' style="white-space:normal"':''}>${o.regie?('in regie = '+euro(o.uur)+'/uur'):euro(o.kost)}</td></tr>`).join('');
+      cr+=optie.map(o=>`<tr><td>${esc(o.oms||'Optie')}</td><td class="bedrag">${o.regie?'in regie':euro(o.kost)}</td></tr>`).join('');
     }
     if(maatwerk.length){
       cr+=`<tr class="grp"><td>Maatwerk (op aanvraag)</td><td></td></tr>`;
       cr+=maatwerk.map(mw=>`<tr><td>${esc(mw.oms||'Maatwerk')}</td><td class="bedrag">in overleg</td></tr>`).join('');
     }
-    if(t.lijnen.length>1) cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(stoneTot)}</td></tr>`;
     return `<section class="ns">
       <h2>${esc(offArtikelNaam(a))}</h2>
       ${intro}
@@ -1524,29 +1534,41 @@ function toonOfferte(){
   const kadres=[k.adres, k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).join('<br>');
   const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
   const bodyHtml=`
-    <div class="kop">
-      <div class="merk"><img class="merk-logo" src="${esc(A.logo)}" alt="${esc(A.merk)}"><small>${esc(A.tagline)}</small></div>
-      <div class="meta"><b>Offerte ${esc(m.nummer)}</b><br>Datum: ${dt(m.datum)}<br>Geldig tot: ${dt(m.geldig)}${m.opsteller?'<br>Opsteller: '+esc(m.opsteller):''}</div>
-    </div>
-    <h1>Offerte voor ${esc(k.bedrijf||'')}</h1>
-    <p class="aan">${esc(k.contactpersoon||'')}${k.functie?', '+esc(k.functie):''}${kadres?'<br>'+kadres:''}${k.email?'<br>'+esc(k.email):''}${k.telefoon?' · '+esc(k.telefoon):''}</p>
-    ${m.intro?`<div class="intro">${esc(m.intro)}</div>`:''}
-    ${secties}
-    <table class="totalen">${totHtml}</table>
-    <div class="voorw">
-      ${kmTekst?`<p><b>Verplaatsing:</b> ${esc(kmTekst)}</p>`:''}
-      ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
-      <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
-    </div>
-    <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>`;
-  const cont=document.getElementById('offerte-print');
-  if(!cont){ setOffStatus('Print-blok ontbreekt op de pagina.','err'); return; }
-  cont.innerHTML=bodyHtml;
-  setOffStatus('Offerte klaar — kies "Opslaan als PDF" in het afdrukvenster.','ok');
-  const imgs=Array.from(cont.querySelectorAll('img'));
-  const klaar=Promise.all(imgs.map(im=> (im.complete && im.naturalWidth) ? null : new Promise(res=>{ im.onload=res; im.onerror=res; })));
-  const tijd=new Promise(res=>setTimeout(res,2500));
-  Promise.race([klaar,tijd]).then(()=>setTimeout(()=>window.print(),60));
+    <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>
+    <table class="psheet">
+    <thead><tr><td><div class="ptop"></div></td></tr></thead>
+    <tfoot><tr><td><div class="fspace"></div></td></tr></tfoot>
+    <tbody><tr><td>
+      <div class="kop">
+        <div class="merk"><img class="merk-logo" src="${esc(A.logo)}" alt="${esc(A.merk)}"><small>${esc(A.tagline)}</small></div>
+        <div class="meta"><b>Offerte ${esc(m.nummer)}</b><br>Datum: ${dt(m.datum)}<br>Geldig tot: ${dt(m.geldig)}${m.opsteller?'<br>Opsteller: '+esc(m.opsteller):''}</div>
+      </div>
+      <h1>Offerte voor ${esc(k.bedrijf||'')}</h1>
+      <p class="aan">${esc(k.contactpersoon||'')}${k.functie?', '+esc(k.functie):''}${kadres?'<br>'+kadres:''}${k.email?'<br>'+esc(k.email):''}${k.telefoon?' · '+esc(k.telefoon):''}</p>
+      ${m.intro?`<div class="intro">${esc(m.intro)}</div>`:''}
+      ${secties}
+      <table class="totalen">${totHtml}</table>
+      <div class="voorw">
+        ${kmTekst?`<p><b>Verplaatsing:</b> ${esc(kmTekst)}</p>`:''}
+        ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
+        <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
+      </div>
+    </td></tr></tbody>
+    </table>`;
+  const styles=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
+  const doc=`<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>Offerte ${esc(m.nummer||'')} ${esc(k.bedrijf||'')}</title>`
+    +`<base href="${location.href}"><style>${styles}\nbody{margin:0;background:#fff}\n#offerte-print{display:block !important}</style></head>`
+    +`<body><div id="offerte-print">${bodyHtml}</div></body></html>`;
+  const w=window.open('','_blank');
+  if(!w){ setOffStatus('Pop-up geblokkeerd — sta pop-ups toe voor deze site.','err'); alert('Pop-up geblokkeerd. Sta pop-ups toe voor deze site en probeer opnieuw.'); return; }
+  w.document.open(); w.document.write(doc); w.document.close();
+  setOffStatus('Offerte geopend in nieuw tabblad — kies daar "Opslaan als PDF".','ok');
+  const start=()=>{
+    const imgs=Array.from(w.document.querySelectorAll('img'));
+    const klaar=Promise.all(imgs.map(im=> (im.complete && im.naturalWidth) ? null : new Promise(res=>{ im.onload=res; im.onerror=res; })));
+    Promise.race([klaar,new Promise(res=>setTimeout(res,2500))]).then(()=>setTimeout(()=>{ w.focus(); w.print(); },80));
+  };
+  if(w.document.readyState==='complete') start(); else w.onload=start;
  } catch(e){ console.error('toonOfferte fout:', e); setOffStatus('Fout bij PDF maken: '+(e.message||e),'err'); alert('Fout bij PDF maken: '+(e.message||e)); }
 }
 function vulProspectDropdown(){

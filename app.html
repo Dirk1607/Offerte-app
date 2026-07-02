@@ -129,7 +129,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .cl-rij { display:flex; gap:10px; }
 #offerte-print .cl-naam { font-weight:600; white-space:nowrap; }
 #offerte-print .waarom { color:#374151; margin:0 0 8px; }
-#offerte-print .belofte { margin:8px 0 12px; font-style:italic; color:#4b5563; }
+#offerte-print .belofte { margin:8px 0 12px; color:#4b5563; }
 #offerte-print table.clusters tr.grp td { font-weight:700; color:#1e2a4a; padding-top:9px; }
 #offerte-print table.clusters { width:100%; border-collapse:collapse; margin:6px 0; }
 #offerte-print table.clusters td { padding:6px 6px; border-bottom:1px solid #eef1f5; vertical-align:top; }
@@ -229,7 +229,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.18</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.19</div>
   </section>
 
   <!-- TAB 2 -->
@@ -1488,6 +1488,8 @@ function toonOfferte(){
     const stoneTot=calc.basis+(opties?calc.opties:0);
     const del=(a.deliverables||[]).filter(x=>(x||'').trim());
     const procs=(a.processen||[]).filter(p=>(p.naam||'').trim()||p.data);
+    const kl=calc.klant||{};
+    const klantUren=(kl.uur||0)+(kl.halvedag||0)*4+((kl.dag||0)+(kl.heledag||0))*8;
     const blok=(titel,tekst)=> (tekst&&String(tekst).trim())?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div>${esc(String(tekst).trim())}</div></div>`:'';
     const intro=blok('Waarom dit belangrijk is',a.waarom)+blok('Doel',a.doel)+blok('Meetbaar objectief',a.meetbaar_objectief)+blok('Belofte',a.belofte);
     let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div></td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
@@ -1505,6 +1507,7 @@ function toonOfferte(){
       ${intro}
       <table class="clusters">${cr}</table>
       ${del.length?`<div class="krijgt"><b>Wat u ontvangt:</b><ul>${del.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+      ${klantUren>0?`<div class="krijgt"><b>Uw investering in tijd:</b> ${klantUren.toLocaleString('nl-BE')} uur</div>`:''}
       ${procs.length?`<div class="proc"><b>Bijhorend proces:</b>${procs.map(p=>p.data?`<div class="proc-img"><img src="${p.data}" alt="${escAttr(p.naam||'')}"></div>`:` ${esc(p.naam||'')}`).join('')}</div>`:''}
     </section>`;
   }).join('');

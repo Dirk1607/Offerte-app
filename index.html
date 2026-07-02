@@ -184,7 +184,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.8</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.9</div>
   </section>
 
   <!-- TAB 2 -->
@@ -263,16 +263,16 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div class="card" style="margin-top:16px">
       <div class="subkop">Voorwaarden &amp; totaal</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:10px">
-        <label class="off-lbl">Verplaatsing (€, optioneel)<input id="off-verpl" type="number" step="0.01" min="0" oninput="offMeta.verplaatsing=parseFloat(this.value)||0;renderOffTotalen()"></label>
         <label class="off-lbl">Korting (%)<input id="off-korting" type="number" step="1" min="0" max="100" oninput="offMeta.korting=parseFloat(this.value)||0;renderOffTotalen()"></label>
         <label class="off-lbl">BTW (%)<input id="off-btw" type="number" step="1" min="0" oninput="offMeta.btw=parseFloat(this.value)||0;renderOffTotalen()"></label>
       </div>
+      <label class="off-lbl" style="margin-top:12px">Verplaatsing (algemene omschrijving)<textarea id="off-verpl-tekst" rows="2" oninput="offMeta.verplaatsingTekst=this.value"></textarea></label>
       <label class="off-lbl" style="margin-top:12px">Betalingsvoorwaarden<textarea id="off-betaling" rows="2" oninput="offMeta.betaling=this.value"></textarea></label>
       <div id="off-totalen" style="margin-top:14px"></div>
       <div style="margin-top:14px;display:flex;gap:10px">
-        <button class="btn" onclick="toonOfferte()">📄 Offerte tonen / afdrukken (PDF)</button>
+        <button class="btn primary" onclick="toonOfferte()">📄 Offerte in PDF aanmaken</button>
       </div>
-      <div class="hint" style="margin-top:6px">Afdrukken opent een nette offerte in een nieuw venster; kies daar "Opslaan als PDF" om ze te versturen.</div>
+      <div class="hint" style="margin-top:6px">Opent een nette offerte in een nieuw venster; kies daar "Opslaan als PDF" om ze te versturen.</div>
     </div>
   </section>
 
@@ -1307,18 +1307,24 @@ async function bewaarKm() {
 // ---------- OFFERTE-TAB: klant kiezen (prospect of bestaande klant) ----------
 var offProspecten = [], offKlanten = [], offKlant = null, offGeladen = false;
 var offCatalogus = [], OFF_TARIEVEN = {}, offSelectie = {};
-var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', intro:'', betaling:'Betaling binnen 14 dagen na factuurdatum.', verplaatsing:0, korting:0, btw:21 };
+var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', intro:'', betaling:'Betaling binnen 14 dagen na factuurdatum.', verplaatsingTekst:'', korting:0, btw:21 };
+var AFZENDER = {
+  merk:'The Next Level', tagline:'Your stepping stones to The Next Level',
+  bedrijf:'Ariadne BV', persoon:'Dirk Vander Eyken',
+  adres:'Melkweg 8, 2980 Halle-Zoersel', btw:'BE 0502.581.150', tel:'+32 468 13 79 78'
+};
 function euro(n){ return '€ ' + (Number(n)||0).toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function setOffStatus(msg, kind){ const el=document.getElementById('off-status'); if(!el) return; el.className='status'+(kind?' '+kind:''); el.innerHTML=msg||''; }
 async function laadOfferteTab(){
   if (offGeladen) return;
   setOffStatus('<span class="spin"></span>Prospecten, klanten en NextStones laden…');
   try {
-    const [pros, kl, cat, tar] = await Promise.all([
+    const [pros, kl, cat, tar, km] = await Promise.all([
       TNL.getProspects().catch(()=>[]), TNL.getKlanten(),
-      TNL.getCatalogus({ alleenActief:false }), TNL.getTarieven()
+      TNL.getCatalogus({ alleenActief:false }), TNL.getTarieven(),
+      TNL.getInstelling('km_vergoeding').catch(()=>null)
     ]);
-    offProspecten = pros || []; offKlanten = kl || []; offCatalogus = cat || []; OFF_TARIEVEN = tar || {};
+    offProspecten = pros || []; offKlanten = kl || []; offCatalogus = cat || []; OFF_TARIEVEN = tar || {}; KM_VERG = km || KM_VERG || {};
     vulProspectDropdown(); vulKlantDropdown(); initOffMeta(); renderOffNextstones(); renderOffTotalen();
     offGeladen = true; setOffStatus('');
   } catch (e){ setOffStatus('Laden mislukt: ' + (e.message||e), 'err'); }
@@ -1331,6 +1337,8 @@ function initOffMeta(){
   const set=(id,v)=>{ const e=document.getElementById(id); if(e&&!e.value) e.value=v; };
   set('off-nr',offMeta.nummer); set('off-datum',offMeta.datum); set('off-geldig',offMeta.geldig);
   set('off-btw',String(offMeta.btw)); set('off-betaling',offMeta.betaling);
+  if(!offMeta.verplaatsingTekst) offMeta.verplaatsingTekst=buildKmClause();
+  set('off-verpl-tekst',offMeta.verplaatsingTekst);
 }
 function offArtikelNaam(a){ const s=a.station,l=s&&s.lijn; return [l&&l.naam, s&&s.naam, a.subnaam].filter(Boolean).join(' — ') || a.subnaam || '(naamloos)'; }
 function offLijn(a){
@@ -1362,84 +1370,117 @@ function offToggle(id,key,val){
 function offBerekenTotaal(){
   let sub=0; const lijnen=[];
   offCatalogus.forEach(a=>{ const s=offSelectie[a.id]; if(s&&s.include){ const {calc,bedrag}=offLijn(a); sub+=bedrag; lijnen.push({a,calc,bedrag,opties:s.opties!==false}); } });
-  const verpl=Number(offMeta.verplaatsing)||0;
-  const subExcl=sub+verpl;
   const kortingPct=Number(offMeta.korting)||0;
-  const korting=subExcl*kortingPct/100;
-  const naKorting=subExcl-korting;
+  const korting=sub*kortingPct/100;
+  const naKorting=sub-korting;
   const btwPct=Number(offMeta.btw)||0;
   const btw=naKorting*btwPct/100;
-  return { lijnen, sub, verpl, kortingPct, korting, naKorting, btwPct, btw, totaal:naKorting+btw };
+  return { lijnen, sub, kortingPct, korting, naKorting, btwPct, btw, totaal:naKorting+btw };
 }
 function renderOffTotalen(){
   const el=document.getElementById('off-totalen'); if(!el) return;
   const t=offBerekenTotaal();
   const rij=(l,v,groot)=>`<div style="display:flex;justify-content:space-between;padding:2px 0;${groot?'font-weight:700;font-size:15px;border-top:2px solid var(--navy,#1e2a4a);padding-top:6px;margin-top:4px':''}"><span>${l}</span><span>${euro(v)}</span></div>`;
   let h=rij('Subtotaal NextStones', t.sub);
-  if(t.verpl) h+=rij('Verplaatsing', t.verpl);
   if(t.kortingPct) h+=rij('Korting ('+t.kortingPct+'%)', -t.korting);
   h+=rij('Subtotaal excl. btw', t.naKorting);
   h+=rij('Btw ('+t.btwPct+'%)', t.btw);
   h+=rij('Totaal incl. btw', t.totaal, true);
   el.innerHTML=h;
 }
+function buildKmClause(){
+  const k=KM_VERG||{};
+  const fmt=n=>Number(n).toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(k.kost_per_km||k.snelheid_kmu||k.uren_factor){
+    let s='Verplaatsingskosten worden apart aangerekend';
+    if(k.kost_per_km) s+=' aan € '+fmt(k.kost_per_km)+' per kilometer';
+    s+='. De reistijd wordt aangerekend aan het uurtarief van de betrokken consultant';
+    if(k.uren_factor) s+=' gedeeld door '+k.uren_factor;
+    if(k.snelheid_kmu) s+=' (aan een gemiddelde snelheid van '+k.snelheid_kmu+' km/u)';
+    s+='.';
+    return s;
+  }
+  return 'Verplaatsingskosten worden apart aangerekend volgens de afgesproken tarieven.';
+}
+function offClusterRows(a){
+  const calc=TNL.berekenFix({ wbs:a.wbs||[] }, OFF_TARIEVEN);
+  const perGroep=calc.perGroep||{}; const rows=[]; const gezien=new Set();
+  (a.clusters||[]).forEach(c=>{ const naam=(c.naam||'').trim(); if(!naam||gezien.has(naam)) return; gezien.add(naam); rows.push({ naam, oms:(c.omschrijving||'').trim(), kost:perGroep[naam]||0 }); });
+  Object.keys(perGroep).forEach(naam=>{ if(!gezien.has(naam)){ gezien.add(naam); rows.push({ naam, oms:'', kost:perGroep[naam] }); } });
+  return { calc, rows };
+}
 function toonOfferte(){
   if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); return; }
   const t=offBerekenTotaal();
   if(!t.lijnen.length){ setOffStatus('Selecteer minstens één NextStone.','err'); return; }
-  const k=offKlant, m=offMeta;
-  const dl=a=>((a.deliverables||[]).filter(x=>(x||'').trim()));
+  const k=offKlant, m=offMeta, A=AFZENDER;
   const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
-  const lijnenHtml=t.lijnen.map(({a,bedrag})=>{
-    const bel=(a.belofte||a.doel||'').trim();
-    const items=dl(a);
-    return `<tr class="ns">
-      <td><div class="ns-naam">${esc(offArtikelNaam(a))}</div>
-        ${bel?`<div class="ns-bel">${esc(bel)}</div>`:''}
-        ${items.length?`<ul class="ns-del">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</td>
-      <td class="bedrag">${euro(bedrag)}</td></tr>`;
+  const secties=t.lijnen.map(({a,opties})=>{
+    const { calc, rows }=offClusterRows(a);
+    const stoneTot=calc.basis+(opties?calc.opties:0);
+    const del=(a.deliverables||[]).filter(x=>(x||'').trim());
+    const proc=(a.processen||[]).map(p=>(p.naam||'').trim()).filter(Boolean);
+    let cr=rows.map(r=>`<tr><td>${esc(r.naam)}${r.oms?`<div class="cl-oms">${esc(r.oms)}</div>`:''}</td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
+    if(opties && calc.opties>0) cr+=`<tr><td>Opties</td><td class="bedrag">${euro(calc.opties)}</td></tr>`;
+    cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(stoneTot)}</td></tr>`;
+    return `<section class="ns">
+      <h2>${esc(offArtikelNaam(a))}</h2>
+      ${a.waarom&&a.waarom.trim()?`<p class="waarom">${esc(a.waarom.trim())}</p>`:''}
+      ${a.belofte&&a.belofte.trim()?`<p class="belofte">${esc(a.belofte.trim())}</p>`:(a.doel&&a.doel.trim()?`<p class="belofte">${esc(a.doel.trim())}</p>`:'')}
+      <table class="clusters">${cr}</table>
+      ${del.length?`<div class="krijgt"><b>Wat u ontvangt:</b><ul>${del.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+      ${proc.length?`<p class="proc"><b>Bijhorend proces:</b> ${proc.map(esc).join(', ')}</p>`:''}
+    </section>`;
   }).join('');
   const totRij=(l,v,groot)=>`<tr class="${groot?'tot':''}"><td>${l}</td><td class="bedrag">${euro(v)}</td></tr>`;
-  let totHtml=totRij('Subtotaal NextStones', t.sub);
-  if(t.verpl) totHtml+=totRij('Verplaatsing', t.verpl);
+  let totHtml=totRij('Subtotaal', t.sub);
   if(t.kortingPct) totHtml+=totRij('Korting ('+t.kortingPct+'%)', -t.korting);
   totHtml+=totRij('Subtotaal excl. btw', t.naKorting);
   totHtml+=totRij('Btw ('+t.btwPct+'%)', t.btw);
   totHtml+=totRij('Totaal incl. btw', t.totaal, true);
-  const adres=[k.adres, k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).join('<br>');
+  const kadres=[k.adres, k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).join('<br>');
+  const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
   const doc=`<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>Offerte ${esc(m.nummer)}</title>
   <style>
     *{box-sizing:border-box} body{font-family:'Segoe UI',system-ui,sans-serif;color:#1e2a4a;margin:0;padding:38px 44px;font-size:13px;line-height:1.5}
     .kop{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e2a4a;padding-bottom:14px;margin-bottom:22px}
     .merk{font-size:22px;font-weight:800} .merk small{display:block;font-size:11px;font-weight:600;color:#6b7686;letter-spacing:.3px}
+    .merk .afz{display:block;font-size:10.5px;font-weight:400;color:#6b7686;margin-top:6px;line-height:1.4}
     .meta{text-align:right;font-size:12px;color:#374151} .meta b{color:#1e2a4a}
     h1{font-size:17px;margin:0 0 4px} .aan{margin:0 0 20px;color:#374151}
-    .blok{margin:0 0 18px} .intro{white-space:pre-wrap;margin:0 0 20px}
-    table{width:100%;border-collapse:collapse;margin:8px 0 4px}
-    td{padding:8px 6px;vertical-align:top;border-bottom:1px solid #e5e7eb}
+    .intro{white-space:pre-wrap;margin:0 0 22px}
+    .ns{margin:0 0 22px;page-break-inside:avoid}
+    .ns h2{font-size:15px;margin:0 0 4px;color:#1e2a4a}
+    .waarom{color:#374151;margin:0 0 6px} .belofte{margin:0 0 8px;font-style:italic;color:#4b5563}
+    table.clusters{width:100%;border-collapse:collapse;margin:6px 0}
+    table.clusters td{padding:6px 6px;border-bottom:1px solid #eef1f5;vertical-align:top}
     .bedrag{text-align:right;white-space:nowrap;width:130px;font-variant-numeric:tabular-nums}
-    .ns-naam{font-weight:700} .ns-bel{color:#374151;margin:2px 0} .ns-del{margin:4px 0 0;padding-left:18px;color:#4b5563}
-    .ns-del li{margin:1px 0}
-    .totalen{width:60%;margin-left:auto} .totalen td{border:none;padding:3px 6px}
+    .cl-oms{color:#6b7686;font-size:12px;margin-top:2px}
+    table.clusters tr.subtot td{border-top:1px solid #1e2a4a;font-weight:700}
+    .krijgt{margin:6px 0;font-size:12px} .krijgt ul{margin:4px 0 0;padding-left:18px} .krijgt li{margin:1px 0}
+    .proc{font-size:12px;color:#374151;margin:6px 0 0}
+    .totalen{width:60%;margin-left:auto;border-collapse:collapse;margin-top:12px} .totalen td{padding:3px 6px}
     .totalen tr.tot td{border-top:2px solid #1e2a4a;font-weight:800;font-size:15px;padding-top:8px}
-    .voorw{margin-top:26px;font-size:12px;color:#374151} .voorw b{color:#1e2a4a}
+    .voorw{margin-top:26px;font-size:12px;color:#374151} .voorw b{color:#1e2a4a} .voorw p{margin:0 0 6px}
     .foot{margin-top:34px;border-top:1px solid #e5e7eb;padding-top:10px;font-size:11px;color:#6b7686;text-align:center}
     @media print{body{padding:0}}
   </style></head><body>
     <div class="kop">
-      <div class="merk">The Next Level<small>Your stepping stones to The Next Level</small></div>
+      <div class="merk">${esc(A.merk)}<small>${esc(A.tagline)}</small>
+        <span class="afz">${esc(A.bedrijf)} · ${esc(A.persoon)}<br>${esc(A.adres)}<br>BTW ${esc(A.btw)} · ${esc(A.tel)}</span></div>
       <div class="meta"><b>Offerte ${esc(m.nummer)}</b><br>Datum: ${dt(m.datum)}<br>Geldig tot: ${dt(m.geldig)}${m.opsteller?'<br>Opsteller: '+esc(m.opsteller):''}</div>
     </div>
     <h1>Offerte voor ${esc(k.bedrijf||'')}</h1>
-    <p class="aan">${esc(k.contactpersoon||'')}${k.functie?', '+esc(k.functie):''}${adres?'<br>'+adres:''}${k.email?'<br>'+esc(k.email):''}${k.telefoon?' · '+esc(k.telefoon):''}</p>
+    <p class="aan">${esc(k.contactpersoon||'')}${k.functie?', '+esc(k.functie):''}${kadres?'<br>'+kadres:''}${k.email?'<br>'+esc(k.email):''}${k.telefoon?' · '+esc(k.telefoon):''}</p>
     ${m.intro?`<div class="intro">${esc(m.intro)}</div>`:''}
-    <table>${lijnenHtml}</table>
+    ${secties}
     <table class="totalen">${totHtml}</table>
     <div class="voorw">
+      ${kmTekst?`<p><b>Verplaatsing:</b> ${esc(kmTekst)}</p>`:''}
       ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
       <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
     </div>
-    <div class="foot">The Next Level · offerte ${esc(m.nummer)} · ${dt(m.datum)}</div>
+    <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>
   </body></html>`;
   const w=window.open('','_blank');
   if(!w){ setOffStatus('Pop-up geblokkeerd — sta pop-ups toe om de offerte te openen.','err'); return; }

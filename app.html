@@ -224,7 +224,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.14</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.15</div>
   </section>
 
   <!-- TAB 2 -->
@@ -1521,7 +1521,10 @@ function toonOfferte(){
   if(!cont){ setOffStatus('Print-blok ontbreekt op de pagina.','err'); return; }
   cont.innerHTML=bodyHtml;
   setOffStatus('Offerte klaar — kies "Opslaan als PDF" in het afdrukvenster.','ok');
-  setTimeout(()=>{ window.print(); }, 120);
+  const imgs=Array.from(cont.querySelectorAll('img'));
+  const klaar=Promise.all(imgs.map(im=> (im.complete && im.naturalWidth) ? null : new Promise(res=>{ im.onload=res; im.onerror=res; })));
+  const tijd=new Promise(res=>setTimeout(res,2500));
+  Promise.race([klaar,tijd]).then(()=>setTimeout(()=>window.print(),60));
 }
 function vulProspectDropdown(){
   const sel=document.getElementById('off-prospect'); if(!sel) return;

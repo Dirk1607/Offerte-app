@@ -184,7 +184,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.10</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.11</div>
   </section>
 
   <!-- TAB 2 -->
@@ -630,6 +630,7 @@ var catGeladen = false;
 var edit = null;   // editor-state voor de open Fix
 
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // Vaste processtappen die in elke nieuwe NextStone horen (werkwoord + van + …).
 const VASTE_PROCESSTAPPEN = ['Beschrijven van het proces', 'Coördineren van het project'];

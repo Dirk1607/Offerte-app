@@ -100,6 +100,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .tool-chip { display:inline-flex; align-items:center; gap:6px; background:var(--light,#f5f7fa); border:1px solid var(--border,#dfe3ea); border-radius:14px; padding:3px 6px 3px 10px; font-size:12px; }
 .tool-chip .x { border:none; background:none; cursor:pointer; font-size:14px; line-height:1; color:var(--muted,#6b7686); padding:0 2px; }
 .tool-add { font-size:12px; padding:5px 8px; border:1px solid var(--border,#dfe3ea); border-radius:7px; background:#fff; cursor:pointer; }
+.off-lbl { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); }
+.off-lbl input, .off-lbl textarea { width:100%; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 9px 3px; }
 .wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
@@ -182,7 +184,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.7</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.8</div>
   </section>
 
   <!-- TAB 2 -->
@@ -243,7 +245,34 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="off-klant-form"></div>
     </div>
     <div class="card" style="margin-top:16px">
-      <div class="placeholder">NextStone-selectie en prijsopmaak bouwen we in de volgende stap.</div>
+      <div class="subkop">Offertegegevens</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px">
+        <label class="off-lbl">Offertenummer<input id="off-nr" oninput="offMeta.nummer=this.value"></label>
+        <label class="off-lbl">Datum<input id="off-datum" type="date" oninput="offMeta.datum=this.value"></label>
+        <label class="off-lbl">Geldig tot<input id="off-geldig" type="date" oninput="offMeta.geldig=this.value"></label>
+        <label class="off-lbl">Opsteller<input id="off-opsteller" oninput="offMeta.opsteller=this.value"></label>
+      </div>
+      <label class="off-lbl" style="margin-top:12px">Inleiding (optioneel)<textarea id="off-intro" rows="3" oninput="offMeta.intro=this.value"></textarea></label>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="subkop">NextStones in deze offerte</div>
+      <div id="off-nextstones"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="subkop">Voorwaarden &amp; totaal</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:10px">
+        <label class="off-lbl">Verplaatsing (€, optioneel)<input id="off-verpl" type="number" step="0.01" min="0" oninput="offMeta.verplaatsing=parseFloat(this.value)||0;renderOffTotalen()"></label>
+        <label class="off-lbl">Korting (%)<input id="off-korting" type="number" step="1" min="0" max="100" oninput="offMeta.korting=parseFloat(this.value)||0;renderOffTotalen()"></label>
+        <label class="off-lbl">BTW (%)<input id="off-btw" type="number" step="1" min="0" oninput="offMeta.btw=parseFloat(this.value)||0;renderOffTotalen()"></label>
+      </div>
+      <label class="off-lbl" style="margin-top:12px">Betalingsvoorwaarden<textarea id="off-betaling" rows="2" oninput="offMeta.betaling=this.value"></textarea></label>
+      <div id="off-totalen" style="margin-top:14px"></div>
+      <div style="margin-top:14px;display:flex;gap:10px">
+        <button class="btn" onclick="toonOfferte()">📄 Offerte tonen / afdrukken (PDF)</button>
+      </div>
+      <div class="hint" style="margin-top:6px">Afdrukken opent een nette offerte in een nieuw venster; kies daar "Opslaan als PDF" om ze te versturen.</div>
     </div>
   </section>
 
@@ -1277,16 +1306,146 @@ async function bewaarKm() {
 
 // ---------- OFFERTE-TAB: klant kiezen (prospect of bestaande klant) ----------
 var offProspecten = [], offKlanten = [], offKlant = null, offGeladen = false;
+var offCatalogus = [], OFF_TARIEVEN = {}, offSelectie = {};
+var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', intro:'', betaling:'Betaling binnen 14 dagen na factuurdatum.', verplaatsing:0, korting:0, btw:21 };
+function euro(n){ return '€ ' + (Number(n)||0).toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function setOffStatus(msg, kind){ const el=document.getElementById('off-status'); if(!el) return; el.className='status'+(kind?' '+kind:''); el.innerHTML=msg||''; }
 async function laadOfferteTab(){
   if (offGeladen) return;
-  setOffStatus('<span class="spin"></span>Prospecten en klanten laden…');
+  setOffStatus('<span class="spin"></span>Prospecten, klanten en NextStones laden…');
   try {
-    const [pros, kl] = await Promise.all([TNL.getProspects().catch(()=>[]), TNL.getKlanten()]);
-    offProspecten = pros || []; offKlanten = kl || [];
-    vulProspectDropdown(); vulKlantDropdown();
+    const [pros, kl, cat, tar] = await Promise.all([
+      TNL.getProspects().catch(()=>[]), TNL.getKlanten(),
+      TNL.getCatalogus({ alleenActief:false }), TNL.getTarieven()
+    ]);
+    offProspecten = pros || []; offKlanten = kl || []; offCatalogus = cat || []; OFF_TARIEVEN = tar || {};
+    vulProspectDropdown(); vulKlantDropdown(); initOffMeta(); renderOffNextstones(); renderOffTotalen();
     offGeladen = true; setOffStatus('');
   } catch (e){ setOffStatus('Laden mislukt: ' + (e.message||e), 'err'); }
+}
+function initOffMeta(){
+  const today=new Date(), iso=d=>d.toISOString().slice(0,10);
+  if(!offMeta.datum) offMeta.datum=iso(today);
+  if(!offMeta.geldig){ const g=new Date(today); g.setDate(g.getDate()+30); offMeta.geldig=iso(g); }
+  if(!offMeta.nummer) offMeta.nummer='OFF-'+today.getFullYear()+'-'+String(Math.floor(Math.random()*900)+100);
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e&&!e.value) e.value=v; };
+  set('off-nr',offMeta.nummer); set('off-datum',offMeta.datum); set('off-geldig',offMeta.geldig);
+  set('off-btw',String(offMeta.btw)); set('off-betaling',offMeta.betaling);
+}
+function offArtikelNaam(a){ const s=a.station,l=s&&s.lijn; return [l&&l.naam, s&&s.naam, a.subnaam].filter(Boolean).join(' — ') || a.subnaam || '(naamloos)'; }
+function offLijn(a){
+  const sel=offSelectie[a.id]||{include:false,opties:true};
+  const calc=TNL.berekenFix({ wbs:a.wbs||[] }, OFF_TARIEVEN);
+  const bedrag=calc.basis + (sel.opties!==false ? calc.opties : 0);
+  return { calc, bedrag, sel };
+}
+function renderOffNextstones(){
+  const cont=document.getElementById('off-nextstones'); if(!cont) return;
+  if(!offCatalogus.length){ cont.innerHTML='<div class="leeg">Nog geen NextStones in de catalogus (tabblad NextStones).</div>'; return; }
+  cont.innerHTML=offCatalogus.map(a=>{
+    const { bedrag, sel }=offLijn(a);
+    return `<div class="dyn-rij" style="align-items:center;gap:10px;border-bottom:1px solid var(--border,#e5e7eb);padding:7px 0">
+      <label style="flex:1;display:flex;gap:8px;align-items:center;cursor:pointer">
+        <input type="checkbox" style="flex:none" ${sel.include?'checked':''} onchange="offToggle('${a.id}','include',this.checked)">
+        <span>${escAttr(offArtikelNaam(a))}</span></label>
+      <label style="font-size:12px;color:var(--muted);display:flex;gap:5px;align-items:center${sel.include?'':';opacity:.4'}">
+        <input type="checkbox" ${sel.opties!==false?'checked':''} ${sel.include?'':'disabled'} onchange="offToggle('${a.id}','opties',this.checked)"> opties mee</label>
+      <span style="width:120px;text-align:right;font-weight:600">${sel.include?euro(bedrag):'—'}</span>
+    </div>`;
+  }).join('');
+}
+function offToggle(id,key,val){
+  offSelectie[id]=offSelectie[id]||{include:false,opties:true};
+  offSelectie[id][key]=val;
+  renderOffNextstones(); renderOffTotalen();
+}
+function offBerekenTotaal(){
+  let sub=0; const lijnen=[];
+  offCatalogus.forEach(a=>{ const s=offSelectie[a.id]; if(s&&s.include){ const {calc,bedrag}=offLijn(a); sub+=bedrag; lijnen.push({a,calc,bedrag,opties:s.opties!==false}); } });
+  const verpl=Number(offMeta.verplaatsing)||0;
+  const subExcl=sub+verpl;
+  const kortingPct=Number(offMeta.korting)||0;
+  const korting=subExcl*kortingPct/100;
+  const naKorting=subExcl-korting;
+  const btwPct=Number(offMeta.btw)||0;
+  const btw=naKorting*btwPct/100;
+  return { lijnen, sub, verpl, kortingPct, korting, naKorting, btwPct, btw, totaal:naKorting+btw };
+}
+function renderOffTotalen(){
+  const el=document.getElementById('off-totalen'); if(!el) return;
+  const t=offBerekenTotaal();
+  const rij=(l,v,groot)=>`<div style="display:flex;justify-content:space-between;padding:2px 0;${groot?'font-weight:700;font-size:15px;border-top:2px solid var(--navy,#1e2a4a);padding-top:6px;margin-top:4px':''}"><span>${l}</span><span>${euro(v)}</span></div>`;
+  let h=rij('Subtotaal NextStones', t.sub);
+  if(t.verpl) h+=rij('Verplaatsing', t.verpl);
+  if(t.kortingPct) h+=rij('Korting ('+t.kortingPct+'%)', -t.korting);
+  h+=rij('Subtotaal excl. btw', t.naKorting);
+  h+=rij('Btw ('+t.btwPct+'%)', t.btw);
+  h+=rij('Totaal incl. btw', t.totaal, true);
+  el.innerHTML=h;
+}
+function toonOfferte(){
+  if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); return; }
+  const t=offBerekenTotaal();
+  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één NextStone.','err'); return; }
+  const k=offKlant, m=offMeta;
+  const dl=a=>((a.deliverables||[]).filter(x=>(x||'').trim()));
+  const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
+  const lijnenHtml=t.lijnen.map(({a,bedrag})=>{
+    const bel=(a.belofte||a.doel||'').trim();
+    const items=dl(a);
+    return `<tr class="ns">
+      <td><div class="ns-naam">${esc(offArtikelNaam(a))}</div>
+        ${bel?`<div class="ns-bel">${esc(bel)}</div>`:''}
+        ${items.length?`<ul class="ns-del">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</td>
+      <td class="bedrag">${euro(bedrag)}</td></tr>`;
+  }).join('');
+  const totRij=(l,v,groot)=>`<tr class="${groot?'tot':''}"><td>${l}</td><td class="bedrag">${euro(v)}</td></tr>`;
+  let totHtml=totRij('Subtotaal NextStones', t.sub);
+  if(t.verpl) totHtml+=totRij('Verplaatsing', t.verpl);
+  if(t.kortingPct) totHtml+=totRij('Korting ('+t.kortingPct+'%)', -t.korting);
+  totHtml+=totRij('Subtotaal excl. btw', t.naKorting);
+  totHtml+=totRij('Btw ('+t.btwPct+'%)', t.btw);
+  totHtml+=totRij('Totaal incl. btw', t.totaal, true);
+  const adres=[k.adres, k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).join('<br>');
+  const doc=`<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>Offerte ${esc(m.nummer)}</title>
+  <style>
+    *{box-sizing:border-box} body{font-family:'Segoe UI',system-ui,sans-serif;color:#1e2a4a;margin:0;padding:38px 44px;font-size:13px;line-height:1.5}
+    .kop{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e2a4a;padding-bottom:14px;margin-bottom:22px}
+    .merk{font-size:22px;font-weight:800} .merk small{display:block;font-size:11px;font-weight:600;color:#6b7686;letter-spacing:.3px}
+    .meta{text-align:right;font-size:12px;color:#374151} .meta b{color:#1e2a4a}
+    h1{font-size:17px;margin:0 0 4px} .aan{margin:0 0 20px;color:#374151}
+    .blok{margin:0 0 18px} .intro{white-space:pre-wrap;margin:0 0 20px}
+    table{width:100%;border-collapse:collapse;margin:8px 0 4px}
+    td{padding:8px 6px;vertical-align:top;border-bottom:1px solid #e5e7eb}
+    .bedrag{text-align:right;white-space:nowrap;width:130px;font-variant-numeric:tabular-nums}
+    .ns-naam{font-weight:700} .ns-bel{color:#374151;margin:2px 0} .ns-del{margin:4px 0 0;padding-left:18px;color:#4b5563}
+    .ns-del li{margin:1px 0}
+    .totalen{width:60%;margin-left:auto} .totalen td{border:none;padding:3px 6px}
+    .totalen tr.tot td{border-top:2px solid #1e2a4a;font-weight:800;font-size:15px;padding-top:8px}
+    .voorw{margin-top:26px;font-size:12px;color:#374151} .voorw b{color:#1e2a4a}
+    .foot{margin-top:34px;border-top:1px solid #e5e7eb;padding-top:10px;font-size:11px;color:#6b7686;text-align:center}
+    @media print{body{padding:0}}
+  </style></head><body>
+    <div class="kop">
+      <div class="merk">The Next Level<small>Your stepping stones to The Next Level</small></div>
+      <div class="meta"><b>Offerte ${esc(m.nummer)}</b><br>Datum: ${dt(m.datum)}<br>Geldig tot: ${dt(m.geldig)}${m.opsteller?'<br>Opsteller: '+esc(m.opsteller):''}</div>
+    </div>
+    <h1>Offerte voor ${esc(k.bedrijf||'')}</h1>
+    <p class="aan">${esc(k.contactpersoon||'')}${k.functie?', '+esc(k.functie):''}${adres?'<br>'+adres:''}${k.email?'<br>'+esc(k.email):''}${k.telefoon?' · '+esc(k.telefoon):''}</p>
+    ${m.intro?`<div class="intro">${esc(m.intro)}</div>`:''}
+    <table>${lijnenHtml}</table>
+    <table class="totalen">${totHtml}</table>
+    <div class="voorw">
+      ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
+      <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
+    </div>
+    <div class="foot">The Next Level · offerte ${esc(m.nummer)} · ${dt(m.datum)}</div>
+  </body></html>`;
+  const w=window.open('','_blank');
+  if(!w){ setOffStatus('Pop-up geblokkeerd — sta pop-ups toe om de offerte te openen.','err'); return; }
+  w.document.write(doc); w.document.close();
+  setTimeout(()=>{ try{ w.focus(); w.print(); }catch(_){} }, 400);
+  setOffStatus('Offerte geopend in een nieuw venster.','ok');
 }
 function vulProspectDropdown(){
   const sel=document.getElementById('off-prospect'); if(!sel) return;

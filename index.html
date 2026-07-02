@@ -184,7 +184,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.9</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.10</div>
   </section>
 
   <!-- TAB 2 -->
@@ -1482,11 +1482,15 @@ function toonOfferte(){
     </div>
     <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>
   </body></html>`;
-  const w=window.open('','_blank');
-  if(!w){ setOffStatus('Pop-up geblokkeerd — sta pop-ups toe om de offerte te openen.','err'); return; }
-  w.document.write(doc); w.document.close();
-  setTimeout(()=>{ try{ w.focus(); w.print(); }catch(_){} }, 400);
-  setOffStatus('Offerte geopend in een nieuw venster.','ok');
+  let ifr=document.getElementById('off-print-frame');
+  if(ifr) ifr.remove();
+  ifr=document.createElement('iframe');
+  ifr.id='off-print-frame';
+  ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+  ifr.onload=()=>{ try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }catch(_){} };
+  document.body.appendChild(ifr);
+  ifr.src=URL.createObjectURL(new Blob([doc],{type:'text/html'}));
+  setOffStatus('Offerte klaar — kies in het afdrukvenster "Opslaan als PDF".','ok');
 }
 function vulProspectDropdown(){
   const sel=document.getElementById('off-prospect'); if(!sel) return;

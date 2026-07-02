@@ -87,7 +87,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .niveau-blok .nv-titel { font-weight:700; color:var(--orange); margin-bottom:8px; }
 .niveau-blok .nv-prijs { float:right; color:var(--navy); }
 
-/* Kop-velden van een NextStone (label links, veld rechts, even lang) */
+/* Kop-velden van een Stepping Stone (label links, veld rechts, even lang) */
 .kop-grid { display:grid; grid-template-columns: 150px 1fr; gap:8px 12px; align-items:start; margin-bottom:18px; }
 .kop-grid > label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; padding-top:8px; }
 .kop-grid input, .kop-grid textarea { width:100%; border:1px solid var(--border); border-radius:7px; padding:8px 10px; font-size:13px; font-family:inherit; }
@@ -107,9 +107,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 @media print {
   body > *:not(#offerte-print) { display:none !important; }
   #offerte-print { display:block !important; }
-  @page { margin:16mm; }
+  @page { margin:0; }
 }
-#offerte-print { font-family:'Segoe UI',system-ui,sans-serif; color:#1e2a4a; font-size:13px; line-height:1.5; }
+#offerte-print { font-family:'Segoe UI',system-ui,sans-serif; color:#1e2a4a; font-size:13px; line-height:1.5; padding:15mm 16mm; }
 #offerte-print .kop { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #1e2a4a; padding-bottom:14px; margin-bottom:22px; }
 #offerte-print .merk { font-size:22px; font-weight:800; }
 #offerte-print .merk-logo { height:48px; display:block; margin-bottom:4px; }
@@ -123,14 +123,18 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .aan { margin:0 0 20px; color:#374151; }
 #offerte-print .intro { white-space:pre-wrap; margin:0 0 22px; }
 #offerte-print .ns { margin:0 0 22px; }
-#offerte-print .ns h2 { font-size:15px; margin:0 0 4px; color:#1e2a4a; }
+#offerte-print .ns h2 { font-size:15px; margin:0 0 10px; color:#1e2a4a; }
+#offerte-print .ns-blok { margin:0 0 12px; }
+#offerte-print .ns-blok-t { font-weight:700; margin-bottom:2px; }
+#offerte-print .cl-rij { display:flex; gap:10px; }
+#offerte-print .cl-naam { font-weight:600; white-space:nowrap; }
 #offerte-print .waarom { color:#374151; margin:0 0 8px; }
 #offerte-print .belofte { margin:8px 0 12px; font-style:italic; color:#4b5563; }
 #offerte-print table.clusters tr.grp td { font-weight:700; color:#1e2a4a; padding-top:9px; }
 #offerte-print table.clusters { width:100%; border-collapse:collapse; margin:6px 0; }
 #offerte-print table.clusters td { padding:6px 6px; border-bottom:1px solid #eef1f5; vertical-align:top; }
 #offerte-print .bedrag { text-align:right; white-space:nowrap; width:130px; font-variant-numeric:tabular-nums; }
-#offerte-print .cl-oms { color:#6b7686; font-size:12px; margin-top:2px; }
+#offerte-print .cl-oms { color:#6b7686; font-size:12px; }
 #offerte-print table.clusters tr.subtot td { border-top:1px solid #1e2a4a; font-weight:700; }
 #offerte-print .krijgt { margin:6px 0; font-size:12px; }
 #offerte-print .krijgt ul { margin:4px 0 0; padding-left:18px; }
@@ -182,7 +186,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
 <nav>
   <button class="actief" data-tab="gesprek">① Gespreksvoorbereiding</button>
-  <button data-tab="catalogus">② TNL NextStones</button>
+  <button data-tab="catalogus">② TNL Stepping Stones</button>
   <button data-tab="offerte">③ Offerte</button>
   <button data-tab="tarieven">④ Tarieven</button>
   <button data-tab="tools">⑤ Tools</button>
@@ -192,7 +196,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   <!-- TAB 1 -->
   <section class="panel actief" id="tab-gesprek">
     <h2>Gespreksvoorbereiding</h2>
-    <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden. <em>Welke NextStone wordt jouw volgende stap?</em></p>
+    <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden. <em>Welke Stepping Stone wordt jouw volgende stap?</em></p>
 
     <div class="card">
       <textarea id="mail-tekst" placeholder="Plak hier de volledige quickscan-mail (of het rapport-blok met de scores)…"></textarea>
@@ -225,13 +229,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.17</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.18</div>
   </section>
 
   <!-- TAB 2 -->
   <section class="panel" id="tab-catalogus">
-    <h2>TNL NextStones <small style="font-weight:400;color:var(--muted);font-size:14px">— Your stepping stones to The Next Level</small></h2>
-    <p class="sub">Je verbeterprojecten: lijn → station → <b>NextStone</b>. Elke NextStone zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en NextStones onder een station.</p>
+    <h2>TNL Stepping Stones <small style="font-weight:400;color:var(--muted);font-size:14px">— Your stepping stones to The Next Level</small></h2>
+    <p class="sub">Je verbeterprojecten: lijn → station → <b>Stepping Stone</b>. Elke Stepping Stone zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en Stepping Stones onder een station.</p>
     <div class="status" id="cat-status">Laden…</div>
     <div id="cat-tree"></div>
   </section>
@@ -266,14 +270,14 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">Factor voor de uren
           <input id="km-factor" type="number" step="0.1" min="0.1" placeholder="2" style="width:130px" onchange="bewaarKm()"></label>
       </div>
-      <div class="hint" style="margin-top:8px">Reisuren = afstand ÷ snelheid. Reiskost = reisuren × uurtarief consultant ÷ factor (bv. factor 2 = reistijd aan half tarief). De afstand per NextStone vullen we later in de offerte in.</div>
+      <div class="hint" style="margin-top:8px">Reisuren = afstand ÷ snelheid. Reiskost = reisuren × uurtarief consultant ÷ factor (bv. factor 2 = reistijd aan half tarief). De afstand per Stepping Stone vullen we later in de offerte in.</div>
     </div>
   </section>
 
   <!-- TAB 3 -->
   <section class="panel" id="tab-offerte">
     <h2>Offerte</h2>
-    <p class="sub">Kies de klant — uit je prospecten of uit bestaande klanten — en vul de gegevens aan. De NextStone-selectie en prijsopmaak volgen in een volgende stap.</p>
+    <p class="sub">Kies de klant — uit je prospecten of uit bestaande klanten — en vul de gegevens aan. De Stepping Stone-selectie en prijsopmaak volgen in een volgende stap.</p>
     <div class="card">
       <div class="subkop">Klant</div>
       <div class="dyn-rij" style="flex-wrap:wrap;gap:14px;align-items:flex-end">
@@ -297,7 +301,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
 
     <div class="card" style="margin-top:16px">
-      <div class="subkop">NextStones in deze offerte</div>
+      <div class="subkop">Stepping Stones in deze offerte</div>
       <div id="off-nextstones"></div>
     </div>
 
@@ -336,17 +340,17 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <div id="art-modal" class="modal-overlay" style="display:none">
   <div class="modal">
     <div class="modal-kop">
-      <h3 id="art-titel">NextStone</h3>
+      <h3 id="art-titel">Stepping Stone</h3>
       <button class="x" onclick="sluitArtikel()">×</button>
     </div>
     <div class="modal-body">
       <div class="kop-grid">
-        <label>NextStone</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
-        <label>NextStone Path</label><input id="a-volnaam" disabled>
-        <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze NextStone relevant voor de klant?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+        <label>Stepping Stone</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
+        <label>Stepping Stone Path</label><input id="a-volnaam" disabled>
+        <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze Stepping Stone relevant voor de klant?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Meetbaar objectief</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant." onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
-        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra de NextStone geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra de Stepping Stone geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
       </div>
 
       <div class="subkop">Clusters</div>
@@ -676,9 +680,9 @@ var edit = null;   // editor-state voor de open Fix
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// Vaste processtappen die in elke nieuwe NextStone horen (werkwoord + van + …).
+// Vaste processtappen die in elke nieuwe Stepping Stone horen (werkwoord + van + …).
 const VASTE_PROCESSTAPPEN = ['Beschrijven van het proces', 'Coördineren van het project'];
-// Standaard-deliverables ("wat is af als het af is") voor een nieuwe NextStone.
+// Standaard-deliverables ("wat is af als het af is") voor een nieuwe Stepping Stone.
 const STANDAARD_DELIVERABLES = ['Een beschreven proces', 'Een gecoördineerd project'];
 function eersteRol(){ return (TARIEF_ROLLEN[0] && TARIEF_ROLLEN[0].rol) || 'Sr'; }
 function leegDeliverable(extra){
@@ -757,9 +761,9 @@ function renderCatBeheer() {
             <span class="snaam">${s.naam}</span>
             <button class="btn btn-ghost mini" onclick="hernoemStation('${s.id}')">Hernoem</button>
             <button class="btn btn-ghost mini mini-danger" onclick="verwijderStation('${s.id}')">Verwijder</button>
-            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ NextStone</button>
+            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ Stepping Stone</button>
           </div>`;
-        if (!arts.length) html += `<div class="leeg">Nog geen NextStones.</div>`;
+        if (!arts.length) html += `<div class="leeg">Nog geen Stepping Stones.</div>`;
         arts.forEach(a => {
           const c = TNL.berekenFix(a, TARIEVEN);
           const onb = onbekendeRollen(a);
@@ -809,7 +813,7 @@ function nieuwArtikel(stationId) {
     processen: [],
     wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
   vulArtikelForm({});
-  document.getElementById('art-titel').textContent = 'Nieuwe NextStone';
+  document.getElementById('art-titel').textContent = 'Nieuwe Stepping Stone';
   document.getElementById('a-verwijder').style.display = 'none';
   document.getElementById('art-modal').style.display = 'flex';
 }
@@ -827,12 +831,12 @@ function bewerkArtikel(id) {
     ])
   };
   vulArtikelForm(a);
-  document.getElementById('art-titel').textContent = 'NextStone bewerken';
+  document.getElementById('art-titel').textContent = 'Stepping Stone bewerken';
   document.getElementById('a-verwijder').style.display = 'inline-block';
   document.getElementById('art-modal').style.display = 'flex';
 }
 function sluitArtikel() { document.getElementById('art-modal').style.display = 'none'; edit = null; }
-function terugNaarLijst() { sluitArtikel(); laadCatalogus(); }   // terug naar de NextStones-lijst
+function terugNaarLijst() { sluitArtikel(); laadCatalogus(); }   // terug naar de Stepping Stones-lijst
 
 function vulArtikelForm(a) {
   const f = id => document.getElementById(id);
@@ -1252,7 +1256,7 @@ function buildFicheHtml(t) {
   </div>`;
 }
 
-// koppeling tools <-> NextStone (multi-select in de NextStone-editor)
+// koppeling tools <-> Stepping Stone (multi-select in de Stepping Stone-editor)
 async function renderNextstoneTools() {
   const cont = document.getElementById('a-tools'); if (!cont) return;
   if (!toolsCache.length) { try { toolsCache = await TNL.getTools(); } catch (e) {} }
@@ -1338,7 +1342,7 @@ function renderTarieven() {
   document.getElementById('tar-lijst').innerHTML = kop + (TARIEF_ROLLEN.map(t => {
     const n = artikelenMetRol(t.rol).length;
     return `<div class="dyn-rij">
-    <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} NextStone(s)</small>`:''}</span>
+    <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} Stepping Stone(s)</small>`:''}</span>
     <input maxlength="4" style="width:70px" value="${escAttr(t.afkorting||'')}" placeholder="afk." onchange="wijzigTariefVeld('${escAttr(t.rol)}','afkorting',this.value)">
     <input type="number" style="width:100px" value="${t.uurprijs??''}"      onchange="wijzigTariefVeld('${escAttr(t.rol)}','uurprijs',this.value)">
     <input type="number" style="width:100px" value="${t.halvedagprijs??''}" onchange="wijzigTariefVeld('${escAttr(t.rol)}','halvedagprijs',this.value)">
@@ -1377,7 +1381,7 @@ var AFZENDER = {
 function euro(n){ return '€ ' + (Number(n)||0).toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function setOffStatus(msg, kind){ const el=document.getElementById('off-status'); if(!el) return; el.className='status'+(kind?' '+kind:''); el.innerHTML=msg||''; }
 async function laadOfferteTab(){
-  setOffStatus('<span class="spin"></span>Prospecten, klanten en NextStones laden…');
+  setOffStatus('<span class="spin"></span>Prospecten, klanten en Stepping Stones laden…');
   try {
     const [pros, kl, cat, tar, km] = await Promise.all([
       TNL.getProspects().catch(()=>[]), TNL.getKlanten(),
@@ -1409,7 +1413,7 @@ function offLijn(a){
 }
 function renderOffNextstones(){
   const cont=document.getElementById('off-nextstones'); if(!cont) return;
-  if(!offCatalogus.length){ cont.innerHTML='<div class="leeg">Nog geen NextStones in de catalogus (tabblad NextStones).</div>'; return; }
+  if(!offCatalogus.length){ cont.innerHTML='<div class="leeg">Nog geen Stepping Stones in de catalogus (tabblad Stepping Stones).</div>'; return; }
   cont.innerHTML=offCatalogus.map(a=>{
     const { bedrag, sel }=offLijn(a);
     return `<div class="dyn-rij" style="align-items:center;gap:10px;border-bottom:1px solid var(--border,#e5e7eb);padding:7px 0">
@@ -1441,7 +1445,7 @@ function renderOffTotalen(){
   const el=document.getElementById('off-totalen'); if(!el) return;
   const t=offBerekenTotaal();
   const rij=(l,v,groot)=>`<div style="display:flex;justify-content:space-between;padding:2px 0;${groot?'font-weight:700;font-size:15px;border-top:2px solid var(--navy,#1e2a4a);padding-top:6px;margin-top:4px':''}"><span>${l}</span><span>${euro(v)}</span></div>`;
-  let h=rij('Subtotaal NextStones', t.sub);
+  let h=rij('Subtotaal Stepping Stones', t.sub);
   if(t.kortingPct) h+=rij('Korting ('+t.kortingPct+'%)', -t.korting);
   h+=rij('Subtotaal excl. btw', t.naKorting);
   h+=rij('Btw ('+t.btwPct+'%)', t.btw);
@@ -1451,13 +1455,11 @@ function renderOffTotalen(){
 function buildKmClause(){
   const k=KM_VERG||{};
   const fmt=n=>Number(n).toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2});
-  if(k.kost_per_km||k.snelheid_kmu||k.uren_factor){
+  const deel=f=>{ f=Number(f); if(f===2) return 'de helft'; if(f===3) return 'een derde'; if(f===4) return 'een vierde'; return f?('1/'+f+'e'):'een verlaagd deel'; };
+  if(k.kost_per_km||k.uren_factor){
     let s='Verplaatsingskosten worden apart aangerekend';
     if(k.kost_per_km) s+=' aan € '+fmt(k.kost_per_km)+' per kilometer';
-    s+='. De reistijd wordt aangerekend aan het uurtarief van de betrokken consultant';
-    if(k.uren_factor) s+=' gedeeld door '+k.uren_factor;
-    if(k.snelheid_kmu) s+=' (aan een gemiddelde snelheid van '+k.snelheid_kmu+' km/u)';
-    s+='.';
+    s+='. De effectieve reistijd wordt aangerekend aan '+deel(k.uren_factor)+' van het tarief.';
     return s;
   }
   return 'Verplaatsingskosten worden apart aangerekend volgens de afgesproken tarieven.';
@@ -1470,7 +1472,7 @@ function offClusterRows(a){
   const optie=[], maatwerk=[];
   (a.wbs||[]).forEach(d=>{
     const g=(d.scopeGroep||'').trim();
-    if(g==='Optioneel'){ if(d.gekozen===false) return; optie.push({ oms:(d.omschrijving||'').trim(), kost:TNL.prijsVanEenheid(d.rol,d.eenheid,d.aantal,OFF_TARIEVEN) }); }
+    if(g==='Optioneel'){ if(d.gekozen===false) return; const regie=!(Number(d.aantal)>0); const uur=(OFF_TARIEVEN[d.rol]&&OFF_TARIEVEN[d.rol].uurprijs)||0; optie.push({ oms:(d.omschrijving||'').trim(), kost:TNL.prijsVanEenheid(d.rol,d.eenheid,d.aantal,OFF_TARIEVEN), regie, uur }); }
     else if(g==='Maatwerk'||g==='OutOfScope'){ if((d.omschrijving||'').trim()) maatwerk.push({ oms:(d.omschrijving||'').trim() }); }
   });
   return { calc, rows, optie, maatwerk };
@@ -1478,7 +1480,7 @@ function offClusterRows(a){
 function toonOfferte(){
   if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); return; }
   const t=offBerekenTotaal();
-  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één NextStone.','err'); return; }
+  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één Stepping Stone.','err'); return; }
   const k=offKlant, m=offMeta, A=AFZENDER;
   const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
   const secties=t.lijnen.map(({a,opties})=>{
@@ -1486,10 +1488,12 @@ function toonOfferte(){
     const stoneTot=calc.basis+(opties?calc.opties:0);
     const del=(a.deliverables||[]).filter(x=>(x||'').trim());
     const procs=(a.processen||[]).filter(p=>(p.naam||'').trim()||p.data);
-    let cr=rows.map(r=>`<tr><td>${esc(r.naam)}${r.oms?`<div class="cl-oms">${esc(r.oms)}</div>`:''}</td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
+    const blok=(titel,tekst)=> (tekst&&String(tekst).trim())?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div>${esc(String(tekst).trim())}</div></div>`:'';
+    const intro=blok('Waarom dit belangrijk is',a.waarom)+blok('Doel',a.doel)+blok('Meetbaar objectief',a.meetbaar_objectief)+blok('Belofte',a.belofte);
+    let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div></td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
     if(opties && optie.length){
       cr+=`<tr class="grp"><td>Opties</td><td></td></tr>`;
-      cr+=optie.map(o=>`<tr><td>${esc(o.oms||'Optie')}</td><td class="bedrag">${euro(o.kost)}</td></tr>`).join('');
+      cr+=optie.map(o=>`<tr><td>${esc(o.oms||'Optie')}</td><td class="bedrag"${o.regie?' style="white-space:normal"':''}>${o.regie?('in regie = '+euro(o.uur)+'/uur'):euro(o.kost)}</td></tr>`).join('');
     }
     if(maatwerk.length){
       cr+=`<tr class="grp"><td>Maatwerk (op aanvraag)</td><td></td></tr>`;
@@ -1498,8 +1502,7 @@ function toonOfferte(){
     cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(stoneTot)}</td></tr>`;
     return `<section class="ns">
       <h2>${esc(offArtikelNaam(a))}</h2>
-      ${a.waarom&&a.waarom.trim()?`<p class="waarom">${esc(a.waarom.trim())}</p>`:''}
-      ${a.belofte&&a.belofte.trim()?`<p class="belofte">${esc(a.belofte.trim())}</p>`:(a.doel&&a.doel.trim()?`<p class="belofte">${esc(a.doel.trim())}</p>`:'')}
+      ${intro}
       <table class="clusters">${cr}</table>
       ${del.length?`<div class="krijgt"><b>Wat u ontvangt:</b><ul>${del.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
       ${procs.length?`<div class="proc"><b>Bijhorend proces:</b>${procs.map(p=>p.data?`<div class="proc-img"><img src="${p.data}" alt="${escAttr(p.naam||'')}"></div>`:` ${esc(p.naam||'')}`).join('')}</div>`:''}
@@ -1515,8 +1518,7 @@ function toonOfferte(){
   const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
   const bodyHtml=`
     <div class="kop">
-      <div class="merk"><img class="merk-logo" src="${esc(A.logo)}" alt="${esc(A.merk)}"><small>${esc(A.tagline)}</small>
-        <span class="afz">${esc(A.bedrijf)} · ${esc(A.persoon)}<br>${esc(A.adres)}<br>BTW ${esc(A.btw)} · ${esc(A.tel)}</span></div>
+      <div class="merk"><img class="merk-logo" src="${esc(A.logo)}" alt="${esc(A.merk)}"><small>${esc(A.tagline)}</small></div>
       <div class="meta"><b>Offerte ${esc(m.nummer)}</b><br>Datum: ${dt(m.datum)}<br>Geldig tot: ${dt(m.geldig)}${m.opsteller?'<br>Opsteller: '+esc(m.opsteller):''}</div>
     </div>
     <h1>Offerte voor ${esc(k.bedrijf||'')}</h1>
@@ -1529,7 +1531,7 @@ function toonOfferte(){
       ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
       <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
     </div>
-    <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>`;
+    <div class="foot">${esc(A.bedrijf)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>`;
   const cont=document.getElementById('offerte-print');
   if(!cont){ setOffStatus('Print-blok ontbreekt op de pagina.','err'); return; }
   cont.innerHTML=bodyHtml;
@@ -1694,7 +1696,7 @@ async function slaArtikelOp() {
 }
 async function verwijderArtikel() {
   if (!edit.id) return;
-  if (!confirm('Deze NextStone definitief verwijderen?')) return;
+  if (!confirm('Deze Stepping Stone definitief verwijderen?')) return;
   try { await TNL.deleteArtikel(edit.id); sluitArtikel(); await laadCatalogus(); }
   catch(e){ alert('Mislukt: '+(e.message||e)); }
 }

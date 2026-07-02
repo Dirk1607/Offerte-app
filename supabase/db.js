@@ -231,6 +231,24 @@ const TNL = (() => {
     return check(await client().from('klant').insert(klant).select().single());
   }
 
+  // ---------- prospecten (read-only uit het aparte Prospectie-project) ----------
+  const PROSPECTIE = {
+    url: 'https://pylfvfcieyrwegcvlwwa.supabase.co',
+    anonKey: 'sb_publishable_jINc1spJu3sUcltJSABpLQ_r_jBNBud'
+  };
+  let sbp = null;
+  function prospectieClient() {
+    if (sbp) return sbp;
+    if (!window.supabase) throw new Error('supabase-js (CDN) niet geladen');
+    sbp = window.supabase.createClient(PROSPECTIE.url, PROSPECTIE.anonKey);
+    return sbp;
+  }
+  async function getProspects() {
+    return check(await prospectieClient().from('prospects')
+      .select('id, titel, voornaam, naam, bedrijf, email, telefoon, categorie, status, notities')
+      .order('bedrijf', { ascending: true }));
+  }
+
   // ---------- quickscan (scan opslaan/ophalen) ----------
   // Slaat klant + scan op. Scan is uniek op (klant_id, datum, invuller):
   // zelfde combinatie opnieuw inlezen werkt het bestaande dossier bij.
@@ -322,6 +340,7 @@ const TNL = (() => {
     getStations, upsertStation, deleteStation,
     getCatalogus, getArtikel, upsertArtikel, updateArtikel, deleteArtikel,
     getKlanten, vindKlantOpBedrijf, upsertKlant, saveGesprek, getScansVanKlant,
+    getProspects,
     saveOfferte, getOffertes, getOfferte
   };
 })();

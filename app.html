@@ -182,7 +182,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.6</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.7</div>
   </section>
 
   <!-- TAB 2 -->
@@ -230,8 +230,21 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   <!-- TAB 3 -->
   <section class="panel" id="tab-offerte">
     <h2>Offerte</h2>
-    <p class="sub">Geselecteerde producten → offerte met snapshot. (Volgende stap.)</p>
-    <div class="card"><div class="placeholder">Offerte wordt in de volgende stap gebouwd.</div></div>
+    <p class="sub">Kies de klant — uit je prospecten of uit bestaande klanten — en vul de gegevens aan. De NextStone-selectie en prijsopmaak volgen in een volgende stap.</p>
+    <div class="card">
+      <div class="subkop">Klant</div>
+      <div class="dyn-rij" style="flex-wrap:wrap;gap:14px;align-items:flex-end">
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:220px">Prospect kiezen (uit de Prospectie-tool)
+          <select id="off-prospect" onchange="kiesProspect(this.value)"><option value="">— kies een prospect —</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:220px">of bestaande klant
+          <select id="off-klant" onchange="kiesKlant(this.value)"><option value="">— kies een klant —</option></select></label>
+      </div>
+      <div class="status" id="off-status"></div>
+      <div id="off-klant-form"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="placeholder">NextStone-selectie en prijsopmaak bouwen we in de volgende stap.</div>
+    </div>
   </section>
 
   <!-- TAB 5 — Tools -->
@@ -369,7 +382,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=13"></script>
+<script src="supabase/db.js?v=14"></script>
 <script>
 // ============================================================
 // STATE
@@ -894,6 +907,7 @@ function renderTotalen() {
 
 // ---------- TABBLAD ④ — TARIEVEN ----------
 document.querySelector('nav button[data-tab="tarieven"]').addEventListener('click', laadTarieven);
+document.querySelector('nav button[data-tab="offerte"]').addEventListener('click', laadOfferteTab);
 
 // ========== TABBLAD ⑤ — TOOLS ==========
 let toolsCache = [];
@@ -1259,6 +1273,91 @@ async function bewaarKm() {
   const st = document.getElementById('km-status');
   try { await TNL.setInstelling('km_vergoeding', KM_VERG); if (st){ st.innerHTML = '<span style="color:var(--groen,#2e7d4f)">Km-vergoeding bewaard.</span>'; setTimeout(() => { if (st) st.textContent = ''; }, 2000); } }
   catch (e) { if (st) st.innerHTML = '<span style="color:var(--red)">Bewaren mislukt: ' + (e.message||e) + '</span>'; }
+}
+
+// ---------- OFFERTE-TAB: klant kiezen (prospect of bestaande klant) ----------
+var offProspecten = [], offKlanten = [], offKlant = null, offGeladen = false;
+function setOffStatus(msg, kind){ const el=document.getElementById('off-status'); if(!el) return; el.className='status'+(kind?' '+kind:''); el.innerHTML=msg||''; }
+async function laadOfferteTab(){
+  if (offGeladen) return;
+  setOffStatus('<span class="spin"></span>Prospecten en klanten laden…');
+  try {
+    const [pros, kl] = await Promise.all([TNL.getProspects().catch(()=>[]), TNL.getKlanten()]);
+    offProspecten = pros || []; offKlanten = kl || [];
+    vulProspectDropdown(); vulKlantDropdown();
+    offGeladen = true; setOffStatus('');
+  } catch (e){ setOffStatus('Laden mislukt: ' + (e.message||e), 'err'); }
+}
+function vulProspectDropdown(){
+  const sel=document.getElementById('off-prospect'); if(!sel) return;
+  sel.innerHTML='<option value="">— kies een prospect —</option>'+offProspecten.map(p=>{
+    const naam=[p.voornaam,p.naam].filter(Boolean).join(' ');
+    const lbl=[p.bedrijf||'(zonder bedrijf)', naam].filter(Boolean).join(' — ');
+    return `<option value="${p.id}">${escAttr(lbl)}</option>`;
+  }).join('');
+}
+function vulKlantDropdown(){
+  const sel=document.getElementById('off-klant'); if(!sel) return;
+  const cur=offKlant&&offKlant.id;
+  sel.innerHTML='<option value="">— kies een klant —</option>'+offKlanten.map(k=>
+    `<option value="${k.id}" ${cur===k.id?'selected':''}>${escAttr(k.bedrijf||'(naamloos)')}</option>`).join('');
+}
+function kiesProspect(pid){
+  if(!pid) return;
+  const p=offProspecten.find(x=>String(x.id)===String(pid)); if(!p) return;
+  const bestaande=offKlanten.find(k=>(k.bedrijf||'').trim().toLowerCase()===(p.bedrijf||'').trim().toLowerCase());
+  const merge=(a,b)=>(a&&String(a).trim())?a:(b||'');
+  const volledigeNaam=[p.titel,p.voornaam,p.naam].filter(Boolean).join(' ');
+  offKlant = bestaande ? {
+    id:bestaande.id, bedrijf:bestaande.bedrijf||p.bedrijf||'',
+    contactpersoon:merge(bestaande.contactpersoon, volledigeNaam),
+    functie:bestaande.functie||'', email:merge(bestaande.email,p.email),
+    telefoon:merge(bestaande.telefoon,p.telefoon), adres:bestaande.adres||'',
+    btw_nummer:bestaande.btw_nummer||'', sector:bestaande.sector||'',
+    medewerkers:bestaande.medewerkers||'', notities:merge(bestaande.notities,p.notities),
+    prospect_id:String(p.id)
+  } : {
+    bedrijf:p.bedrijf||'', contactpersoon:volledigeNaam, functie:'', email:p.email||'',
+    telefoon:p.telefoon||'', adres:'', btw_nummer:'', sector:'', medewerkers:'',
+    notities:p.notities||'', prospect_id:String(p.id)
+  };
+  const ks=document.getElementById('off-klant'); if(ks) ks.value='';
+  renderKlantForm();
+  setOffStatus(bestaande
+    ? 'Bestaande klant "'+(p.bedrijf||'')+'" geladen — vul aan en bewaar.'
+    : 'Prospect "'+(p.bedrijf||'')+'" geladen — vul aan en bewaar als klant.', 'ok');
+}
+function kiesKlant(kid){
+  if(!kid) return;
+  const k=offKlanten.find(x=>String(x.id)===String(kid)); if(!k) return;
+  offKlant={...k};
+  const ps=document.getElementById('off-prospect'); if(ps) ps.value='';
+  renderKlantForm(); setOffStatus('Klant geladen.','ok');
+}
+function renderKlantForm(){
+  const cont=document.getElementById('off-klant-form'); if(!cont) return;
+  if(!offKlant){ cont.innerHTML=''; return; }
+  const k=offKlant;
+  const veld=(label,key)=>`<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">${label}<input style="width:100%" value="${escAttr(k[key]||'')}" oninput="offKlant['${key}']=this.value"></label>`;
+  cont.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px">
+    ${veld('Bedrijf','bedrijf')}${veld('Contactpersoon','contactpersoon')}${veld('Functie','functie')}
+    ${veld('E-mail','email')}${veld('Telefoon','telefoon')}${veld('Adres','adres')}
+    ${veld('BTW-nummer','btw_nummer')}${veld('Sector','sector')}
+  </div>
+  <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+    <button class="btn" onclick="bewaarKlant()">Klant opslaan</button>
+    ${k.prospect_id?'<span class="hint">Gekoppeld aan prospect #'+escAttr(k.prospect_id)+'</span>':''}
+  </div>`;
+}
+async function bewaarKlant(){
+  if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Geef minstens een bedrijfsnaam op.','err'); return; }
+  setOffStatus('<span class="spin"></span>Opslaan…');
+  try {
+    const saved=await TNL.upsertKlant(offKlant);
+    offKlant=saved; offGeladen=false; await laadOfferteTab();
+    const ks=document.getElementById('off-klant'); if(ks) ks.value=saved.id;
+    renderKlantForm(); setOffStatus('Klant bewaard.','ok');
+  } catch(e){ setOffStatus('Opslaan mislukt: '+(e.message||e),'err'); }
 }
 
 // ---------- rol-gebruik detecteren ----------

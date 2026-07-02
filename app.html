@@ -102,6 +102,43 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .tool-add { font-size:12px; padding:5px 8px; border:1px solid var(--border,#dfe3ea); border-radius:7px; background:#fff; cursor:pointer; }
 .off-lbl { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); }
 .off-lbl input, .off-lbl textarea { width:100%; }
+/* ---- Offerte-afdruk ---- */
+#offerte-print { display:none; }
+@media print {
+  body > *:not(#offerte-print) { display:none !important; }
+  #offerte-print { display:block !important; }
+  @page { margin:16mm; }
+}
+#offerte-print { font-family:'Segoe UI',system-ui,sans-serif; color:#1e2a4a; font-size:13px; line-height:1.5; }
+#offerte-print .kop { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #1e2a4a; padding-bottom:14px; margin-bottom:22px; }
+#offerte-print .merk { font-size:22px; font-weight:800; }
+#offerte-print .merk small { display:block; font-size:11px; font-weight:600; color:#6b7686; letter-spacing:.3px; }
+#offerte-print .merk .afz { display:block; font-size:10.5px; font-weight:400; color:#6b7686; margin-top:6px; line-height:1.4; }
+#offerte-print .meta { text-align:right; font-size:12px; color:#374151; }
+#offerte-print .meta b { color:#1e2a4a; }
+#offerte-print h1 { font-size:17px; margin:0 0 4px; }
+#offerte-print .aan { margin:0 0 20px; color:#374151; }
+#offerte-print .intro { white-space:pre-wrap; margin:0 0 22px; }
+#offerte-print .ns { margin:0 0 22px; page-break-inside:avoid; }
+#offerte-print .ns h2 { font-size:15px; margin:0 0 4px; color:#1e2a4a; }
+#offerte-print .waarom { color:#374151; margin:0 0 6px; }
+#offerte-print .belofte { margin:0 0 8px; font-style:italic; color:#4b5563; }
+#offerte-print table.clusters { width:100%; border-collapse:collapse; margin:6px 0; }
+#offerte-print table.clusters td { padding:6px 6px; border-bottom:1px solid #eef1f5; vertical-align:top; }
+#offerte-print .bedrag { text-align:right; white-space:nowrap; width:130px; font-variant-numeric:tabular-nums; }
+#offerte-print .cl-oms { color:#6b7686; font-size:12px; margin-top:2px; }
+#offerte-print table.clusters tr.subtot td { border-top:1px solid #1e2a4a; font-weight:700; }
+#offerte-print .krijgt { margin:6px 0; font-size:12px; }
+#offerte-print .krijgt ul { margin:4px 0 0; padding-left:18px; }
+#offerte-print .krijgt li { margin:1px 0; }
+#offerte-print .proc { font-size:12px; color:#374151; margin:6px 0 0; }
+#offerte-print .totalen { width:60%; margin-left:auto; border-collapse:collapse; margin-top:12px; }
+#offerte-print .totalen td { padding:3px 6px; }
+#offerte-print .totalen tr.tot td { border-top:2px solid #1e2a4a; font-weight:800; font-size:15px; padding-top:8px; }
+#offerte-print .voorw { margin-top:26px; font-size:12px; color:#374151; }
+#offerte-print .voorw b { color:#1e2a4a; }
+#offerte-print .voorw p { margin:0 0 6px; }
+#offerte-print .foot { margin-top:34px; border-top:1px solid #e5e7eb; padding-top:10px; font-size:11px; color:#6b7686; text-align:center; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 9px 3px; }
 .wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
@@ -184,7 +221,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.12</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.13</div>
   </section>
 
   <!-- TAB 2 -->
@@ -287,6 +324,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div id="tools-lijst"></div>
   </section>
 </main>
+
+<!-- Verborgen offerte-afdruk (alleen zichtbaar bij printen) -->
+<div id="offerte-print"></div>
 
 <!-- Fix-editor -->
 <div id="art-modal" class="modal-overlay" style="display:none">
@@ -1441,31 +1481,7 @@ function toonOfferte(){
   totHtml+=totRij('Totaal incl. btw', t.totaal, true);
   const kadres=[k.adres, k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).join('<br>');
   const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
-  const doc=`<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>Offerte ${esc(m.nummer)}</title>
-  <style>
-    *{box-sizing:border-box} body{font-family:'Segoe UI',system-ui,sans-serif;color:#1e2a4a;margin:0;padding:38px 44px;font-size:13px;line-height:1.5}
-    .kop{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e2a4a;padding-bottom:14px;margin-bottom:22px}
-    .merk{font-size:22px;font-weight:800} .merk small{display:block;font-size:11px;font-weight:600;color:#6b7686;letter-spacing:.3px}
-    .merk .afz{display:block;font-size:10.5px;font-weight:400;color:#6b7686;margin-top:6px;line-height:1.4}
-    .meta{text-align:right;font-size:12px;color:#374151} .meta b{color:#1e2a4a}
-    h1{font-size:17px;margin:0 0 4px} .aan{margin:0 0 20px;color:#374151}
-    .intro{white-space:pre-wrap;margin:0 0 22px}
-    .ns{margin:0 0 22px;page-break-inside:avoid}
-    .ns h2{font-size:15px;margin:0 0 4px;color:#1e2a4a}
-    .waarom{color:#374151;margin:0 0 6px} .belofte{margin:0 0 8px;font-style:italic;color:#4b5563}
-    table.clusters{width:100%;border-collapse:collapse;margin:6px 0}
-    table.clusters td{padding:6px 6px;border-bottom:1px solid #eef1f5;vertical-align:top}
-    .bedrag{text-align:right;white-space:nowrap;width:130px;font-variant-numeric:tabular-nums}
-    .cl-oms{color:#6b7686;font-size:12px;margin-top:2px}
-    table.clusters tr.subtot td{border-top:1px solid #1e2a4a;font-weight:700}
-    .krijgt{margin:6px 0;font-size:12px} .krijgt ul{margin:4px 0 0;padding-left:18px} .krijgt li{margin:1px 0}
-    .proc{font-size:12px;color:#374151;margin:6px 0 0}
-    .totalen{width:60%;margin-left:auto;border-collapse:collapse;margin-top:12px} .totalen td{padding:3px 6px}
-    .totalen tr.tot td{border-top:2px solid #1e2a4a;font-weight:800;font-size:15px;padding-top:8px}
-    .voorw{margin-top:26px;font-size:12px;color:#374151} .voorw b{color:#1e2a4a} .voorw p{margin:0 0 6px}
-    .foot{margin-top:34px;border-top:1px solid #e5e7eb;padding-top:10px;font-size:11px;color:#6b7686;text-align:center}
-    @media print{body{padding:0}}
-  </style></head><body>
+  const bodyHtml=`
     <div class="kop">
       <div class="merk">${esc(A.merk)}<small>${esc(A.tagline)}</small>
         <span class="afz">${esc(A.bedrijf)} · ${esc(A.persoon)}<br>${esc(A.adres)}<br>BTW ${esc(A.btw)} · ${esc(A.tel)}</span></div>
@@ -1481,17 +1497,12 @@ function toonOfferte(){
       ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
       <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
     </div>
-    <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>
-  </body></html>`;
-  let ifr=document.getElementById('off-print-frame');
-  if(ifr) ifr.remove();
-  ifr=document.createElement('iframe');
-  ifr.id='off-print-frame';
-  ifr.style.cssText='position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0';
-  ifr.onload=()=>{ setTimeout(()=>{ try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }catch(_){} }, 150); };
-  document.body.appendChild(ifr);
-  ifr.src=URL.createObjectURL(new Blob([doc],{type:'text/html'}));
-  setOffStatus('Offerte klaar — kies in het afdrukvenster "Opslaan als PDF".','ok');
+    <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>`;
+  const cont=document.getElementById('offerte-print');
+  if(!cont){ setOffStatus('Print-blok ontbreekt op de pagina.','err'); return; }
+  cont.innerHTML=bodyHtml;
+  setOffStatus('Offerte klaar — kies "Opslaan als PDF" in het afdrukvenster.','ok');
+  setTimeout(()=>{ window.print(); }, 120);
 }
 function vulProspectDropdown(){
   const sel=document.getElementById('off-prospect'); if(!sel) return;

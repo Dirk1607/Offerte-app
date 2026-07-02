@@ -182,7 +182,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.5</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.6</div>
   </section>
 
   <!-- TAB 2 -->
@@ -209,6 +209,21 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <input id="tar-heel" type="number" placeholder="€ hele dag" style="width:110px">
         <button class="btn" onclick="voegTariefToe()">+ Toevoegen</button>
       </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="subkop">Km-vergoeding (verplaatsing)</div>
+      <p class="sub" style="margin-top:2px">Voor stappen die bij de klant gebeuren (KM-vinkje in de WBS). De reistijd en -kost worden later in de offerte berekend.</p>
+      <div class="status" id="km-status"></div>
+      <div class="dyn-rij" style="flex-wrap:wrap;align-items:flex-end;gap:16px">
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">Kostprijs per km (€)
+          <input id="km-kost" type="number" step="0.01" min="0" placeholder="0,42" style="width:130px" onchange="bewaarKm()"></label>
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">Gemiddelde snelheid (km/u)
+          <input id="km-snelheid" type="number" step="1" min="1" placeholder="80" style="width:130px" onchange="bewaarKm()"></label>
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">Factor voor de uren
+          <input id="km-factor" type="number" step="0.1" min="0.1" placeholder="2" style="width:130px" onchange="bewaarKm()"></label>
+      </div>
+      <div class="hint" style="margin-top:8px">Reisuren = afstand ÷ snelheid. Reiskost = reisuren × uurtarief consultant ÷ factor (bv. factor 2 = reistijd aan half tarief). De afstand per NextStone vullen we later in de offerte in.</div>
     </div>
   </section>
 
@@ -354,7 +369,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=11"></script>
+<script src="supabase/db.js?v=13"></script>
 <script>
 // ============================================================
 // STATE
@@ -566,6 +581,7 @@ function wisMail() {
 // ============================================================
 var TARIEVEN = {};         // { rol: { uurprijs, halvedagprijs, heledagprijs } }
 var TARIEF_ROLLEN = [];    // [{ rol, uurprijs, halvedagprijs, heledagprijs }] geordend
+var KM_VERG = {};          // { kost_per_km, snelheid_kmu, uren_factor } — globale km-vergoeding
 var catStations = [];
 var catArtikelen = [];
 var catGeladen = false;
@@ -1197,13 +1213,15 @@ async function laadTarieven() {
   const st = document.getElementById('tar-status');
   st.textContent = 'Laden…';
   try {
-    [TARIEF_ROLLEN, catArtikelen] = await Promise.all([
-      TNL.getTarievenLijst(), TNL.getCatalogus({ alleenActief:false })
+    let km;
+    [TARIEF_ROLLEN, catArtikelen, km] = await Promise.all([
+      TNL.getTarievenLijst(), TNL.getCatalogus({ alleenActief:false }), TNL.getInstelling('km_vergoeding')
     ]);
     TARIEVEN = Object.fromEntries(TARIEF_ROLLEN.map(t => [t.rol, {
       uurprijs: Number(t.uurprijs)||0, halvedagprijs: Number(t.halvedagprijs)||0, heledagprijs: Number(t.heledagprijs)||0
     }]));
-    renderTarieven();
+    KM_VERG = km || {};
+    renderTarieven(); vulKmForm();
     st.textContent = '';
   } catch (e) {
     st.innerHTML = '<span style="color:var(--red)">Laden mislukt: ' + (e.message||e) + '</span>';
@@ -1225,6 +1243,22 @@ function renderTarieven() {
     <button class="x" title="verwijderen" onclick="verwijderTariefUI('${escAttr(t.rol)}')">×</button>
   </div>`;
   }).join('') || '<div class="leeg">Nog geen rollen.</div>');
+}
+
+// ---------- km-vergoeding (globale instelling) ----------
+function vulKmForm() {
+  const k = KM_VERG || {};
+  const g = id => document.getElementById(id);
+  if (g('km-kost'))     g('km-kost').value     = (k.kost_per_km  ?? '');
+  if (g('km-snelheid')) g('km-snelheid').value = (k.snelheid_kmu ?? '');
+  if (g('km-factor'))   g('km-factor').value   = (k.uren_factor  ?? '');
+}
+async function bewaarKm() {
+  const num = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+  KM_VERG = { kost_per_km: num('km-kost'), snelheid_kmu: num('km-snelheid'), uren_factor: num('km-factor') };
+  const st = document.getElementById('km-status');
+  try { await TNL.setInstelling('km_vergoeding', KM_VERG); if (st){ st.innerHTML = '<span style="color:var(--groen,#2e7d4f)">Km-vergoeding bewaard.</span>'; setTimeout(() => { if (st) st.textContent = ''; }, 2000); } }
+  catch (e) { if (st) st.innerHTML = '<span style="color:var(--red)">Bewaren mislukt: ' + (e.message||e) + '</span>'; }
 }
 
 // ---------- rol-gebruik detecteren ----------

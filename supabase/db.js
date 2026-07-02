@@ -89,6 +89,17 @@ const TNL = (() => {
     return check(await client().from('tarieven').delete().eq('rol', rol));
   }
 
+  // ---------- app-brede instellingen (key-value) ----------
+  async function getInstelling(sleutel) {
+    const row = check(await client().from('instellingen')
+      .select('waarde').eq('sleutel', sleutel).maybeSingle());
+    return row ? row.waarde : null;
+  }
+  async function setInstelling(sleutel, waarde) {
+    return check(await client().from('instellingen')
+      .upsert({ sleutel, waarde, updated_at: new Date().toISOString() }).select().single());
+  }
+
   // Rekenkern van een TNL Fix: kost per scope-groep, totalen, doorlooptijd
   // en klant-inspanning. Deliverables met optie=true tellen apart (niet in basis).
   //   fix.wbs = [{ rol, eenheid, aantal, scopeGroep, optie, week, klantAantal, klantEenheid }]
@@ -306,6 +317,7 @@ const TNL = (() => {
     client, berekenNiveau, berekenFix,
     getTools, getTool, upsertTool, updateTool, deleteTool, uploadToolPdf, uploadToolDoc,
     getTarieven, getTarievenLijst, setTarief, verwijderTarief, prijsVanEenheid,
+    getInstelling, setInstelling,
     getLijnen,
     getStations, upsertStation, deleteStation,
     getCatalogus, getArtikel, upsertArtikel, updateArtikel, deleteArtikel,

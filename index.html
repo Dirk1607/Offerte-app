@@ -124,8 +124,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .intro { white-space:pre-wrap; margin:0 0 22px; }
 #offerte-print .ns { margin:0 0 22px; page-break-inside:avoid; }
 #offerte-print .ns h2 { font-size:15px; margin:0 0 4px; color:#1e2a4a; }
-#offerte-print .waarom { color:#374151; margin:0 0 6px; }
-#offerte-print .belofte { margin:0 0 8px; font-style:italic; color:#4b5563; }
+#offerte-print .waarom { color:#374151; margin:0 0 8px; }
+#offerte-print .belofte { margin:8px 0 12px; font-style:italic; color:#4b5563; }
+#offerte-print table.clusters tr.grp td { font-weight:700; color:#1e2a4a; padding-top:9px; }
 #offerte-print table.clusters { width:100%; border-collapse:collapse; margin:6px 0; }
 #offerte-print table.clusters td { padding:6px 6px; border-bottom:1px solid #eef1f5; vertical-align:top; }
 #offerte-print .bedrag { text-align:right; white-space:nowrap; width:130px; font-variant-numeric:tabular-nums; }
@@ -224,7 +225,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.15</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.16</div>
   </section>
 
   <!-- TAB 2 -->
@@ -1376,7 +1377,6 @@ var AFZENDER = {
 function euro(n){ return '€ ' + (Number(n)||0).toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function setOffStatus(msg, kind){ const el=document.getElementById('off-status'); if(!el) return; el.className='status'+(kind?' '+kind:''); el.innerHTML=msg||''; }
 async function laadOfferteTab(){
-  if (offGeladen) return;
   setOffStatus('<span class="spin"></span>Prospecten, klanten en NextStones laden…');
   try {
     const [pros, kl, cat, tar, km] = await Promise.all([
@@ -1467,7 +1467,13 @@ function offClusterRows(a){
   const perGroep=calc.perGroep||{}; const rows=[]; const gezien=new Set();
   (a.clusters||[]).forEach(c=>{ const naam=(c.naam||'').trim(); if(!naam||gezien.has(naam)) return; gezien.add(naam); rows.push({ naam, oms:(c.omschrijving||'').trim(), kost:perGroep[naam]||0 }); });
   Object.keys(perGroep).forEach(naam=>{ if(!gezien.has(naam)){ gezien.add(naam); rows.push({ naam, oms:'', kost:perGroep[naam] }); } });
-  return { calc, rows };
+  const optie=[], maatwerk=[];
+  (a.wbs||[]).forEach(d=>{
+    const g=(d.scopeGroep||'').trim();
+    if(g==='Optioneel'){ if(d.gekozen===false) return; optie.push({ oms:(d.omschrijving||'').trim(), kost:TNL.prijsVanEenheid(d.rol,d.eenheid,d.aantal,OFF_TARIEVEN) }); }
+    else if(g==='Maatwerk'||g==='OutOfScope'){ if((d.omschrijving||'').trim()) maatwerk.push({ oms:(d.omschrijving||'').trim() }); }
+  });
+  return { calc, rows, optie, maatwerk };
 }
 function toonOfferte(){
   if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); return; }
@@ -1476,12 +1482,19 @@ function toonOfferte(){
   const k=offKlant, m=offMeta, A=AFZENDER;
   const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
   const secties=t.lijnen.map(({a,opties})=>{
-    const { calc, rows }=offClusterRows(a);
+    const { calc, rows, optie, maatwerk }=offClusterRows(a);
     const stoneTot=calc.basis+(opties?calc.opties:0);
     const del=(a.deliverables||[]).filter(x=>(x||'').trim());
     const procs=(a.processen||[]).filter(p=>(p.naam||'').trim()||p.data);
     let cr=rows.map(r=>`<tr><td>${esc(r.naam)}${r.oms?`<div class="cl-oms">${esc(r.oms)}</div>`:''}</td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
-    if(opties && calc.opties>0) cr+=`<tr><td>Opties</td><td class="bedrag">${euro(calc.opties)}</td></tr>`;
+    if(opties && optie.length){
+      cr+=`<tr class="grp"><td>Opties</td><td></td></tr>`;
+      cr+=optie.map(o=>`<tr><td>${esc(o.oms||'Optie')}</td><td class="bedrag">${euro(o.kost)}</td></tr>`).join('');
+    }
+    if(maatwerk.length){
+      cr+=`<tr class="grp"><td>Maatwerk (op aanvraag)</td><td></td></tr>`;
+      cr+=maatwerk.map(mw=>`<tr><td>${esc(mw.oms||'Maatwerk')}</td><td class="bedrag">in overleg</td></tr>`).join('');
+    }
     cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(stoneTot)}</td></tr>`;
     return `<section class="ns">
       <h2>${esc(offArtikelNaam(a))}</h2>

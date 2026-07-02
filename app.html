@@ -182,7 +182,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.4</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.5</div>
   </section>
 
   <!-- TAB 2 -->
@@ -266,6 +266,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
       <div class="subkop">Gebruikte tool(s)</div>
       <div id="a-tools"></div>
+
+      <div class="subkop">Processen (voor de offerte)</div>
+      <div id="a-processen"></div>
     </div>
     <div class="modal-voet">
       <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>
@@ -700,6 +703,7 @@ function nieuwArtikel(stationId) {
     clusters: [{ naam:'Fundament', omschrijving:'' }],
     deliverables: STANDAARD_DELIVERABLES.slice(),
     tool_ids: [],
+    processen: [],
     wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
   vulArtikelForm({});
   document.getElementById('art-titel').textContent = 'Nieuwe NextStone';
@@ -713,6 +717,7 @@ function bewerkArtikel(id) {
     clusters: (a.clusters || []).map(c => ({ ...c })),
     deliverables: (a.deliverables || []).slice(),
     tool_ids: (a.tool_ids || []).slice(),
+    processen: (a.processen || []).map(p => ({ ...p })),
     wbs: sorteerWbs([
       ...(JSON.parse(JSON.stringify(a.wbs||[]))).map(d => leegDeliverable(d)),
       ...(a.out_of_scope||[]).map(o => leegDeliverable({ scopeGroep:'Maatwerk', omschrijving:o.omschrijving }))
@@ -731,7 +736,7 @@ function vulArtikelForm(a) {
   f('a-subnaam').value = a.subnaam || '';
   ['waarom','doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
   renderVolnaam(); renderScopeSuggesties(); renderClusters(); renderWbs(); renderDeliverables();
-  renderNextstoneTools(); renderTotalen();
+  renderNextstoneTools(); renderNextstoneProcessen(); renderTotalen();
 }
 
 function renderVolnaam() {
@@ -1166,6 +1171,28 @@ function toggleNextstoneTool(id, on) {
   renderNextstoneTools();
 }
 
+// Processen kiezen uit een map op de pc (voorlopig: enkel de bestandsnaam bewaren).
+function renderNextstoneProcessen() {
+  const cont = document.getElementById('a-processen'); if (!cont) return;
+  const lijst = edit.processen || (edit.processen = []);
+  const chips = lijst.length
+    ? lijst.map((p,i) => `<span class="tool-chip">${escAttr(p.naam||'')}<button class="x" title="verwijderen" onclick="verwijderProces(${i})">×</button></span>`).join('')
+    : '<div class="leeg">Nog geen proces gekoppeld.</div>';
+  cont.innerHTML = `<div class="tool-chips">${chips}</div>`
+    + `<label class="tool-add" style="display:inline-block">+ Proces toevoegen…`
+    + `<input type="file" multiple accept=".bpmn,.pdf,.png,.svg,.jpg,.jpeg" style="display:none" onchange="procesBestandenGekozen(this.files);this.value=''"></label>`
+    + `<div class="hint" style="margin-top:6px">Voorlopig bewaren we enkel de bestandsnaam; het bestand zelf koppelen we in een latere fase.</div>`;
+}
+function procesBestandenGekozen(files) {
+  edit.processen = edit.processen || [];
+  Array.from(files || []).forEach(f => { if (!edit.processen.some(p => p.naam === f.name)) edit.processen.push({ naam: f.name }); });
+  renderNextstoneProcessen();
+}
+function verwijderProces(i) {
+  (edit.processen || []).splice(i, 1);
+  renderNextstoneProcessen();
+}
+
 async function laadTarieven() {
   const st = document.getElementById('tar-status');
   st.textContent = 'Laden…';
@@ -1274,7 +1301,8 @@ async function slaArtikelOp() {
     wbs: edit.wbs, out_of_scope: [],
     deliverables: (edit.deliverables || []).map(d => (d||'').trim()).filter(Boolean),
     clusters: (edit.clusters || []).filter(c => (c.naam||'').trim()).map(c => ({ naam:c.naam.trim(), omschrijving:(c.omschrijving||'').trim() })),
-    tool_ids: edit.tool_ids || []
+    tool_ids: edit.tool_ids || [],
+    processen: edit.processen || []
   };
   if (edit.id) artikel.id = edit.id;
   try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }

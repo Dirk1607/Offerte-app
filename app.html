@@ -95,7 +95,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .kop-grid textarea.kop-uit:focus { height:120px; overflow:auto; }
 
 /* WBS-deliverables (uitgelijnd raster; vaste kolombreedtes = kop lijnt uit) */
-.wbs-head, .wbs-blok { display:grid; grid-template-columns: 86px minmax(50px,1fr) 54px 42px 42px 40px 40px 34px 40px 32px 16px; gap:4px; align-items:start; }
+.wbs-head, .wbs-blok { display:grid; grid-template-columns: 86px minmax(40px,1fr) 54px 46px 42px 40px 40px 34px 52px 32px 16px; gap:4px; align-items:start; }
 .tool-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
 .tool-chip { display:inline-flex; align-items:center; gap:6px; background:var(--light,#f5f7fa); border:1px solid var(--border,#dfe3ea); border-radius:14px; padding:3px 6px 3px 10px; font-size:12px; }
 .tool-chip .x { border:none; background:none; cursor:pointer; font-size:14px; line-height:1; color:var(--muted,#6b7686); padding:0 2px; }
@@ -229,7 +229,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.19</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.20</div>
   </section>
 
   <!-- TAB 2 -->
@@ -898,7 +898,7 @@ function renderWbs() {
     const vlg = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.volgorde??''}" oninput="edit.wbs[${i}].volgorde=parseFloat(this.value)||0" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const week = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs();renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const km = `<div class="wbs-opt"><input type="checkbox" ${d.klant?'checked':''} title="Stap gebeurt bij de klant (verplaatsing meerekenen)" onchange="edit.wbs[${i}].klant=this.checked"></div>`;
-    const klu = `<input type="number" min="0" max="999" placeholder="u" value="${d.klantAantal||''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;edit.wbs[${i}].klantEenheid='uur'">`;
+    const klu = `<input type="number" step="0.5" min="0" max="999" placeholder="u" value="${d.klantAantal||''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;edit.wbs[${i}].klantEenheid='uur'" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     return `<div class="wbs-blok${t==='optioneel'?' is-optie':''}">${cluster}${deliv}${rol}${aantal}${eenheid}${vlg}${week}${km}${klu}${keuze}${del}</div>`;
   }).join('');
   document.getElementById('a-wbs').innerHTML = edit.wbs.length ? head + rijen : '<div class="leeg">Nog geen deliverables.</div>';
@@ -1478,9 +1478,10 @@ function offClusterRows(a){
   return { calc, rows, optie, maatwerk };
 }
 function toonOfferte(){
-  if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); return; }
+ try {
+  if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); alert('Kies en bewaar eerst een klant (bovenaan het tabblad Offerte).'); return; }
   const t=offBerekenTotaal();
-  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één Stepping Stone.','err'); return; }
+  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één Stepping Stone.','err'); alert('Vink minstens één Stepping Stone aan in de lijst.'); return; }
   const k=offKlant, m=offMeta, A=AFZENDER;
   const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
   const secties=t.lijnen.map(({a,opties})=>{
@@ -1501,7 +1502,7 @@ function toonOfferte(){
       cr+=`<tr class="grp"><td>Maatwerk (op aanvraag)</td><td></td></tr>`;
       cr+=maatwerk.map(mw=>`<tr><td>${esc(mw.oms||'Maatwerk')}</td><td class="bedrag">in overleg</td></tr>`).join('');
     }
-    cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(stoneTot)}</td></tr>`;
+    if(t.lijnen.length>1) cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(stoneTot)}</td></tr>`;
     return `<section class="ns">
       <h2>${esc(offArtikelNaam(a))}</h2>
       ${intro}
@@ -1512,11 +1513,14 @@ function toonOfferte(){
     </section>`;
   }).join('');
   const totRij=(l,v,groot)=>`<tr class="${groot?'tot':''}"><td>${l}</td><td class="bedrag">${euro(v)}</td></tr>`;
-  let totHtml=totRij('Subtotaal', t.sub);
-  if(t.kortingPct) totHtml+=totRij('Korting ('+t.kortingPct+'%)', -t.korting);
-  totHtml+=totRij('Subtotaal excl. btw', t.naKorting);
+  let totHtml='';
+  if(t.kortingPct){
+    totHtml+=totRij('Subtotaal', t.sub);
+    totHtml+=totRij('Korting ('+t.kortingPct+'%)', -t.korting);
+  }
+  totHtml+=totRij('Totaal excl. btw', t.naKorting, true);
   totHtml+=totRij('Btw ('+t.btwPct+'%)', t.btw);
-  totHtml+=totRij('Totaal incl. btw', t.totaal, true);
+  totHtml+=totRij('Totaal incl. btw', t.totaal);
   const kadres=[k.adres, k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).join('<br>');
   const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
   const bodyHtml=`
@@ -1534,7 +1538,7 @@ function toonOfferte(){
       ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
       <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
     </div>
-    <div class="foot">${esc(A.bedrijf)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>`;
+    <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>`;
   const cont=document.getElementById('offerte-print');
   if(!cont){ setOffStatus('Print-blok ontbreekt op de pagina.','err'); return; }
   cont.innerHTML=bodyHtml;
@@ -1543,6 +1547,7 @@ function toonOfferte(){
   const klaar=Promise.all(imgs.map(im=> (im.complete && im.naturalWidth) ? null : new Promise(res=>{ im.onload=res; im.onerror=res; })));
   const tijd=new Promise(res=>setTimeout(res,2500));
   Promise.race([klaar,tijd]).then(()=>setTimeout(()=>window.print(),60));
+ } catch(e){ console.error('toonOfferte fout:', e); setOffStatus('Fout bij PDF maken: '+(e.message||e),'err'); alert('Fout bij PDF maken: '+(e.message||e)); }
 }
 function vulProspectDropdown(){
   const sel=document.getElementById('off-prospect'); if(!sel) return;

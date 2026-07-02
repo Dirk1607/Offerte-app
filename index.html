@@ -96,6 +96,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
 /* WBS-deliverables (uitgelijnd raster; vaste kolombreedtes = kop lijnt uit) */
 .wbs-head, .wbs-blok { display:grid; grid-template-columns: 86px minmax(50px,1fr) 54px 42px 42px 40px 40px 34px 40px 32px 16px; gap:4px; align-items:start; }
+.tool-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+.tool-chip { display:inline-flex; align-items:center; gap:6px; background:var(--light,#f5f7fa); border:1px solid var(--border,#dfe3ea); border-radius:14px; padding:3px 6px 3px 10px; font-size:12px; }
+.tool-chip .x { border:none; background:none; cursor:pointer; font-size:14px; line-height:1; color:var(--muted,#6b7686); padding:0 2px; }
+.tool-add { font-size:12px; padding:5px 8px; border:1px solid var(--border,#dfe3ea); border-radius:7px; background:#fff; cursor:pointer; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 9px 3px; }
 .wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
@@ -178,7 +182,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.3</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.4</div>
   </section>
 
   <!-- TAB 2 -->
@@ -1143,16 +1147,23 @@ function buildFicheHtml(t) {
 async function renderNextstoneTools() {
   const cont = document.getElementById('a-tools'); if (!cont) return;
   if (!toolsCache.length) { try { toolsCache = await TNL.getTools(); } catch (e) {} }
-  if (!toolsCache.length) { cont.innerHTML = '<div class="leeg">Nog geen tools aangemaakt (tabblad Tools).</div>'; return; }
-  const sel = new Set(edit.tool_ids || []);
-  cont.innerHTML = toolsCache.map(t =>
-    `<label class="deliv-rij" style="cursor:pointer"><input type="checkbox" style="flex:none;width:auto" ${sel.has(t.id)?'checked':''} onchange="toggleNextstoneTool('${t.id}',this.checked)"> ${escAttr(t.naam)}${t.afkorting?' ('+escAttr(t.afkorting)+')':''}</label>`
-  ).join('');
+  const ids = edit.tool_ids || [];
+  const gekozen = ids.map(id => toolsCache.find(t => t.id === id)).filter(Boolean);
+  const beschikbaar = toolsCache.filter(t => !ids.includes(t.id));
+  const chips = gekozen.length
+    ? gekozen.map(t => `<span class="tool-chip">${escAttr(t.naam)}${t.afkorting?' ('+escAttr(t.afkorting)+')':''}<button class="x" title="losmaken" onclick="toggleNextstoneTool('${t.id}',false)">×</button></span>`).join('')
+    : '<div class="leeg">Nog geen tool gekoppeld.</div>';
+  let kiezer;
+  if (!toolsCache.length) kiezer = '<div class="leeg">Nog geen tools aangemaakt (tabblad Tools).</div>';
+  else if (!beschikbaar.length) kiezer = '<div class="hint">Alle tools zijn gekoppeld.</div>';
+  else kiezer = `<select class="tool-add" onchange="if(this.value)toggleNextstoneTool(this.value,true)"><option value="">+ Tool toevoegen…</option>${beschikbaar.map(t => `<option value="${t.id}">${escAttr(t.naam)}</option>`).join('')}</select>`;
+  cont.innerHTML = `<div class="tool-chips">${chips}</div>${kiezer}`;
 }
 function toggleNextstoneTool(id, on) {
   edit.tool_ids = edit.tool_ids || [];
   if (on) { if (!edit.tool_ids.includes(id)) edit.tool_ids.push(id); }
-  else { edit.tool_ids = edit.tool_ids.filter(x => x!==id); }
+  else { edit.tool_ids = edit.tool_ids.filter(x => x !== id); }
+  renderNextstoneTools();
 }
 
 async function laadTarieven() {

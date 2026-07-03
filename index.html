@@ -111,7 +111,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   #offerte-print { display:block !important; }
   @page { margin:0; }
 }
-#offerte-print { font-family:'Segoe UI',system-ui,sans-serif; color:#1e2a4a; font-size:13px; line-height:1.5; padding:0; }
+#offerte-print { font-family:Arial,Helvetica,sans-serif; color:#1e2a4a; font-size:13px; line-height:1.5; padding:0; }
 #offerte-print .psheet { width:100%; border-collapse:collapse; }
 #offerte-print .psheet > thead > tr > td, #offerte-print .psheet > tbody > tr > td, #offerte-print .psheet > tfoot > tr > td { padding:0 16mm; }
 #offerte-print .psheet > thead > tr > td { padding-top:14mm; }
@@ -143,6 +143,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print table.clusters td { padding:6px 6px; border-bottom:1px solid #eef1f5; vertical-align:top; }
 #offerte-print .bedrag { text-align:right; white-space:nowrap; width:130px; font-variant-numeric:tabular-nums; }
 #offerte-print .cl-oms { color:#6b7686; font-size:12px; }
+#offerte-print .cl-det { margin:4px 0 0 102px; padding:0; list-style:none; }
+#offerte-print .cl-det li { color:#4b5563; font-size:11.5px; padding:1px 0 1px 12px; position:relative; }
+#offerte-print .cl-det li::before { content:"–"; position:absolute; left:0; color:#9aa3b2; }
 #offerte-print table.clusters tr.subtot td { border-top:1px solid #1e2a4a; font-weight:700; }
 #offerte-print .krijgt { margin:6px 0; font-size:12px; page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .krijgt ul { margin:4px 0 0; padding-left:18px; }
@@ -237,7 +240,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.21</div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.25</div>
   </section>
 
   <!-- TAB 2 -->
@@ -357,7 +360,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <label>Stepping Stone Path</label><input id="a-volnaam" disabled>
         <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze Stepping Stone relevant voor de klant?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
-        <label>Meetbaar objectief</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant." onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+        <label>Meetbaar</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant." onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra de Stepping Stone geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
       </div>
 
@@ -1470,7 +1473,7 @@ function buildKmClause(){
   if(k.kost_per_km||k.uren_factor){
     let s='Verplaatsingskosten worden apart aangerekend';
     if(k.kost_per_km) s+=' aan € '+fmt(k.kost_per_km)+' per kilometer';
-    s+='. De effectieve reistijd wordt aangerekend aan '+deel(k.uren_factor)+' van het tarief.';
+    s+='. De effectieve reistijd wordt voor '+deel(k.uren_factor)+' aangerekend.';
     return s;
   }
   return 'Verplaatsingskosten worden apart aangerekend volgens de afgesproken tarieven.';
@@ -1478,8 +1481,9 @@ function buildKmClause(){
 function offClusterRows(a){
   const calc=TNL.berekenFix({ wbs:a.wbs||[] }, OFF_TARIEVEN);
   const perGroep=calc.perGroep||{}; const rows=[]; const gezien=new Set();
-  (a.clusters||[]).forEach(c=>{ const naam=(c.naam||'').trim(); if(!naam||gezien.has(naam)) return; gezien.add(naam); rows.push({ naam, oms:(c.omschrijving||'').trim(), kost:perGroep[naam]||0 }); });
-  Object.keys(perGroep).forEach(naam=>{ if(!gezien.has(naam)){ gezien.add(naam); rows.push({ naam, oms:'', kost:perGroep[naam] }); } });
+  const detailsVan=naam=>(a.wbs||[]).filter(d=>(d.scopeGroep||'').trim()===naam && d.gekozen!==false).map(d=>(d.omschrijving||'').trim()).filter(Boolean);
+  (a.clusters||[]).forEach(c=>{ const naam=(c.naam||'').trim(); if(!naam||gezien.has(naam)) return; gezien.add(naam); rows.push({ naam, oms:(c.omschrijving||'').trim(), kost:perGroep[naam]||0, details:detailsVan(naam) }); });
+  Object.keys(perGroep).forEach(naam=>{ if(!gezien.has(naam)){ gezien.add(naam); rows.push({ naam, oms:'', kost:perGroep[naam], details:detailsVan(naam) }); } });
   const optie=[], maatwerk=[];
   (a.wbs||[]).forEach(d=>{
     const g=(d.scopeGroep||'').trim();
@@ -1503,8 +1507,8 @@ function toonOfferte(){
     const kl=calc.klant||{};
     const klantUren=(kl.uur||0)+(kl.halvedag||0)*4+((kl.dag||0)+(kl.heledag||0))*8;
     const blok=(titel,tekst)=> (tekst&&String(tekst).trim())?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div>${esc(String(tekst).trim())}</div></div>`:'';
-    const intro=blok('Waarom dit belangrijk is',a.waarom)+blok('Doel',a.doel)+blok('Meetbaar objectief',a.meetbaar_objectief)+blok('Belofte',a.belofte);
-    let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div></td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
+    const intro=blok('Waarom dit belangrijk is',a.waarom)+blok('Doel',a.doel)+blok('Meetbaar',a.meetbaar_objectief)+blok('Belofte',a.belofte);
+    let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div>${(r.details&&r.details.length)?`<ul class="cl-det">${r.details.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
     if(opties && optie.length){
       cr+=`<tr class="grp"><td>Opties</td><td></td></tr>`;
       cr+=optie.map(o=>`<tr><td>${esc(o.oms||'Optie')}</td><td class="bedrag">${o.regie?'in regie':euro(o.kost)}</td></tr>`).join('');
@@ -1519,7 +1523,7 @@ function toonOfferte(){
       <table class="clusters">${cr}</table>
       ${del.length?`<div class="krijgt"><b>Wat u ontvangt:</b><ul>${del.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
       ${klantUren>0?`<div class="krijgt"><b>Uw investering in tijd:</b> ${klantUren.toLocaleString('nl-BE')} uur</div>`:''}
-      ${procs.length?`<div class="proc"><b>Bijhorend proces:</b>${procs.map(p=>p.data?`<div class="proc-img"><img src="${p.data}" alt="${escAttr(p.naam||'')}"></div>`:` ${esc(p.naam||'')}`).join('')}</div>`:''}
+      <!-- 'Bijhorend proces: ...' voorlopig verborgen op verzoek (2026-07-03); zie git-historie v2.23 om te herstellen -->
     </section>`;
   }).join('');
   const totRij=(l,v,groot)=>`<tr class="${groot?'tot':''}"><td>${l}</td><td class="bedrag">${euro(v)}</td></tr>`;

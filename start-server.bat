@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0"
-npx live-server --port=3002 --browser=chrome
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0serve-lokaal.ps1"
 pause

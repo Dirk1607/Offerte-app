@@ -13,12 +13,15 @@
 }
 * { box-sizing:border-box; margin:0; padding:0; }
 body { font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--text); background:var(--light); line-height:1.5; }
-header { background:var(--navy); color:#fff; padding:16px 28px; display:flex; align-items:center; justify-content:space-between; }
-header h1 { font-size:18px; font-weight:800; letter-spacing:.3px; }
-header .conn { font-size:12px; opacity:.85; }
-nav { display:flex; gap:4px; background:#fff; padding:0 20px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:5; }
-nav button { background:none; border:none; padding:14px 20px; font-size:14px; font-weight:700; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; }
-nav button.actief { color:var(--navy); border-bottom-color:var(--orange); }
+header { background:var(--navy); color:#fff; padding:0 28px; min-height:108px; display:flex; align-items:center; gap:22px; box-shadow:0 2px 12px rgba(27,58,107,0.2); position:sticky; top:0; z-index:10; }
+header h1 { font-size:22px; font-weight:700; letter-spacing:.3px; margin:0; white-space:nowrap; }
+header h1 .ver { font-size:14px; font-weight:600; opacity:.7; }
+.logo-badge { background:#fff; border-radius:9px; padding:3px 10px; display:flex; align-items:center; }
+.logo-badge img { height:54px; width:auto; display:block; }
+nav { margin-left:auto; align-self:stretch; display:flex; align-items:stretch; gap:28px; }
+nav button { display:flex; align-items:flex-end; background:none; border:none; padding:0 2px 12px; font-size:14px; font-weight:600; color:rgba(255,255,255,0.55); cursor:pointer; border-bottom:3px solid transparent; transition:all .2s; }
+nav button:hover { color:#fff; }
+nav button.actief { color:#fff; border-bottom-color:var(--orange); }
 main { max-width:1000px; margin:0 auto; padding:28px 20px 80px; }
 .panel { display:none; }
 .panel.actief { display:block; }
@@ -191,21 +194,20 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </head>
 <body>
 <header>
-  <h1>TNL - Offerte</h1>
-  <div class="conn" id="conn">Verbinden met database…</div>
+  <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
+  <div><h1>Offerte App <span class="ver">v2.26</span></h1></div>
+  <nav>
+    <button class="actief" data-tab="catalogus">Stepping Stones</button>
+    <button data-tab="offerte">Offerte</button>
+    <button data-tab="tarieven">Tarieven</button>
+    <button data-tab="tools">Tools</button>
+    <button data-tab="gesprek">Gespreksvoorbereiding</button>
+  </nav>
 </header>
-
-<nav>
-  <button class="actief" data-tab="gesprek">① Gespreksvoorbereiding</button>
-  <button data-tab="catalogus">② TNL Stepping Stones</button>
-  <button data-tab="offerte">③ Offerte</button>
-  <button data-tab="tarieven">④ Tarieven</button>
-  <button data-tab="tools">⑤ Tools</button>
-</nav>
 
 <main>
   <!-- TAB 1 -->
-  <section class="panel actief" id="tab-gesprek">
+  <section class="panel" id="tab-gesprek">
     <h2>Gespreksvoorbereiding</h2>
     <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden. <em>Welke Stepping Stone wordt jouw volgende stap?</em></p>
 
@@ -240,11 +242,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
     </div>
 
-    <div style="text-align:center;font-size:10px;color:#94a3b8;opacity:.7;margin-top:20px;letter-spacing:.3px">&copy; The Next Level &middot; Offertetool v2.25</div>
   </section>
 
   <!-- TAB 2 -->
-  <section class="panel" id="tab-catalogus">
+  <section class="panel actief" id="tab-catalogus">
     <h2>TNL Stepping Stones <small style="font-weight:400;color:var(--muted);font-size:14px">— Your stepping stones to The Next Level</small></h2>
     <p class="sub">Je verbeterprojecten: lijn → station → <b>Stepping Stone</b>. Elke Stepping Stone zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en Stepping Stones onder een station.</p>
     <div class="status" id="cat-status">Laden…</div>
@@ -515,9 +516,11 @@ document.querySelectorAll('nav button').forEach(b => {
       NAAM_NAAR_CODE[l.code.toLowerCase()] = l.code;
     });
     Object.assign(NAAM_NAAR_CODE, NAAM_ALIASSEN);
-    conn.textContent = `✓ Verbonden (${LIJNEN.length} lijnen)`;
+    if (conn) conn.textContent = `✓ Verbonden (${LIJNEN.length} lijnen)`;
+    // Stepping Stones is de standaard-tab bij opstarten -> meteen laden
+    if (!catGeladen) laadCatalogus();
   } catch (e) {
-    conn.textContent = '✗ Geen verbinding met database';
+    if (conn) conn.textContent = '✗ Geen verbinding met database';
     console.error(e);
   }
 })();

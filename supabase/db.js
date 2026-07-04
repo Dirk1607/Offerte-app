@@ -331,9 +331,48 @@ const TNL = (() => {
     return { pad, url: data.publicUrl + '?t=' + Date.now() };
   }
 
+  // ---------- consultants (profielenbibliotheek) ----------
+  async function getConsultants() {
+    return check(await client().from('consultant').select('*').order('naam'));
+  }
+  async function getConsultant(id) {
+    return check(await client().from('consultant').select('*').eq('id', id).single());
+  }
+  async function upsertConsultant(c) {
+    return check(await client().from('consultant')
+      .upsert({ ...c, updated_at: new Date().toISOString() }).select().single());
+  }
+  async function updateConsultant(id, patch) {
+    return check(await client().from('consultant')
+      .update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id).select().single());
+  }
+  async function deleteConsultant(id) {
+    return check(await client().from('consultant').delete().eq('id', id));
+  }
+  // Foto of CV naar Storage (consultant-fiches/{id}/{soort}-...). soort = 'foto' | 'cv'.
+  async function uploadConsultantFile(consultantId, file, soort) {
+    const safe = (file.name || soort).replace(/[^\w.\-]+/g, '_');
+    const pad = consultantId + '/' + soort + '-' + Date.now() + '-' + safe;
+    const { error } = await client().storage.from('consultant-fiches').upload(pad, file, { upsert: true });
+    if (error) throw error;
+    const { data } = client().storage.from('consultant-fiches').getPublicUrl(pad);
+    return { url: data.publicUrl, naam: file.name };
+  }
+  // Gegenereerde profiel-PDF naar Storage. soort = 'kort' | 'detail' (aparte bestanden).
+  async function uploadConsultantPdf(consultantId, blob, soort) {
+    const pad = consultantId + '/profiel-' + (soort === 'detail' ? 'detail' : 'kort') + '.pdf';
+    const { error } = await client().storage.from('consultant-fiches')
+      .upload(pad, blob, { upsert: true, contentType: 'application/pdf' });
+    if (error) throw error;
+    const { data } = client().storage.from('consultant-fiches').getPublicUrl(pad);
+    return { pad, url: data.publicUrl + '?t=' + Date.now() };
+  }
+
   return {
     client, berekenNiveau, berekenFix,
     getTools, getTool, upsertTool, updateTool, deleteTool, uploadToolPdf, uploadToolDoc,
+    getConsultants, getConsultant, upsertConsultant, updateConsultant, deleteConsultant,
+    uploadConsultantFile, uploadConsultantPdf,
     getTarieven, getTarievenLijst, setTarief, verwijderTarief, prijsVanEenheid,
     getInstelling, setInstelling,
     getLijnen,

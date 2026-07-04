@@ -195,12 +195,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <body>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.26</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.36</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
     <button data-tab="tarieven">Tarieven</button>
     <button data-tab="tools">Tools</button>
+    <button data-tab="consultants">Consultants</button>
     <button data-tab="gesprek">Gespreksvoorbereiding</button>
   </nav>
 </header>
@@ -343,6 +344,17 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div id="tools-status" class="status"></div>
     <div id="tools-lijst"></div>
   </section>
+
+  <!-- TAB 6 — Consultants -->
+  <section class="panel" id="tab-consultants">
+    <h2>Consultants <small style="font-weight:400;color:var(--muted);font-size:14px">— profielenbibliotheek</small></h2>
+    <p class="sub">Beheer de consultantprofielen en genereer per consultant een TNL-profiel (1-pager PDF). De consultant vult zijn gegevens, expertise en tarief in.</p>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn" onclick="nieuwConsultant()">+ Nieuwe consultant</button>
+    </div>
+    <div id="cons-status" class="status"></div>
+    <div id="cons-lijst"></div>
+  </section>
 </main>
 
 <!-- Verborgen offerte-afdruk (alleen zichtbaar bij printen) -->
@@ -468,10 +480,136 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   </div>
 </div>
 
+<style>
+.exp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 18px;margin-top:6px}
+.exp-rij{display:flex;align-items:center;gap:8px;font-size:13px}
+.exp-rij label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exp-rij input[type=range]{flex:1;min-width:70px}
+.exp-rij .exp-val{width:22px;text-align:right;font-weight:700;color:var(--dark)}
+.cons-chip{display:inline-flex;align-items:center;gap:6px;background:#eef2f8;border:1px solid #d5deea;border-radius:14px;padding:3px 10px;font-size:12px;margin:0 6px 6px 0}
+.cons-chip .x{cursor:pointer;color:var(--muted);font-weight:700}
+.cons-ta{width:100%;min-height:90px;resize:vertical;line-height:1.45;box-sizing:border-box}
+</style>
+<!-- Consultant-editor -->
+<div id="cons-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-kop">
+      <h3 id="cons-titel">Consultant</h3>
+      <button class="x" onclick="sluitConsultant()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="subkop">Identiteit &amp; contact</div>
+      <div class="kop-grid">
+        <label>Voornaam</label><input id="c-voornaam" placeholder="bv. Dirk">
+        <label>Naam *</label><input id="c-naam" placeholder="bv. Vander Eyken">
+        <label>Titel / rol</label><input id="c-titel" placeholder="bv. Senior Consultant">
+        <label>E-mail</label><input id="c-email" placeholder="bv. dirk@thenextlevel.be">
+        <label>Telefoon</label><input id="c-telefoon" placeholder="bv. +32 497 00 00 00">
+        <label>LinkedIn</label><input id="c-linkedin" placeholder="bv. linkedin.com/in/dirk">
+        <label>Status</label>
+        <select id="c-status"><option value="actief">actief</option><option value="inactief">inactief</option><option value="kandidaat">kandidaat</option></select>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Regio's (provincie)</div>
+      <div id="c-regios"></div>
+
+      <div class="subkop">Foto, CV &amp; Management Profile</div>
+      <div class="dyn-rij" style="flex-wrap:wrap;gap:16px;align-items:center">
+        <div id="c-foto-prev" style="width:64px;height:64px;border-radius:8px;background:#eef2f8;overflow:hidden;flex:none;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px">geen foto</div>
+        <label class="btn btn-ghost mini" style="cursor:pointer;margin:0">Foto uploaden<input type="file" accept="image/*" style="display:none" onchange="uploadConsFile('foto', this.files[0])"></label>
+      </div>
+      <div class="dyn-rij" style="flex-wrap:wrap;gap:16px;align-items:center;margin-top:10px">
+        <span id="c-cv-naam" style="color:var(--muted);font-size:13px;min-width:120px">Geen CV</span>
+        <label class="btn btn-ghost mini" style="cursor:pointer;margin:0">CV uploaden<input type="file" accept="application/pdf" style="display:none" onchange="uploadConsFile('cv', this.files[0])"></label>
+        <span id="c-mgmt-naam" style="color:var(--muted);font-size:13px;min-width:160px">Geen Management Profile</span>
+        <label class="btn btn-ghost mini" style="cursor:pointer;margin:0">Management Profile uploaden<input type="file" accept="application/pdf" style="display:none" onchange="uploadConsFile('mgmt', this.files[0])"></label>
+      </div>
+      <details style="margin-top:8px;font-size:13px;color:var(--muted)">
+        <summary style="cursor:pointer;font-weight:600;color:var(--dark)">Wat is het verschil tussen een CV en een Management Profile?</summary>
+        <div style="margin-top:6px;line-height:1.5">
+          Upload je <b>CV</b> (een klassiek, chronologisch overzicht van je loopbaan: functies, werkgevers, data, diploma's — antwoordt op "wat heb ik gedaan en wanneer?")
+          en/of je <b>Management Profile</b> (een verhalend portret dat je realisaties, impact en leiderschapsstijl belicht — antwoordt op "wie ben ik als leider en welke waarde lever ik?").
+          Het CV is je feitelijke track record; het Management Profile is je verhaal en positionering.
+          Heb je enkel een CV? Geen probleem — wij helpen je er een Management Profile uit op te maken.
+          Deze documenten zijn jouw bijlagen; ze komen <b>niet</b> in het TNL Profiel zelf.
+        </div>
+      </details>
+      <div class="hint" style="margin-top:6px">Upload werkt pas nadat de consultant één keer is opgeslagen (er is een id nodig).</div>
+
+      <div class="subkop">Positionering</div>
+      <label class="off-lbl">Pitch (oneliner)<input id="c-pitch" placeholder='bv. "Ik help KMO-zaakvoerders sturen op feiten – niet op buikgevoel."'></label>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Profieltekst — beschrijvend (komt op het TNL Expert Profiel)</div>
+      <textarea id="c-profieltekst" class="cons-ta" style="min-height:120px" placeholder="Vloeiende, verkopende tekst die de essentie van de consultant beschrijft. Tip: laat desktop-Claude van de opsomming (CV/functies) een mooie tekst maken en plak die hier."></textarea>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Kerncompetenties</div>
+      <div id="c-kerncomp"></div>
+      <button class="btn btn-ghost mini" onclick="cObjRij('kerncompetenties','c-kerncomp')">+ Kerncompetentie</button>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Cijfers (KPI-tegels)</div>
+      <div id="c-kpi"></div>
+      <button class="btn btn-ghost mini" onclick="cObjRij('kpi','c-kpi')">+ Cijfer</button>
+
+      <div class="subkop">Achtergrond</div>
+      <textarea id="c-achtergrond" class="cons-ta" placeholder="Korte achtergrond (opleiding, vorige rollen, wat je uniek maakt)…"></textarea>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Sectoren</div>
+      <div id="c-sectoren"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Talen</div>
+      <div id="c-talen"></div>
+      <button class="btn btn-ghost mini" onclick="cObjRij('talen','c-talen')">+ Taal</button>
+
+      <div class="subkop">CV (loopbaan)</div>
+      <div id="c-ervaring"></div>
+      <button class="btn btn-ghost mini" onclick="cObjRij('ervaring','c-ervaring')">+ Regel</button>
+      <div class="hint" style="margin-top:4px">Vink <b>★ op profiel</b> aan bij de rollen die op het TNL Profiel mogen verschijnen (enkele belangrijke). Vink je niets aan, dan tonen we de 4 recentste.</div>
+      <div class="subkop">Opleidingen &amp; certificaten</div>
+      <div id="c-opleidingen"></div>
+      <button class="btn btn-ghost mini" onclick="cObjRij('opleidingen','c-opleidingen')">+ Opleiding</button>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Skills</div>
+      <div id="c-skills"></div>
+      <button class="btn btn-ghost mini" onclick="cStrRij('skills','c-skills','skill (bv. Problemsolver)')">+ Skill</button>
+
+      <div class="subkop">Expertise per metrolijn (score 0–10)</div>
+      <div id="c-exp-lijnen" class="exp-grid"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:14px 2px 4px">Expertise per versneller (score 0–10)</div>
+      <div id="c-exp-versn" class="exp-grid"></div>
+
+      <div class="subkop">Tools die ik kan implementeren</div>
+      <div id="c-tools"></div>
+      <div class="subkop">Stepping Stones die ik lever</div>
+      <div id="c-nextstones"></div>
+
+      <div class="subkop">Tarief (consultant — voor latere marge)</div>
+      <div class="dyn-rij" style="flex-wrap:wrap;gap:16px;align-items:flex-end">
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">€ / uur
+          <input id="c-tar-uur" type="number" step="1" min="0" style="width:120px"></label>
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">€ / halve dag
+          <input id="c-tar-half" type="number" step="1" min="0" style="width:120px"></label>
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">€ / hele dag
+          <input id="c-tar-heel" type="number" step="1" min="0" style="width:120px"></label>
+      </div>
+
+      <div class="subkop">Testimonials (wat klanten zeggen)</div>
+      <div id="c-testimonials"></div>
+      <button class="btn btn-ghost mini" onclick="cObjRij('testimonials','c-testimonials')">+ Testimonial</button>
+
+      <div class="subkop">Wat u van mij mag verwachten</div>
+      <textarea id="c-verwachting" class="cons-ta" placeholder="Korte belofte naar de klant toe…"></textarea>
+
+      <div class="subkop">Interne notities</div>
+      <textarea id="c-notities" class="cons-ta" placeholder="Vrije notities (intern, niet op het profiel)"></textarea>
+    </div>
+    <div class="modal-voet">
+      <button class="btn mini-danger btn-ghost" id="c-verwijder" onclick="verwijderConsultant()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="sluitConsultant()">Annuleren</button>
+        <button class="btn" onclick="slaConsultantOp(false)">Opslaan</button>
+        <button class="btn" style="background:var(--green)" onclick="slaConsultantOp(true)">Opslaan &amp; Genereer TNL Profiel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=14"></script>
+<script src="supabase/db.js?v=16"></script>
 <script>
 // ============================================================
 // STATE
@@ -1740,6 +1878,396 @@ async function verwijderArtikel() {
 
 // volledige naam live bijwerken bij typen van subnaam
 document.getElementById('a-subnaam').addEventListener('input', () => { if (edit) renderVolnaam(); });
+
+// ============================================================
+// CONSULTANTS — profielenbibliotheek
+// ============================================================
+let consCache = [], consEdit = null, consToolsCache = [], consNextstonesCache = [];
+const PROVINCIES = ["Antwerpen","Vlaams-Brabant","Oost-Vlaanderen","West-Vlaanderen","Limburg","Brussel","Waals-Brabant","Henegouwen","Luik","Namen","Luxemburg","Heel België"];
+const SECTOREN_BASIS = ["Productie / Industrie","Bouw / Technische diensten","Engineering / Installatie","Voeding / Agro","Drukkerij / Verpakking","Groothandel / Distributie","Retail / Detailhandel","Import / Export","E-commerce","Consultancy / Advies","Financiële diensten","Juridische diensten","HR / Uitzendbureau","Marketing / Communicatie","Facility / Schoonmaak","Transport / Logistiek","Vastgoed","IT / Software","Telecom","Automatisering / Industrie 4.0","Zorgsector / Welzijn","Onderwijs / Opleiding","Non-profit / Vereniging","Overheid / Semi-overheid"];
+let regioCustom = [], sectorCustom = [];
+const METRO_DOMEINEN = {
+  STR:"Strategie",PROD:"Product / R&D",MKT:"Marketing",SAL:"Sales",OPS:"Operations",
+  AFS:"After Sales",HR:"HR",FIN:"Finance",IT:"IT",QUA:"Kwaliteit",SAF:"Veiligheid",
+  PM:"Project Management",PROC:"Proces Management",LEAD:"Leadership",CHG:"Change Management"
+};
+const METRO_LIJNEN = ["STR","PROD","MKT","SAL","OPS","AFS","HR","FIN","IT","QUA","SAF"];
+const METRO_VERSNELLERS = ["PM","PROC","LEAD","CHG"];
+const CONS_LEEG = { id:null, regios:[], skills:[], sectoren:[], kerncompetenties:[], kpi:[],
+  talen:[], ervaring:[], opleidingen:[], testimonials:[], expertise:{}, tool_ids:[], nextstone_ids:[] };
+const CONS_COLS = {
+  kerncompetenties:[{k:'titel',ph:'titel',w:150},{k:'subtitel',ph:'omschrijving'}],
+  kpi:[{k:'getal',ph:'cijfer (bv. 12+)',w:120},{k:'label',ph:'label (bv. Jaar ervaring)'}],
+  talen:[{k:'taal',ph:'taal',w:150},{k:'niveau',ph:'niveau (optioneel)'}],
+  ervaring:[{k:'periode',ph:'periode',w:110},{k:'rol',ph:'rol',w:140},{k:'bedrijf',ph:'bedrijf',w:140},{k:'omschrijving',ph:'omschrijving'},{k:'top',type:'check',ph:'★ op profiel'}],
+  opleidingen:[{k:'jaar',ph:'jaar',w:80},{k:'titel',ph:'titel'},{k:'instelling',ph:'instelling'}],
+  testimonials:[{k:'quote',ph:'quote'},{k:'naam',ph:'naam',w:120},{k:'functie',ph:'functie/bedrijf'}]
+};
+function nsNaam(a){ return a.subnaam || a.naam || a.volledige_naam || a.kop || '(Stepping Stone)'; }
+
+document.querySelector('nav button[data-tab="consultants"]').addEventListener('click', laadConsultants);
+
+async function laadConsultants() {
+  const st = document.getElementById('cons-status'); st.textContent = 'Laden…';
+  try {
+    consCache = await TNL.getConsultants();
+    if (!consToolsCache.length)      { try { consToolsCache = await TNL.getTools(); } catch(e){} }
+    if (!consNextstonesCache.length) { try { consNextstonesCache = await TNL.getCatalogus({ alleenActief:false }); } catch(e){} }
+    try { regioCustom  = (await TNL.getInstelling('regio_opties'))  || []; } catch(e){ regioCustom = []; }
+    try { sectorCustom = (await TNL.getInstelling('sector_opties')) || []; } catch(e){ sectorCustom = []; }
+    renderConsLijst(); st.textContent = '';
+  } catch (e) { st.innerHTML = '<span style="color:var(--red)">Laden mislukt: ' + (e.message||e) + '</span>'; }
+}
+function renderConsLijst() {
+  const el = document.getElementById('cons-lijst');
+  if (!consCache.length) { el.innerHTML = '<div class="leeg">Nog geen consultants.</div>'; return; }
+  el.innerHTML = consCache.map(c => `<div class="artikel-kaart" style="margin-left:0">
+    <span class="anaam">${escAttr(((c.voornaam?c.voornaam+' ':'')+(c.naam||'')).trim())}${c.titel?` <small style="color:var(--muted);font-weight:400">— ${escAttr(c.titel)}</small>`:''}</span>
+    <span class="aprijs">${escAttr(c.status||'')}</span>
+    <button class="btn btn-ghost mini" onclick="bewerkConsultant('${c.id}')">Bewerken</button>
+    <button class="btn btn-ghost mini" onclick="regenereerProfiel('${c.id}','kort')">Genereer TNL Profiel</button>
+  </div>`).join('');
+}
+
+function nieuwConsultant() {
+  consEdit = JSON.parse(JSON.stringify(CONS_LEEG));
+  vulConsForm({});
+  document.getElementById('cons-titel').textContent = 'Nieuwe consultant';
+  document.getElementById('c-verwijder').style.display = 'none';
+  document.getElementById('cons-modal').style.display = 'flex';
+}
+function bewerkConsultant(id) {
+  const c = consCache.find(x => x.id===id); if (!c) return;
+  consEdit = JSON.parse(JSON.stringify(c));
+  ['regios','skills','sectoren','kerncompetenties','kpi','talen','ervaring','opleidingen','testimonials','tool_ids','nextstone_ids']
+    .forEach(k => { if (!Array.isArray(consEdit[k])) consEdit[k] = []; });
+  if (!consEdit.expertise || typeof consEdit.expertise !== 'object') consEdit.expertise = {};
+  vulConsForm(c);
+  document.getElementById('cons-titel').textContent = 'Consultant bewerken';
+  document.getElementById('c-verwijder').style.display = 'inline-block';
+  document.getElementById('cons-modal').style.display = 'flex';
+}
+function sluitConsultant() { document.getElementById('cons-modal').style.display = 'none'; consEdit = null; }
+
+function vulConsForm(c) {
+  const f = id => document.getElementById(id);
+  f('c-voornaam').value=c.voornaam||''; f('c-naam').value=c.naam||''; f('c-titel').value=c.titel||'';
+  f('c-email').value=c.email||''; f('c-telefoon').value=c.telefoon||''; f('c-linkedin').value=c.linkedin_url||'';
+  f('c-status').value=c.status||'actief';
+  f('c-pitch').value=c.pitch||''; f('c-profieltekst').value=c.profiel_tekst||''; f('c-achtergrond').value=c.achtergrond||'';
+  f('c-verwachting').value=c.verwachting||''; f('c-notities').value=c.intern_notities||'';
+  const tar=c.tarief||{}; f('c-tar-uur').value=tar.uur||''; f('c-tar-half').value=tar.halvedag||''; f('c-tar-heel').value=tar.heledag||'';
+  renderKeuze('regios','c-regios','Regio'); cRenderStr('skills','c-skills','skill'); renderKeuze('sectoren','c-sectoren','Sector');
+  cRenderObj('kerncompetenties','c-kerncomp'); cRenderObj('kpi','c-kpi'); cRenderObj('talen','c-talen');
+  cRenderObj('ervaring','c-ervaring'); cRenderObj('opleidingen','c-opleidingen'); cRenderObj('testimonials','c-testimonials');
+  renderExpertise(); renderConsTools(); renderConsNextstones();
+  document.getElementById('c-foto-prev').innerHTML = c.foto_url ? '<img src="'+escAttr(c.foto_url)+'" style="width:100%;height:100%;object-fit:cover">' : 'geen foto';
+  document.getElementById('c-cv-naam').textContent = c.cv_naam || (c.cv_url ? 'CV' : 'Geen CV');
+  document.getElementById('c-mgmt-naam').textContent = c.mgmt_profile_naam || (c.mgmt_profile_url ? 'Management Profile' : 'Geen Management Profile');
+}
+
+// generieke lijst-editors (scoped op consEdit)
+function cRenderStr(veld, cid, ph) {
+  const l = consEdit[veld] || (consEdit[veld]=[]);
+  document.getElementById(cid).innerHTML = l.length ? l.map((v,i) =>
+    `<div class="deliv-rij"><input value="${escAttr(v||'')}" placeholder="${escAttr(ph||'')}" oninput="consEdit.${veld}[${i}]=this.value"><button class="x" onclick="consEdit.${veld}.splice(${i},1);cRenderStr('${veld}','${cid}','${escAttr(ph||'')}')">×</button></div>`
+  ).join('') : '<div class="leeg">Niets toegevoegd.</div>';
+}
+function cStrRij(veld, cid, ph) { (consEdit[veld]||(consEdit[veld]=[])).push(''); cRenderStr(veld,cid,ph); }
+function cRenderObj(veld, cid) {
+  const cols = CONS_COLS[veld]; const l = consEdit[veld] || (consEdit[veld]=[]);
+  document.getElementById(cid).innerHTML = l.length ? l.map((o,i) =>
+    `<div class="proces-rij">${cols.map(col =>
+      col.type==='check'
+        ? `<label style="flex:none;display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);white-space:nowrap"><input type="checkbox" ${o[col.k]?'checked':''} onchange="consEdit.${veld}[${i}].${col.k}=this.checked"> ${escAttr(col.ph)}</label>`
+        : `<input ${col.w?`style="flex:none;width:${col.w}px"`:''} placeholder="${escAttr(col.ph)}" value="${escAttr(o[col.k]||'')}" oninput="consEdit.${veld}[${i}].${col.k}=this.value">`
+    ).join('')}<button class="x" onclick="consEdit.${veld}.splice(${i},1);cRenderObj('${veld}','${cid}')">×</button></div>`
+  ).join('') : '<div class="leeg">Niets toegevoegd.</div>';
+}
+function cObjRij(veld, cid) { const o={}; CONS_COLS[veld].forEach(c=>o[c.k]=''); (consEdit[veld]||(consEdit[veld]=[])).push(o); cRenderObj(veld,cid); }
+
+// keuze-picker (dropdown uit vaste lijst + persistente 'andere') voor regio's & sectoren
+function enkelvoudVan(veld){ return veld==='regios' ? 'Regio' : 'Sector'; }
+function optieLijst(veld){ return (veld==='regios' ? PROVINCIES.concat(regioCustom) : SECTOREN_BASIS.concat(sectorCustom)); }
+function renderKeuze(veld, cid, enkelvoud) {
+  const chosen = consEdit[veld] || (consEdit[veld]=[]);
+  const alle = optieLijst(veld);
+  const chips = chosen.map((v,i) => `<span class="cons-chip">${escAttr(v)} <span class="x" onclick="keuzeVerwijder('${veld}','${cid}',${i})">×</span></span>`).join('');
+  const opts = `<option value="">+ ${enkelvoud} toevoegen…</option>`
+    + alle.filter(v=>!chosen.includes(v)).map(v=>`<option value="${escAttr(v)}">${escAttr(v)}</option>`).join('')
+    + `<option value="__andere__">Andere…</option>`;
+  document.getElementById(cid).innerHTML = (chips || `<span style="color:var(--muted);font-size:13px">Nog geen ${enkelvoud.toLowerCase()}. </span>`)
+    + `<select class="tool-add" onchange="keuzeKies('${veld}','${cid}',this)">${opts}</select>`;
+}
+async function keuzeKies(veld, cid, sel) {
+  const v = sel.value; sel.value = ''; if (!v) return;
+  if (v === '__andere__') {
+    const t = (prompt(enkelvoudVan(veld) + ' toevoegen:') || '').trim(); if (!t) return;
+    (consEdit[veld]||(consEdit[veld]=[])).push(t);
+    const base = veld==='regios' ? PROVINCIES : SECTOREN_BASIS;
+    const custom = veld==='regios' ? regioCustom : sectorCustom;
+    if (!base.includes(t) && !custom.includes(t)) { custom.push(t); try { await TNL.setInstelling(veld==='regios'?'regio_opties':'sector_opties', custom); } catch(e){} }
+  } else { (consEdit[veld]||(consEdit[veld]=[])).push(v); }
+  renderKeuze(veld, cid, enkelvoudVan(veld));
+}
+function keuzeVerwijder(veld, cid, i) { (consEdit[veld]||[]).splice(i,1); renderKeuze(veld, cid, enkelvoudVan(veld)); }
+
+// expertise-schuifjes 0–10
+function renderExpertise() {
+  consEdit.expertise = consEdit.expertise || {};
+  document.getElementById('c-exp-lijnen').innerHTML = METRO_LIJNEN.map(expRij).join('');
+  document.getElementById('c-exp-versn').innerHTML  = METRO_VERSNELLERS.map(expRij).join('');
+}
+function expRij(code) {
+  const v = Number(consEdit.expertise[code]||0);
+  return `<div class="exp-rij"><label title="${escAttr(METRO_DOMEINEN[code]||code)}">${escAttr(METRO_DOMEINEN[code]||code)}</label>
+    <input type="range" min="0" max="10" step="1" value="${v}" oninput="setExp('${code}',this.value)">
+    <span class="exp-val" id="expval-${code}">${v}</span></div>`;
+}
+function setExp(code, val) { consEdit.expertise[code]=Number(val); document.getElementById('expval-'+code).textContent=val; }
+
+// tool- en NextStone-chips
+function renderConsTools() {
+  const chosen = consEdit.tool_ids || (consEdit.tool_ids=[]);
+  const chips = chosen.map(id => { const t=consToolsCache.find(x=>x.id===id); return t?`<span class="cons-chip">${escAttr(t.naam)} <span class="x" onclick="toggleConsTool('${id}')">×</span></span>`:''; }).join('');
+  const opts = `<option value="">+ Tool toevoegen…</option>` + consToolsCache.filter(t=>!chosen.includes(t.id)).map(t=>`<option value="${t.id}">${escAttr(t.naam)}</option>`).join('');
+  document.getElementById('c-tools').innerHTML = (chips||'<span style="color:var(--muted);font-size:13px">Nog geen tool gekoppeld. </span>') + `<select class="tool-add" onchange="if(this.value){toggleConsTool(this.value);this.value=''}">${opts}</select>`;
+}
+function toggleConsTool(id) { const l=consEdit.tool_ids||(consEdit.tool_ids=[]); const i=l.indexOf(id); if(i<0)l.push(id); else l.splice(i,1); renderConsTools(); }
+function renderConsNextstones() {
+  const chosen = consEdit.nextstone_ids || (consEdit.nextstone_ids=[]);
+  const chips = chosen.map(id => { const a=consNextstonesCache.find(x=>x.id===id); return a?`<span class="cons-chip">${escAttr(nsNaam(a))} <span class="x" onclick="toggleConsNs('${id}')">×</span></span>`:''; }).join('');
+  const opts = `<option value="">+ Stepping Stone toevoegen…</option>` + consNextstonesCache.filter(a=>!chosen.includes(a.id)).map(a=>`<option value="${a.id}">${escAttr(nsNaam(a))}</option>`).join('');
+  document.getElementById('c-nextstones').innerHTML = (chips||'<span style="color:var(--muted);font-size:13px">Nog geen Stepping Stone gekoppeld. </span>') + `<select class="tool-add" onchange="if(this.value){toggleConsNs(this.value);this.value=''}">${opts}</select>`;
+}
+function toggleConsNs(id) { const l=consEdit.nextstone_ids||(consEdit.nextstone_ids=[]); const i=l.indexOf(id); if(i<0)l.push(id); else l.splice(i,1); renderConsNextstones(); }
+
+async function uploadConsFile(soort, file) {
+  if (!file) return;
+  if (!consEdit.id) { alert('Sla de consultant eerst op (knop Opslaan) voordat je een foto/CV uploadt.'); return; }
+  try {
+    const r = await TNL.uploadConsultantFile(consEdit.id, file, soort);
+    if (soort==='foto') {
+      consEdit.foto_url = r.url; await TNL.updateConsultant(consEdit.id, { foto_url:r.url });
+      document.getElementById('c-foto-prev').innerHTML = '<img src="'+r.url+'" style="width:100%;height:100%;object-fit:cover">';
+    } else if (soort==='mgmt') {
+      consEdit.mgmt_profile_url = r.url; consEdit.mgmt_profile_naam = r.naam;
+      await TNL.updateConsultant(consEdit.id, { mgmt_profile_url:r.url, mgmt_profile_naam:r.naam });
+      document.getElementById('c-mgmt-naam').textContent = r.naam;
+    } else {
+      consEdit.cv_url = r.url; consEdit.cv_naam = r.naam; await TNL.updateConsultant(consEdit.id, { cv_url:r.url, cv_naam:r.naam });
+      document.getElementById('c-cv-naam').textContent = r.naam;
+    }
+  } catch (e) { alert('Upload mislukt: ' + (e.message||e)); }
+}
+
+async function slaConsultantOp(genereer) {
+  const f = id => document.getElementById(id);
+  const naam = f('c-naam').value.trim();
+  if (!naam) { alert('Naam is verplicht.'); return; }
+  const tarief = {};
+  const tu=parseFloat(f('c-tar-uur').value), th=parseFloat(f('c-tar-half').value), td=parseFloat(f('c-tar-heel').value);
+  if (tu>0) tarief.uur=tu; if (th>0) tarief.halvedag=th; if (td>0) tarief.heledag=td;
+  const c = {
+    voornaam:f('c-voornaam').value.trim()||null, naam, titel:f('c-titel').value.trim()||null,
+    email:f('c-email').value.trim()||null, telefoon:f('c-telefoon').value.trim()||null,
+    linkedin_url:f('c-linkedin').value.trim()||null, status:f('c-status').value,
+    pitch:f('c-pitch').value.trim()||null, profiel_tekst:f('c-profieltekst').value.trim()||null, achtergrond:f('c-achtergrond').value.trim()||null,
+    verwachting:f('c-verwachting').value.trim()||null, intern_notities:f('c-notities').value.trim()||null,
+    regios:(consEdit.regios||[]).map(s=>(s||'').trim()).filter(Boolean),
+    skills:(consEdit.skills||[]).map(s=>(s||'').trim()).filter(Boolean),
+    sectoren:(consEdit.sectoren||[]).map(s=>(s||'').trim()).filter(Boolean),
+    kerncompetenties:(consEdit.kerncompetenties||[]).filter(k=>(k.titel||'').trim()),
+    kpi:(consEdit.kpi||[]).filter(k=>(k.getal||'').toString().trim()),
+    talen:(consEdit.talen||[]).filter(t=>(t.taal||'').trim()),
+    ervaring:(consEdit.ervaring||[]).filter(e=>(e.rol||'').trim()||(e.bedrijf||'').trim()),
+    opleidingen:(consEdit.opleidingen||[]).filter(o=>(o.titel||'').trim()),
+    testimonials:(consEdit.testimonials||[]).filter(t=>(t.quote||'').trim()),
+    expertise:consEdit.expertise||{}, tool_ids:consEdit.tool_ids||[], nextstone_ids:consEdit.nextstone_ids||[],
+    tarief, foto_url:consEdit.foto_url||null, cv_url:consEdit.cv_url||null, cv_naam:consEdit.cv_naam||null,
+    mgmt_profile_url:consEdit.mgmt_profile_url||null, mgmt_profile_naam:consEdit.mgmt_profile_naam||null
+  };
+  if (consEdit.id) c.id = consEdit.id;
+  try {
+    const opgeslagen = await TNL.upsertConsultant(c);
+    consEdit.id = opgeslagen.id;
+    if (genereer) { const r = await genereerProfiel(opgeslagen, 'kort'); window.open(r.url, '_blank'); }
+    sluitConsultant(); await laadConsultants();
+  } catch (e) { alert('Opslaan mislukt: ' + (e.message||e)); }
+}
+async function verwijderConsultant() {
+  if (!consEdit.id) return;
+  if (!confirm('Deze consultant definitief verwijderen?')) return;
+  try { await TNL.deleteConsultant(consEdit.id); sluitConsultant(); await laadConsultants(); }
+  catch (e) { alert('Mislukt: ' + (e.message||e)); }
+}
+async function regenereerProfiel(id, mode) {
+  const c = consCache.find(x => x.id===id); if (!c) return;
+  const st = document.getElementById('cons-status'); st.textContent = (mode==='detail'?'Detailprofiel':'Profiel') + ' genereren…';
+  try { const r = await genereerProfiel(c, mode); st.textContent = (mode==='detail'?'Detailprofiel':'Profiel') + ' bijgewerkt.'; await laadConsultants(); window.open(r.url, '_blank'); }
+  catch (e) { st.innerHTML = '<span style="color:var(--red)">Genereren mislukt: ' + (e.message||e) + '</span>'; }
+}
+async function genereerProfiel(c, mode) {
+  mode = (mode === 'detail') ? 'detail' : 'kort';
+  let foto = null, logo = null, qr = null;
+  if (c.foto_url)     { try { foto = await laadAfbeeldingMeta(c.foto_url); } catch(e){} }
+  try { logo = await laadAfbeeldingMeta('LogoNextLevel_FINAAL.jpg'); } catch(e){}
+  if (c.linkedin_url) { try { qr = await maakQr(normLinkedin(c.linkedin_url)); } catch(e){} }
+  const blob = buildProfielPdf(c, { foto, logo, qr }, mode);
+  const naam = (((c.voornaam||'')+' '+(c.naam||'consultant')).trim()) + ' - TNL Expert Profiel' + (mode==='detail'?' (detail)':'') + '.pdf';
+  const { url } = await TNL.uploadConsultantPdf(c.id, blob, mode);
+  const patch = (mode==='detail') ? { pdf_detail_url:url, pdf_detail_naam:naam } : { pdf_url:url, pdf_naam:naam };
+  await TNL.updateConsultant(c.id, patch);
+  return { url, naam, mode };
+}
+// afbeelding (Storage-URL of lokaal bestand) -> { data:PNG-dataURL, w, h } via canvas (voor aspect ratio)
+function laadAfbeeldingMeta(url) {
+  return new Promise(res => {
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => { try {
+      const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+      cv.getContext('2d').drawImage(img, 0, 0);
+      res({ data: cv.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight });
+    } catch(e){ res(null); } };
+    img.onerror = () => res(null);
+    img.src = url;
+  });
+}
+function normLinkedin(u){ u=String(u||'').trim(); if(!u) return ''; return /^https?:\/\//i.test(u) ? u : 'https://'+u; }
+// QR via qrserver-API (PNG met CORS) -> dataURL voor jsPDF. Geen library nodig.
+function maakQr(text){
+  if(!text) return Promise.resolve(null);
+  const url = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data=' + encodeURIComponent(text);
+  return fetch(url).then(r => r.ok ? r.blob() : null).then(b => b
+    ? new Promise(res => { const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(b); })
+    : null).catch(()=>null);
+}
+
+// 1-pager (TNL Profiel) als vector-PDF (jsPDF) — in de stijl van het template.
+function buildProfielPdf(c, extras, mode) {
+  extras = extras || {};
+  mode = (mode === 'detail') ? 'detail' : 'kort';
+  const foto = extras.foto || null, logo = extras.logo || null, qrData = extras.qr || null;
+  const JS = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  const doc = new JS({ unit:'mm', format:'a4' });
+  const W=210, M=14, RIGHT=W-M, BOT=282;
+  const NAVY=[27,58,107], BLUE=[24,95,165], GREY=[120,120,120], TXT=[40,40,46];   // NAVY = app --navy #1B3A6B
+  // Kopband
+  doc.setFillColor(...NAVY); doc.rect(0,0,W,44,'F');
+  // Foto links (contain in 26mm wit kader)
+  const textX = foto ? M+32 : M;
+  if (foto) { const box=26; let fw=box, fh=box; const r=(foto.w||1)/(foto.h||1);
+    if (r>=1) fh=box/r; else fw=box*r;
+    doc.setFillColor(255,255,255); doc.rect(M,9,box,box,'F');
+    try { doc.addImage(foto.data,'PNG', M+(box-fw)/2, 9+(box-fh)/2, fw, fh); } catch(e){}
+    doc.setDrawColor(255,255,255); doc.setLineWidth(0.6); doc.rect(M,9,box,box); }
+  // Logo rechtsboven (wit badge) + QR eronder
+  let rechtsBreedte = 0, logoBottom = 6;
+  if (logo) { const hL=12, wL=Math.min(46, hL*((logo.w||1)/(logo.h||1))); const lx=RIGHT-wL, ly=6;
+    doc.setFillColor(255,255,255); doc.roundedRect(lx-2, ly-2, wL+4, hL+4, 1.5, 1.5, 'F');
+    try { doc.addImage(logo.data,'PNG', lx, ly, wL, hL); } catch(e){}
+    rechtsBreedte = Math.max(rechtsBreedte, wL+4); logoBottom = ly+hL+4; }
+  const q=19;
+  if (qrData) { const qx=RIGHT-q, qy=(logo?logoBottom+1:7);
+    doc.setFillColor(255,255,255); doc.rect(qx-1.5,qy-1.5,q+3,q+3,'F');
+    try { doc.addImage(qrData,'PNG',qx,qy,q,q); } catch(e){}
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+    doc.text('Scan mijn LinkedIn', qx+q/2, qy+q+3, {align:'center'});
+    rechtsBreedte = Math.max(rechtsBreedte, q+3); }
+  const rechtsGrens = rechtsBreedte>0 ? (RIGHT-rechtsBreedte-4) : RIGHT;
+  doc.setTextColor(255,255,255);
+  if (c.titel) { doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+    doc.text(doc.splitTextToSize(String(c.titel), rechtsGrens-textX)[0], textX, 14); }
+  doc.setFont('helvetica','bold'); doc.setFontSize(22);
+  doc.text(((c.voornaam?c.voornaam+' ':'')+(c.naam||'')).trim(), textX, 25);
+  if (c.pitch) { doc.setFont('helvetica','italic'); doc.setFontSize(10);
+    doc.splitTextToSize('"'+c.pitch+'"', rechtsGrens-textX).slice(0,2).forEach((ln,i)=>doc.text(ln, textX, 32+i*4.6)); }
+  // ===== 2-koloms profielkaart =====
+  const BOT2 = 282;
+  const SB_BGW = 78, SBW = 58, MAINX = 86, MAINW = RIGHT - MAINX;
+  const colTop = 50;
+  const PALET=[[110,140,180],[130,170,150],[190,170,120],[170,140,160],[150,160,190],[180,150,140],[140,175,175],[165,165,150],[175,160,175],[150,175,160]];
+  doc.setFillColor(244,247,251); doc.rect(0, 44, SB_BGW, 253, 'F');
+  const sb   = { x:M,     w:SBW,   y:colTop, main:false };
+  const main = { x:MAINX, w:MAINW, y:colTop, main:true  };
+  const colNewPage = col => { doc.addPage(); if (col.main) { col.x=M; col.w=RIGHT-M; } col.y = 20; };
+  const H = (col, title) => { if (col.y+12>BOT2) colNewPage(col); col.y += 2.5;
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...BLUE);
+    doc.text(String(title).toUpperCase(), col.x, col.y); col.y += 1.3;
+    doc.setDrawColor(...BLUE); doc.setLineWidth(0.3); doc.line(col.x, col.y, col.x+col.w, col.y); col.y += 4.4; };
+  const P = (col, t, o) => { if (t==null||t==='') return; o=o||{};
+    doc.setFont('helvetica', o.italic?'italic':(o.bold?'bold':'normal')); doc.setFontSize(o.size||9.5); doc.setTextColor(...(o.color||TXT));
+    const lh=(o.size||9.5)*0.42+0.9;
+    doc.splitTextToSize(String(t), col.w).forEach(ln=>{ if(col.y+lh>BOT2) colNewPage(col); doc.text(ln, col.x, col.y); col.y+=lh; }); };
+  const barsCol = (col, codes) => { const labelW=28, gap=3, bw=col.w-labelW-gap-8;
+    codes.forEach(code=>{ if(col.y+5>BOT2) colNewPage(col);
+      const v=Math.max(0,Math.min(10,Number((c.expertise||{})[code]||0)));
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT);
+      doc.text(String(METRO_DOMEINEN[code]||code), col.x, col.y+2.2);
+      const bx=col.x+labelW+gap;
+      doc.setFillColor(232,236,242); doc.rect(bx, col.y, bw, 2.6, 'F');
+      doc.setFillColor(...BLUE); doc.rect(bx, col.y, bw*v/10, 2.6, 'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...GREY);
+      doc.text(String(v), col.x+col.w-3, col.y+2.2, {align:'right'});
+      col.y+=4.5; }); };
+  const blokjesCol = (col, items) => { doc.setFontSize(8);
+    items.forEach((it,i)=>{ if(col.y+4>BOT2) colNewPage(col);
+      const cc=PALET[i%PALET.length]; doc.setFillColor(cc[0],cc[1],cc[2]); doc.rect(col.x, col.y-2.4, 2.8, 2.8, 'F');
+      doc.setFont('helvetica','normal'); doc.setTextColor(...TXT);
+      doc.splitTextToSize(String(it), col.w-5).forEach(ln=>{ doc.text(ln, col.x+5, col.y); col.y+=3.7; }); col.y+=0.5; }); };
+  const bulletsCol = (col, items) => { doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT);
+    (items.length?items:['—']).forEach(it=>{ doc.splitTextToSize('•  '+it, col.w).forEach(ln=>{ if(col.y+4>BOT2) colNewPage(col); doc.text(ln, col.x, col.y); col.y+=4; }); }); };
+
+  // ----- ZIJBALK (feiten) -----
+  const contactLijnen = [c.telefoon, c.email, c.linkedin_url, (c.regios||[]).join(' · ')].filter(Boolean);
+  if (contactLijnen.length) { H(sb,'Contact'); contactLijnen.forEach(v=>P(sb, v, {size:8.5})); }
+  const tal=(c.talen||[]).filter(t=>(t.taal||'').trim());
+  if (tal.length) { H(sb,'Talen'); tal.forEach(t=>P(sb, t.taal+(t.niveau?' — '+t.niveau:''), {size:8.5})); }
+  const sec=(c.sectoren||[]).filter(Boolean);
+  if (sec.length) { H(sb,'Sectoren'); blokjesCol(sb, sec); }
+  H(sb,'Expertise — metrolijnen'); barsCol(sb, METRO_LIJNEN);
+  H(sb,'Expertise — versnellers'); barsCol(sb, METRO_VERSNELLERS);
+  const pTools=(c.tool_ids||[]).map(id=>{const t=consToolsCache.find(x=>x.id===id);return t?t.naam:null;}).filter(Boolean);
+  if (pTools.length) { H(sb,'Tools die ik implementeer'); bulletsCol(sb, pTools); }
+  const pNs=(c.nextstone_ids||[]).map(id=>{const a=consNextstonesCache.find(x=>x.id===id);return a?nsNaam(a):null;}).filter(Boolean);
+  if (pNs.length) { H(sb,'Stepping Stones die ik lever'); bulletsCol(sb, pNs); }
+
+  // ----- HOOFDKOLOM (verhaal) -----
+  const kpi = (c.kpi||[]).filter(k=>String(k.getal||'').trim()).slice(0,4);
+  if (kpi.length) { const n=kpi.length, gap=3, tw=(main.w-gap*(n-1))/n; let x=main.x;
+    kpi.forEach(k=>{ doc.setFillColor(238,242,248); doc.rect(x, main.y, tw, 16, 'F');
+      doc.setTextColor(...NAVY); doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.text(String(k.getal), x+tw/2, main.y+7, {align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.3); doc.setTextColor(...GREY);
+      doc.splitTextToSize(String(k.label||''), tw-3).slice(0,2).forEach((ln,i)=>doc.text(ln, x+tw/2, main.y+11+i*2.7, {align:'center'}));
+      x+=tw+gap; }); main.y += 20; }
+  const lead = (c.profiel_tekst||'').trim() || (c.achtergrond||'').trim();
+  if (lead) { H(main,'Profiel'); P(main, lead); }
+  const topErv = (c.ervaring||[]).filter(e=>e.top && ((e.rol||'').trim()||(e.bedrijf||'').trim()));
+  const rollen = topErv.length ? topErv : (c.ervaring||[]).filter(e=>(e.rol||'').trim()||(e.bedrijf||'').trim()).slice(0,4);
+  if (rollen.length) { H(main,'Belangrijkste managementrollen & realisaties');
+    rollen.forEach(e=>{ P(main, [e.periode,e.rol,e.bedrijf].filter(Boolean).join(' — '), {bold:true}); if(e.omschrijving) P(main, e.omschrijving, {size:9, color:GREY}); main.y+=1; }); }
+  const tst=(c.testimonials||[]).filter(t=>(t.quote||'').trim());
+  if (tst.length) { H(main,'Wat klanten zeggen'); tst.forEach(t=>{ P(main, '"'+t.quote+'"', {italic:true}); P(main, [t.naam,t.functie].filter(Boolean).join(', '), {size:8.5, color:GREY}); main.y+=1; }); }
+  if (c.verwachting) { H(main,'Wat u van mij mag verwachten'); P(main, c.verwachting, {italic:true}); }
+
+  // ----- DETAIL (dormant): volledige loopbaan/opleiding op vervolgpagina -----
+  if (mode === 'detail') {
+    doc.addPage(); const full = { x:M, w:RIGHT-M, y:20, main:true };
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...NAVY);
+    doc.text('Detail — loopbaan, opleiding & expertise', full.x, full.y); full.y += 8;
+    const erv=(c.ervaring||[]).filter(e=>(e.rol||'').trim()||(e.bedrijf||'').trim());
+    if (erv.length) { H(full,'Professionele successen'); erv.forEach(e=>{ P(full, [e.periode,e.rol,e.bedrijf].filter(Boolean).join(' — '), {bold:true}); if(e.omschrijving) P(full, e.omschrijving, {size:9, color:GREY}); full.y+=1; }); }
+    const opl=(c.opleidingen||[]).filter(o=>(o.titel||'').trim());
+    if (opl.length) { H(full,'Opleidingen & certificaten'); opl.forEach(o=>P(full, [o.jaar,o.titel,o.instelling].filter(Boolean).join(' — '))); }
+    const sk=(c.skills||[]).filter(Boolean); if (sk.length) { H(full,'Skills'); P(full, sk.join('   ·   ')); }
+  }
+
+  // Voetnoot op elke pagina
+  const paginas = doc.getNumberOfPages();
+  for (let i=1;i<=paginas;i++){ doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GREY);
+    doc.text('The Next Level  ·  thenextlevel.consulting  ·  Vertrouwelijk – bestemd voor de klant', W/2, 290, {align:'center'}); }
+  return doc.output('blob');
+}
 </script>
 </body>
 </html>

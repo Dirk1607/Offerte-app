@@ -251,9 +251,43 @@ const TNL = (() => {
     return check(await client().from('contact')
       .update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id).select().single());
   }
+  async function insertBedrijf(bedrijf) {
+    return check(await client().from('bedrijf').insert(bedrijf).select().single());
+  }
+  async function insertContact(contact) {
+    return check(await client().from('contact').insert(contact).select().single());
+  }
+  async function deleteBedrijf(id) {
+    return check(await client().from('bedrijf').delete().eq('id', id));
+  }
+  async function deleteContact(id) {
+    return check(await client().from('contact').delete().eq('id', id));
+  }
   // Werk enkele velden van een scan bij (bv. een scan aan een contact/bedrijf koppelen).
   async function updateQuickscan(id, patch) {
     return check(await client().from('quickscan').update(patch).eq('id', id).select().single());
+  }
+
+  // ---------- fuzzy bedrijf-match (migratie 0025) ----------
+  async function zoekGelijkaardigeBedrijven(naam, drempel = 0.4) {
+    return check(await client().rpc('zoek_gelijkaardige_bedrijven', { p_naam: naam, p_drempel: drempel }));
+  }
+  async function dubbeleBedrijven(drempel = 0.55) {
+    return check(await client().rpc('dubbele_bedrijven', { p_drempel: drempel }));
+  }
+  async function voegBedrijvenSamen(behoudId, verwijderId) {
+    return check(await client().rpc('voeg_bedrijven_samen', { p_behoud: behoudId, p_verwijder: verwijderId }));
+  }
+
+  // ---------- goedkeurings-queue (voorgestelde wijzigingen) ----------
+  async function getVoorstellen(status = 'open') {
+    let q = client().from('wijziging_voorstel').select('*').order('created_at', { ascending: false });
+    if (status) q = q.eq('status', status);
+    return check(await q);
+  }
+  async function updateVoorstel(id, patch) {
+    return check(await client().from('wijziging_voorstel')
+      .update(patch).eq('id', id).select().single());
   }
 
   // ---------- prospecten (read-only uit het aparte Prospectie-project) ----------
@@ -410,7 +444,10 @@ const TNL = (() => {
     getStations, upsertStation, deleteStation,
     getCatalogus, getArtikel, upsertArtikel, updateArtikel, deleteArtikel,
     getKlanten, vindKlantOpBedrijf, upsertKlant, updateKlant, saveGesprek, getScansVanKlant, getAlleScans,
-    getBedrijven, getContacten, updateBedrijf, updateContact, updateQuickscan,
+    getBedrijven, getContacten, updateBedrijf, updateContact, insertBedrijf, insertContact,
+    deleteBedrijf, deleteContact, updateQuickscan,
+    zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
+    getVoorstellen, updateVoorstel,
     getProspects,
     saveOfferte, getOffertes, getOfferte
   };

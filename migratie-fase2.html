@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Migratie fase 2 — bedrijf + contact</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;color:#1b2a41}
+  h1{font-size:20px}
+  .warn{background:#fff6e6;border:1px solid #f0c674;border-radius:8px;padding:10px 14px;font-size:14px}
+  button{font-size:14px;font-weight:600;border-radius:8px;padding:9px 16px;border:1px solid #cdd7e3;background:#fff;cursor:pointer;margin:6px 6px 6px 0}
+  button.primary{background:#1B3A6B;color:#fff;border-color:#1B3A6B}
+  button.reset{color:#b3261e;border-color:#e6b3ae}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  #log{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#0f172a;color:#e2e8f0;border-radius:10px;padding:14px;margin-top:14px;min-height:120px;max-height:60vh;overflow:auto}
+  .ok{color:#4ade80}.err{color:#f87171}.hl{color:#fbbf24}
+</style>
+</head>
+<body>
+<h1>Migratie fase 2 — prospecten + dossiers → <code>bedrijf</code> + <code>contact</code></h1>
+<div class="warn">
+  <b>Veilig:</b> dit voegt enkel toe aan de nieuwe tabellen (<code>bedrijf</code>, <code>contact</code>) en zet <code>bedrijf_id</code>/<code>contact_id</code> op bestaande scans.
+  De oude tabellen (<code>klant</code>, <code>quickscan</code>, <code>prospects</code>) worden <b>niet</b> gewijzigd of gewist.
+  Doe altijd eerst een <b>Proefrun</b>.
+</div>
+
+<div>
+  <button class="primary" onclick="run('dry')">🔍 Proefrun (toont enkel, schrijft niets)</button>
+  <button onclick="run('go')">✅ Echt uitvoeren</button>
+  <button class="reset" onclick="run('reset')">♻ Reset nieuwe tabellen (leegmaken)</button>
+</div>
+<div id="log">Nog niets gedaan.</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase/config.js?v=1"></script>
+<script>
+const logEl = document.getElementById('log');
+function log(msg, cls){ logEl.innerHTML += '\n' + (cls ? `<span class="${cls}">${msg}</span>` : msg); logEl.scrollTop = logEl.scrollHeight; }
+function clearLog(){ logEl.innerHTML = ''; }
+
+const SB  = window.supabase.createClient(window.TNL_SUPABASE.url, window.TNL_SUPABASE.anonKey);
+const SBP = window.supabase.createClient('https://pylfvfcieyrwegcvlwwa.supabase.co', 'sb_publishable_jINc1spJu3sUcltJSABpLQ_r_jBNBud');
+
+// Genormaliseerde bedrijfsnaam — moet 1-op-1 overeenkomen met SQL norm_naam().
+function normNaam(p){
+  let s = (p || '').toLowerCase().trim();
+  s = s.replace(/[.,]/g, '');
+  s = s.replace(/\s+/g, ' ');
+  s = s.replace(/\s+(nv|bv|bvba|cvba|comm\s?v|sa|sprl|srl|vzw|ltd|gmbh|cv|se|esv)$/i, '');
+  return s.trim();
+}
+// Namen die géén echt bedrijf zijn: die worden NIET samengevoegd; elke persoon
+// krijgt een eigen bedrijf op zijn naam (user vult het echte bedrijf later in).
+const NON_BEDRIJF = new Set(['zelfstandige','freelance','freelancer','particulier']);
+// Kuis het bedrijf-veld op: "info@Roofcover" -> "Roofcover".
+function schoonBedrijf(naam){
+  naam = (naam || '').trim();
+  if (naam.includes('@')) naam = naam.split('@').pop().trim();
+  return naam;
+}
+// "Dhr. Joachim Lamberts" -> {aanspreektitel, voornaam, achternaam}
+function splitNaam(full){
+  full = (full || '').trim();
+  let titel = null;
+  const m = full.match(/^(dhr|mevr|mevrouw|meneer|mr|mw|de heer|mevr\.?)\.?\s+/i);
+  if (m){
+    const t = m[1].toLowerCase();
+    titel = t.startsWith('mev') || t === 'mw' ? 'Mevr.' : 'Dhr.';
+    full = full.slice(m[0].length).trim();
+  }
+  const parts = full.split(/\s+/).filter(Boolean);
+  const voornaam = parts.shift() || '';
+  const achternaam = parts.join(' ');
+  return { aanspreektitel: titel, voornaam, achternaam };
+}
+function leeg(v){ return v == null || String(v).trim() === ''; }
+function vulLeeg(obj, veld, waarde){ if (!leeg(waarde) && leeg(obj[veld])) obj[veld] = String(waarde).trim(); }
+function dOrNull(v){ v = (v || '').toString().trim(); return v || null; }
+
+function getBedrijf(map, naamRaw){
+  const naam = (naamRaw || '').trim();
+  const norm = normNaam(naam) || '(onbekend)';
+  let b = map.get(norm);
+  if (!b){ b = { naam: naam || '(onbekend)', naam_norm: norm, adres:null, btw_nummer:null, sector:null,
+    aantal_medewerkers:null, status:'prospect', notities:null, bron:null, contacten:[] }; map.set(norm, b); }
+  return b;
+}
+function vindContact(b, email, voornaam, achternaam){
+  const e = (email || '').trim().toLowerCase();
+  if (e){ const x = b.contacten.find(c => (c.email || '').trim().toLowerCase() === e); if (x) return x; }
+  const vn = (voornaam || '').trim().toLowerCase(), an = (achternaam || '').trim().toLowerCase();
+  if (vn || an){ const x = b.contacten.find(c => (c.voornaam||'').trim().toLowerCase() === vn && (c.achternaam||'').trim().toLowerCase() === an); if (x) return x; }
+  return null;
+}
+
+// Bouwt het volledige migratieplan in het geheugen (schrijft niets weg).
+async function bouwPlan(){
+  const [pr, kl, sc] = await Promise.all([
+    SBP.from('prospects').select('*'),
+    SB.from('klant').select('*'),
+    SB.from('quickscan').select('*')
+  ]);
+  if (pr.error) throw new Error('prospects laden: ' + pr.error.message);
+  if (kl.error) throw new Error('klant laden: ' + kl.error.message);
+  if (sc.error) throw new Error('quickscan laden: ' + sc.error.message);
+  const prospects = pr.data || [], klanten = kl.data || [], scans = sc.data || [];
+  log(`Geladen: ${prospects.length} prospecten · ${klanten.length} klant-dossiers · ${scans.length} scans`);
+
+  const map = new Map();
+  let nContacten = 0, nSplits = 0, nMergesPersoon = 0, warnings = [];
+
+  // 1) Prospecten -> bedrijf + contact
+  for (const p of prospects){
+    const schoon = schoonBedrijf(p.bedrijf);
+    const geenBedrijf = leeg(schoon) || NON_BEDRIJF.has(normNaam(schoon));
+    const bedrijfNaam = geenBedrijf ? ([p.voornaam, p.naam].filter(Boolean).join(' ') || '(onbekend)') : schoon;
+    const b = getBedrijf(map, bedrijfNaam);
+    if (b.bron == null) b.bron = 'prospectie';
+    const st = (p.status || '').toLowerCase();
+    b.contacten.push({
+      aanspreektitel: dOrNull(p.titel), voornaam: dOrNull(p.voornaam), achternaam: dOrNull(p.naam),
+      email: dOrNull(p.email), gsm: dOrNull(p.telefoon), functie: null,
+      quickscan_ingevuld: /quickscan|scan ingevuld/.test(st), nog_te_contacteren: false,
+      cat1: dOrNull(p.categorie), cat2: dOrNull(p.notities),
+      verloop: dOrNull(p.verloop), samenvatting: dOrNull(p.samenvatting),
+      volgende_stap: dOrNull(p.volgende_stap), volgende_stap_datum: dOrNull(p.volgende_stap_datum),
+      notities: null, bron: 'prospectie', prospect_ref: String(p.id)
+    });
+    nContacten++;
+  }
+
+  // 2) Klant-dossiers -> zelfde bedrijf (aanvullen) + contactpersoon splitsen
+  const klantMap = {};   // klant.id -> {b, contact}
+  for (const k of klanten){
+    const b = getBedrijf(map, schoonBedrijf(k.bedrijf));
+    if (b.bron == null) b.bron = 'klant';
+    vulLeeg(b, 'sector', k.sector);
+    vulLeeg(b, 'aantal_medewerkers', k.medewerkers);
+    vulLeeg(b, 'adres', k.adres);
+    vulLeeg(b, 'btw_nummer', k.btw_nummer);
+    vulLeeg(b, 'notities', k.notities);
+    let contact = null;
+    if (!leeg(k.contactpersoon) || !leeg(k.email)){
+      const sp = splitNaam(k.contactpersoon || '');
+      contact = vindContact(b, k.email, sp.voornaam, sp.achternaam);
+      if (contact){
+        nMergesPersoon++;
+        vulLeeg(contact, 'aanspreektitel', sp.aanspreektitel);
+        vulLeeg(contact, 'functie', k.functie);
+        vulLeeg(contact, 'email', k.email);
+        vulLeeg(contact, 'gsm', k.telefoon);
+      } else {
+        if (!leeg(k.contactpersoon)) nSplits++;
+        contact = { aanspreektitel: sp.aanspreektitel, voornaam: dOrNull(sp.voornaam), achternaam: dOrNull(sp.achternaam),
+          email: dOrNull(k.email), gsm: dOrNull(k.telefoon), functie: dOrNull(k.functie),
+          quickscan_ingevuld: false, nog_te_contacteren: false, cat1: null, cat2: null,
+          verloop: null, samenvatting: null, volgende_stap: null, volgende_stap_datum: null,
+          notities: null, bron: 'klant', prospect_ref: null };
+        b.contacten.push(contact); nContacten++;
+      }
+    }
+    klantMap[k.id] = { b, contact };
+  }
+
+  // 3) Scans -> bedrijf_id + contact_id; invuller aan contact koppelen
+  const scanPlan = [];
+  for (const s of scans){
+    const link = klantMap[s.klant_id];
+    if (!link){ warnings.push(`Scan ${s.id} heeft geen bijhorend klant-dossier — overgeslagen.`); continue; }
+    const b = link.b;
+    const sp = splitNaam(s.invuller || '');
+    let contact = vindContact(b, s.invuller_email, sp.voornaam, sp.achternaam) || link.contact;
+    if (!contact){
+      contact = { aanspreektitel: sp.aanspreektitel, voornaam: dOrNull(sp.voornaam), achternaam: dOrNull(sp.achternaam),
+        email: dOrNull(s.invuller_email), gsm: null, functie: dOrNull(s.invuller_functie),
+        quickscan_ingevuld: true, nog_te_contacteren: false, cat1: null, cat2: null,
+        verloop:null, samenvatting:null, volgende_stap:null, volgende_stap_datum:null, notities:null, bron:'quickscan', prospect_ref:null };
+      b.contacten.push(contact); nContacten++;
+    } else {
+      contact.quickscan_ingevuld = true;
+      vulLeeg(contact, 'functie', s.invuller_functie);
+      vulLeeg(contact, 'email', s.invuller_email);
+    }
+    scanPlan.push({ scanId: s.id, b, contact });
+  }
+
+  // categorie-keuzelijsten
+  const cat1 = new Set(['Kennissen','Klant','Netwerk','Vrienden']), cat2 = new Set();
+  for (const b of map.values()) for (const c of b.contacten){ if (c.cat1) cat1.add(c.cat1); if (c.cat2) cat2.add(c.cat2); }
+
+  return { map, scanPlan, stats: { bedrijven: map.size, contacten: nContacten, splits: nSplits, merges: nMergesPersoon, scans: scanPlan.length, warnings }, cat1:[...cat1].sort(), cat2:[...cat2].sort() };
+}
+
+function toonRapport(plan){
+  const s = plan.stats;
+  log('', ); log('===== PROEFRUN-RAPPORT =====', 'hl');
+  log(`Aan te maken: ${s.bedrijven} bedrijven, ${s.contacten} contacten`, 'ok');
+  log(`Waarvan: ${s.merges} personen samengevoegd (prospect+dossier), ${s.splits} namen gesplitst uit "contactpersoon"`);
+  log(`Scans te koppelen aan bedrijf+contact: ${s.scans}`);
+  log(`CAT1-opties: ${plan.cat1.join(', ')}`);
+  log(`CAT2-opties: ${plan.cat2.length} stuks (${plan.cat2.slice(0,8).join(', ')}${plan.cat2.length>8?', …':''})`);
+  if (s.warnings.length){ log('Waarschuwingen:', 'err'); s.warnings.forEach(w => log('  ⚠ ' + w, 'err')); }
+  // bedrijven met >1 contact (interessant om te controleren)
+  const multi = [...plan.map.values()].filter(b => b.contacten.length > 1);
+  if (multi.length){ log('', ); log(`Bedrijven met meerdere contacten (${multi.length}):`, 'hl');
+    multi.forEach(b => log(`  • ${b.naam} → ${b.contacten.map(c => [c.voornaam,c.achternaam].filter(Boolean).join(' ')).join(', ')}`)); }
+}
+
+async function voerUit(plan){
+  const { count } = await SB.from('bedrijf').select('*', { count:'exact', head:true });
+  if (count > 0){ log(`⛔ Er staan al ${count} bedrijven — migratie lijkt al uitgevoerd. Gebruik eerst "Reset" om opnieuw te kunnen.`, 'err'); return; }
+
+  const bedrijfList = [...plan.map.values()];
+  log('Bedrijven wegschrijven…');
+  const insB = await SB.from('bedrijf').insert(bedrijfList.map(b => ({
+    naam:b.naam, adres:b.adres, btw_nummer:b.btw_nummer, sector:b.sector,
+    aantal_medewerkers:b.aantal_medewerkers, status:b.status, notities:b.notities, bron:b.bron
+  }))).select();
+  if (insB.error) throw new Error('bedrijf insert: ' + insB.error.message);
+  insB.data.forEach((row, i) => bedrijfList[i]._id = row.id);
+  log(`✔ ${insB.data.length} bedrijven aangemaakt`, 'ok');
+
+  log('Contacten wegschrijven…');
+  let cTot = 0;
+  for (const b of bedrijfList){
+    if (!b.contacten.length) continue;
+    const insC = await SB.from('contact').insert(b.contacten.map(c => ({
+      bedrijf_id:b._id, aanspreektitel:c.aanspreektitel, voornaam:c.voornaam, achternaam:c.achternaam,
+      email:c.email, gsm:c.gsm, functie:c.functie, quickscan_ingevuld:!!c.quickscan_ingevuld,
+      nog_te_contacteren:!!c.nog_te_contacteren, cat1:c.cat1, cat2:c.cat2, verloop:c.verloop,
+      samenvatting:c.samenvatting, volgende_stap:c.volgende_stap, volgende_stap_datum:c.volgende_stap_datum,
+      notities:c.notities, bron:c.bron, prospect_ref:c.prospect_ref
+    }))).select();
+    if (insC.error) throw new Error('contact insert (' + b.naam + '): ' + insC.error.message);
+    insC.data.forEach((row, i) => b.contacten[i]._id = row.id);
+    cTot += insC.data.length;
+  }
+  log(`✔ ${cTot} contacten aangemaakt`, 'ok');
+
+  log('Scans koppelen…');
+  let sTot = 0;
+  for (const sp of plan.scanPlan){
+    const upd = await SB.from('quickscan').update({ bedrijf_id: sp.b._id, contact_id: sp.contact && sp.contact._id || null }).eq('id', sp.scanId);
+    if (upd.error) throw new Error('scan koppelen: ' + upd.error.message);
+    sTot++;
+  }
+  log(`✔ ${sTot} scans gekoppeld`, 'ok');
+
+  await SB.from('instellingen').upsert({ sleutel:'contact_cat1_opties', waarde: plan.cat1 });
+  await SB.from('instellingen').upsert({ sleutel:'contact_cat2_opties', waarde: plan.cat2 });
+  log('✔ CAT1/CAT2-keuzelijsten bewaard', 'ok');
+  log('', ); log('🎉 MIGRATIE VOLTOOID.', 'ok');
+}
+
+async function reset(){
+  log('Nieuwe tabellen leegmaken…');
+  await SB.from('quickscan').update({ bedrijf_id:null, contact_id:null }).not('id','is',null);
+  const dc = await SB.from('contact').delete().not('id','is',null);
+  const db = await SB.from('bedrijf').delete().not('id','is',null);
+  if (dc.error || db.error) log('Fout bij reset: ' + (dc.error||db.error).message, 'err');
+  else log('✔ bedrijf + contact leeggemaakt, scan-koppelingen gewist', 'ok');
+}
+
+async function run(mode){
+  clearLog();
+  try {
+    if (mode === 'reset'){ if (!confirm('Alle rijen in bedrijf + contact wissen en scan-koppelingen resetten?')) { log('Geannuleerd.'); return; } await reset(); return; }
+    log('Plan opbouwen…');
+    const plan = await bouwPlan();
+    toonRapport(plan);
+    if (mode === 'go'){
+      if (!confirm(`Echt uitvoeren? ${plan.stats.bedrijven} bedrijven en ${plan.stats.contacten} contacten worden aangemaakt.`)) { log('', ); log('Uitvoeren geannuleerd (enkel proefrun getoond).', 'hl'); return; }
+      log('', ); log('Uitvoeren…', 'hl');
+      await voerUit(plan);
+    } else {
+      log('', ); log('(Proefrun — er is niets weggeschreven.)', 'hl');
+    }
+  } catch (e){ log('FOUT: ' + (e.message || e), 'err'); console.error(e); }
+}
+</script>
+</body>
+</html>

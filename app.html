@@ -195,13 +195,14 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <body>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.51</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.57</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
     <button data-tab="tarieven">Tarieven</button>
     <button data-tab="tools">Tools</button>
     <button data-tab="consultants">Consultants</button>
+    <button data-tab="database">Database</button>
     <button data-tab="gesprek">Gespreksvoorbereiding</button>
   </nav>
 </header>
@@ -302,7 +303,29 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       .antw-rij .a-dom{flex:0 0 42px;font-size:11px;font-weight:700;color:var(--muted);padding-top:1px}
       .antw-rij .a-vraag{flex:1}
       .antw-rij .a-ant{flex:0 0 135px;text-align:right;font-weight:600}
+      .vst-card{margin-top:22px;border:1px solid #f0d9b5;background:#fffaf2}
+      .vst-rij{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid #f3e7d3;flex-wrap:wrap;font-size:13px}
+      .vst-rij:first-of-type{border-top:none}
+      .vst-wat{flex:1;min-width:220px}
+      .vst-wat b{color:var(--navy,#1B3A6B)}
+      .vst-waarde{font-size:12px;color:var(--muted)}
+      .vst-waarde .oud{text-decoration:line-through}
+      .vst-waarde .nieuw{color:var(--green,#2E7D52);font-weight:600}
+      .vst-knop{cursor:pointer;font-size:12px;font-weight:600;border-radius:7px;padding:5px 11px;border:1px solid var(--lijn,#cdd7e3);background:#fff}
+      .vst-ja{border-color:var(--green,#2E7D52);color:var(--green,#2E7D52)}
+      .vst-nee{border-color:var(--red,#c0392b);color:var(--red,#c0392b)}
+      .vst-knop:hover{filter:brightness(.97)}
     </style>
+
+    <!-- Goedkeuringsqueue: voorgestelde wijzigingen aan reeds ingevulde velden -->
+    <div id="voorstel-card" class="card vst-card" style="display:none">
+      <div class="score-titel" style="margin-top:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        ⚠️ Wijzigingen ter goedkeuring <span id="voorstel-telling" class="dossier-badge leeg"></span>
+      </div>
+      <p class="sub" style="margin:2px 0 10px">Een binnenkomende scan wou een reeds ingevuld veld wijzigen. Lege velden worden automatisch aangevuld; deze afwijkingen wachten op jouw ja/nee.</p>
+      <div id="voorstel-lijst"></div>
+    </div>
+
     <div class="card" style="margin-top:22px">
       <div class="score-titel" style="margin-top:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         Dossiers &amp; scans <span id="dossier-telling" class="dossier-badge"></span>
@@ -376,14 +399,14 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   <!-- TAB 3 -->
   <section class="panel" id="tab-offerte">
     <h2>Offerte</h2>
-    <p class="sub">Kies de klant — uit je prospecten of uit bestaande klanten — en vul de gegevens aan. De Stepping Stone-selectie en prijsopmaak volgen in een volgende stap.</p>
+    <p class="sub">Kies het bedrijf en de contactpersoon uit de gedeelde database, vul de gegevens aan en bewaar. Bedrijfsgegevens komen op het bedrijf, contactgegevens op het contact.</p>
     <div class="card">
       <div class="subkop">Klant</div>
       <div class="dyn-rij" style="flex-wrap:wrap;gap:14px;align-items:flex-end">
-        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:220px">Prospect kiezen (uit de Prospectie-tool)
-          <select id="off-prospect" onchange="kiesProspect(this.value)"><option value="">— kies een prospect —</option></select></label>
-        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:220px">of bestaande klant
-          <select id="off-klant" onchange="kiesKlant(this.value)"><option value="">— kies een klant —</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:220px">Bedrijf
+          <select id="off-bedrijf" onchange="kiesBedrijf(this.value)"><option value="">— kies een bedrijf —</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:220px">Contactpersoon
+          <select id="off-contact" onchange="kiesContact(this.value)" disabled><option value="">— kies eerst een bedrijf —</option></select></label>
       </div>
       <div class="status" id="off-status"></div>
       <div id="off-klant-form"></div>
@@ -440,6 +463,62 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
     <div id="cons-status" class="status"></div>
     <div id="cons-lijst"></div>
+  </section>
+
+  <!-- TAB 7 — Database (volledig bewerkbaar overzicht bedrijf + contacten) -->
+  <section class="panel" id="tab-database">
+    <style>
+      .db-lijst{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+      .db-kaart{border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff;overflow:hidden}
+      .db-kop{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;flex-wrap:wrap}
+      .db-kop:hover{background:#f8fafc}
+      .db-caret{color:var(--muted);width:12px;font-size:12px}
+      .db-naam{font-weight:600}
+      .db-badge{font-size:11px;font-weight:600;background:#eef2f7;color:#334;border-radius:20px;padding:2px 9px}
+      .db-badge.status-prospect{background:#eaf1fb;color:#2a4f8a}
+      .db-badge.status-klant{background:#e6f2ec;color:#1f7a4d}
+      .db-body{padding:4px 14px 16px;border-top:1px solid #eef2f7}
+      .db-sectie{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 6px}
+      .db-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+      .db-veld{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+      .db-veld input,.db-veld select,.db-veld textarea{width:100%;padding:6px 8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-size:13px;color:#111;background:#fff;font-family:inherit}
+      .db-veld textarea{min-height:52px;resize:vertical}
+      .db-veld.check{flex-direction:row;align-items:center;gap:6px;color:#111;font-size:13px}
+      .db-veld.check input{width:auto}
+      .db-contact{border:1px solid #eef2f7;border-radius:9px;padding:11px 12px;margin-top:10px;background:#fcfdff}
+      .db-contact-kop{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+      .db-contact-kop strong{font-size:13px}
+      .db-acties{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+      .db-btn{cursor:pointer;font-size:12px;font-weight:600;border-radius:7px;padding:5px 11px;border:1px solid var(--lijn,#cdd7e3);background:#fff;color:var(--navy,#1B3A6B)}
+      .db-btn:hover{background:#f1f5f9}
+      .db-btn.prim{background:var(--navy,#1B3A6B);border-color:var(--navy,#1B3A6B);color:#fff}
+      .db-btn.del{border-color:var(--red,#c0392b);color:var(--red,#c0392b);margin-left:auto}
+      .db-zoek{width:100%;max-width:340px;padding:8px 11px;border:1px solid var(--lijn,#cdd7e3);border-radius:8px}
+      .db-mini{font-size:11px;color:var(--muted)}
+      .db-dubbel-kaart{border:1px solid #f0d9b5;background:#fffaf2;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+      .db-dubbel-rij{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #f3e7d3;flex-wrap:wrap;font-size:13px}
+      .db-dubbel-rij:first-of-type{border-top:none}
+      .db-dubbel-paar{flex:1;min-width:240px}
+      .db-dubbel-paar b{color:var(--navy,#1B3A6B)}
+      .db-dubbel-sim{font-size:11px;font-weight:700;color:#b25a1a;background:#fdf0e6;border-radius:20px;padding:2px 8px}
+      .ai-vul{margin:2px 0 10px;border:1px dashed var(--lijn,#cdd7e3);border-radius:9px;padding:8px 11px;background:#fbfdff}
+      .ai-vul>summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--navy,#1B3A6B)}
+      .ai-paste{width:100%;min-height:70px;margin-top:8px;padding:8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-family:inherit;font-size:13px;resize:vertical}
+    </style>
+    <h2>Database <small style="font-weight:400;color:var(--muted);font-size:14px">— alle bedrijven &amp; contacten</small></h2>
+    <p class="sub">Het volledige gedeelde adresboek. Klap een bedrijf open om alle velden van het bedrijf én zijn contactpersonen te bekijken en te corrigeren (bv. een foute aanspreektitel). Elke wijziging bewaar je per bedrijf of per contact.</p>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+      <input id="db-zoek" class="db-zoek" placeholder="Zoek op bedrijf of contact…" oninput="renderDatabase()">
+      <span id="db-telling" class="db-mini"></span>
+      <span style="margin-left:auto;display:flex;gap:8px">
+        <button class="db-btn" onclick="zoekDubbels()">🔍 Zoek dubbels</button>
+        <button class="db-btn" onclick="nieuwDbBedrijf()">+ Nieuw bedrijf</button>
+        <button class="db-btn" onclick="laadDatabase()">↻ Vernieuwen</button>
+      </span>
+    </div>
+    <div id="db-dubbels"></div>
+    <div id="db-status" class="status"></div>
+    <div id="db-lijst" class="db-lijst"><span style="color:var(--muted)">Nog niet geladen — open dit tabblad of klik ↻ Vernieuwen.</span></div>
   </section>
 </main>
 
@@ -704,7 +783,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=18"></script>
+<script src="supabase/db.js?v=21"></script>
 <script>
 // ============================================================
 // STATE
@@ -922,7 +1001,7 @@ function wisMail() {
 // Leest de nieuwe unified tabellen bedrijf + contact + quickscan (migratie 0020).
 // ============================================================
 let dossierData = {
-  bedrijven: [], contacten: [], scans: [],
+  bedrijven: [], contacten: [], scans: [], voorstellen: [],
   contactenPer: {},   // bedrijf_id -> [contact]
   scansPer: {},       // bedrijf_id -> [scan]
   losseScans: [],     // scans zonder bedrijf_id
@@ -936,10 +1015,11 @@ async function laadDossiers() {
   if (!lijst) return;
   lijst.innerHTML = '<span style="color:var(--muted)">Laden…</span>';
   try {
-    const [bedrijven, contacten, scans] = await Promise.all([
+    const [bedrijven, contacten, scans, voorstellen] = await Promise.all([
       TNL.getBedrijven(),
       TNL.getContacten(),
-      TNL.getAlleScans()
+      TNL.getAlleScans(),
+      TNL.getVoorstellen('open').catch(() => [])
     ]);
     const contactenPer = {}, scansPer = {}, losseScans = [];
     const bedrijfById = {}, contactById = {}, scanById = {};
@@ -953,8 +1033,9 @@ async function laadDossiers() {
       if (s.bedrijf_id) (scansPer[s.bedrijf_id] = scansPer[s.bedrijf_id] || []).push(s);
       else losseScans.push(s);
     });
-    dossierData = { bedrijven, contacten, scans, contactenPer, scansPer, losseScans, bedrijfById, contactById, scanById };
+    dossierData = { bedrijven, contacten, scans, voorstellen, contactenPer, scansPer, losseScans, bedrijfById, contactById, scanById };
     renderDossiers();
+    renderVoorstellen();
   } catch (e) {
     lijst.innerHTML = '<span style="color:var(--red)">Kon dossiers niet laden: ' + esc(e.message || e) + '</span>';
   }
@@ -1101,6 +1182,59 @@ function losseScansKaart() {
 }
 
 function toggleDossier(id) { dossierOpen[id] = !dossierOpen[id]; renderDossiers(); }
+
+// ---- Goedkeuringsqueue: voorgestelde wijzigingen aan reeds ingevulde velden ----
+const VELD_LABEL = {
+  sector: 'Sector', aantal_medewerkers: 'Aantal medewerkers',
+  functie: 'Functie', gsm: 'GSM', email: 'E-mail', btw_nummer: 'BTW-nummer',
+  straat: 'Straat', huisnummer: 'Nr', bus: 'Bus', postcode: 'Postcode', gemeente: 'Gemeente'
+};
+function voorstelDoel(v) {
+  if (v.entiteit === 'contact') {
+    const c = dossierData.contactById[v.record_id];
+    if (!c) return 'Contact (verwijderd?)';
+    return contactNaam(c) + (bedrijfNaamVan(c) ? ' — ' + bedrijfNaamVan(c) : '');
+  }
+  const b = dossierData.bedrijfById[v.record_id];
+  return b ? (b.naam || '(naamloos bedrijf)') : 'Bedrijf (verwijderd?)';
+}
+function renderVoorstellen() {
+  const card = document.getElementById('voorstel-card');
+  const lijst = document.getElementById('voorstel-lijst');
+  if (!card || !lijst) return;
+  const vs = dossierData.voorstellen || [];
+  if (!vs.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  document.getElementById('voorstel-telling').textContent = vs.length + ' open';
+  lijst.innerHTML = vs.map(v => {
+    const veld = VELD_LABEL[v.veld] || v.veld;
+    return `<div class="vst-rij">
+      <div class="vst-wat">
+        <b>${esc(voorstelDoel(v))}</b> · ${esc(veld)}
+        <div class="vst-waarde"><span class="oud">${esc(v.oude_waarde || '—')}</span> → <span class="nieuw">${esc(v.nieuwe_waarde || '—')}</span>${v.bron ? ' <span style="opacity:.6">(' + esc(v.bron) + ')</span>' : ''}</div>
+      </div>
+      <button class="vst-knop vst-ja" onclick="keurVoorstel('${escAttr(v.id)}',true)">✓ Overnemen</button>
+      <button class="vst-knop vst-nee" onclick="keurVoorstel('${escAttr(v.id)}',false)">✕ Behouden</button>
+    </div>`;
+  }).join('');
+}
+async function keurVoorstel(id, akkoord) {
+  const v = (dossierData.voorstellen || []).find(x => x.id === id);
+  if (!v) return;
+  try {
+    if (akkoord) {
+      const patch = { [v.veld]: v.nieuwe_waarde };
+      if (v.entiteit === 'contact') await TNL.updateContact(v.record_id, patch);
+      else await TNL.updateBedrijf(v.record_id, patch);
+    }
+    await TNL.updateVoorstel(id, { status: akkoord ? 'goedgekeurd' : 'afgewezen', behandeld_at: new Date().toISOString() });
+    dossierData.voorstellen = (dossierData.voorstellen || []).filter(x => x.id !== id);
+    renderVoorstellen();
+    if (akkoord) laadDossiers();   // toon de nieuwe waarde meteen in het overzicht
+  } catch (e) {
+    alert('Kon voorstel niet verwerken: ' + (e.message || e));
+  }
+}
 
 // Toon de scores van één gekozen scan in het bestaande scores-blok bovenaan.
 function toonScanDetail(scanId) {
@@ -1340,6 +1474,348 @@ async function ontkoppelScan() {
 // Laad de dossiers de eerste keer dat het tabblad geopend wordt.
 document.querySelector('nav button[data-tab="gesprek"]').addEventListener('click', () => {
   if (!dossierData.bedrijven.length) laadDossiers();
+});
+
+// ============================================================
+// TABBLAD Database — volledig bewerkbaar overzicht bedrijf + contacten
+// ============================================================
+const DB_TITELS = ['', 'Dhr.', 'Mevr.'];
+const DB_TALEN = ['NL', 'FR', 'EN'];
+let dbData = { bedrijven: [], contactenPer: {} };
+let dbOpen = {};                 // bedrijf_id -> uitgeklapt?
+let dbCat1 = [], dbCat2 = [];    // keuzelijsten uit instellingen
+
+function dbStatus(msg, kind) {
+  const el = document.getElementById('db-status'); if (!el) return;
+  el.className = 'status' + (kind ? ' ' + kind : ''); el.innerHTML = msg || '';
+}
+async function laadDatabase() {
+  const lijst = document.getElementById('db-lijst'); if (!lijst) return;
+  lijst.innerHTML = '<span style="color:var(--muted)">Laden…</span>';
+  try {
+    const [bedrijven, contacten, c1, c2] = await Promise.all([
+      TNL.getBedrijven(), TNL.getContacten(),
+      TNL.getInstelling('contact_cat1_opties').catch(() => null),
+      TNL.getInstelling('contact_cat2_opties').catch(() => null)
+    ]);
+    dbCat1 = Array.isArray(c1) ? c1 : [];
+    dbCat2 = Array.isArray(c2) ? c2 : [];
+    const per = {};
+    contacten.forEach(c => { (per[c.bedrijf_id] = per[c.bedrijf_id] || []).push(c); });
+    Object.values(per).forEach(arr => arr.sort((a, b) => contactNaam(a).localeCompare(contactNaam(b))));
+    dbData = { bedrijven, contactenPer: per };
+    renderDatabase();
+  } catch (e) {
+    lijst.innerHTML = '<span style="color:var(--red)">Kon database niet laden: ' + esc(e.message || e) + '</span>';
+  }
+}
+function renderDatabase() {
+  const lijst = document.getElementById('db-lijst'); if (!lijst) return;
+  const zoek = (document.getElementById('db-zoek').value || '').trim().toLowerCase();
+  let bedrijven = dbData.bedrijven.slice();
+  if (zoek) bedrijven = bedrijven.filter(b =>
+    (b.naam || '').toLowerCase().includes(zoek) ||
+    (dbData.contactenPer[b.id] || []).some(c =>
+      contactNaam(c).toLowerCase().includes(zoek) || (c.email || '').toLowerCase().includes(zoek)));
+  bedrijven.sort((a, b) => (a.naam || '').localeCompare(b.naam || ''));
+  const totC = dbData.bedrijven.reduce((s, b) => s + (dbData.contactenPer[b.id] || []).length, 0);
+  document.getElementById('db-telling').textContent =
+    bedrijven.length + ' van ' + dbData.bedrijven.length + ' bedrijven · ' + totC + ' contacten';
+  if (!bedrijven.length) { lijst.innerHTML = '<span style="color:var(--muted)">Geen bedrijven gevonden.</span>'; return; }
+  lijst.innerHTML = bedrijven.map(dbKaart).join('');
+}
+function dbInput(obj, key, label, type) {
+  const v = obj[key] == null ? '' : obj[key];
+  const oid = obj.__oid;
+  if (type === 'textarea')
+    return `<label class="db-veld" style="grid-column:1/-1">${label}<textarea oninput="dbSet('${oid}','${key}',this.value)">${esc(v)}</textarea></label>`;
+  return `<label class="db-veld">${label}<input value="${escAttr(v)}" oninput="dbSet('${oid}','${key}',this.value)"></label>`;
+}
+function dbSelect(obj, key, label, opties, metLeeg) {
+  const v = obj[key] == null ? '' : obj[key];
+  const oid = obj.__oid;
+  const lijst = (metLeeg && !opties.includes('') ? [''] : []).concat(opties);
+  const extra = (v && !lijst.includes(v)) ? [v] : [];   // bewaar een afwijkende bestaande waarde
+  const opts = lijst.concat(extra).map(o =>
+    `<option value="${escAttr(o)}" ${String(o) === String(v) ? 'selected' : ''}>${esc(o || '—')}</option>`).join('');
+  return `<label class="db-veld">${label}<select onchange="dbSet('${oid}','${key}',this.value)">${opts}</select></label>`;
+}
+function dbCheck(obj, key, label) {
+  const oid = obj.__oid;
+  return `<label class="db-veld check"><input type="checkbox" ${obj[key] ? 'checked' : ''} onchange="dbSet('${oid}','${key}',this.checked)">${label}</label>`;
+}
+// Vind een bewerkbaar object (bedrijf of contact) op zijn tijdelijke __oid.
+function dbFind(oid) {
+  for (const b of dbData.bedrijven) {
+    if (b.__oid === oid) return b;
+    for (const c of (dbData.contactenPer[b.id] || [])) if (c.__oid === oid) return c;
+  }
+  return null;
+}
+function dbSet(oid, key, val) { const o = dbFind(oid); if (o) o[key] = val; }
+
+function dbKaart(b) {
+  if (!b.__oid) b.__oid = 'b_' + (b.id || Math.random().toString(36).slice(2));
+  const contacten = dbData.contactenPer[b.id] || [];
+  const open = !!dbOpen[b.id || b.__oid];
+  const statusBadge = `<span class="db-badge status-${b.status === 'klant' ? 'klant' : 'prospect'}">${b.status === 'klant' ? 'Klant' : 'Prospect'}</span>`;
+  let body = '';
+  if (open) {
+    const bedrijfVelden = `<div class="db-grid">
+      ${dbInput(b, 'naam', 'Bedrijf')}
+      ${dbSelect(b, 'status', 'Status', ['prospect', 'klant'], false)}
+      ${dbInput(b, 'sector', 'Sector')}
+      ${dbInput(b, 'aantal_medewerkers', 'Aantal medewerkers')}
+      ${dbInput(b, 'straat', 'Straat')}
+      ${dbInput(b, 'huisnummer', 'Nr')}
+      ${dbInput(b, 'bus', 'Bus')}
+      ${dbInput(b, 'postcode', 'Postcode')}
+      ${dbInput(b, 'gemeente', 'Gemeente')}
+      ${dbInput(b, 'land', 'Land')}
+      ${dbInput(b, 'telefoon', 'Algemeen telefoon')}
+      ${dbInput(b, 'email', 'Algemeen e-mail')}
+      ${dbInput(b, 'btw_nummer', 'BTW-nummer')}
+      ${dbInput(b, 'notities', 'Notities', 'textarea')}
+    </div>
+    <div class="db-acties">
+      <button class="db-btn prim" onclick="bewaarDbBedrijf('${b.__oid}')">Bewaar bedrijf</button>
+      ${b.id ? `<button class="db-btn del" onclick="verwijderDbBedrijf('${b.__oid}')">Verwijder bedrijf</button>` : ''}
+    </div>`;
+    const contactenHtml = contacten.map(dbContactBlok).join('');
+    const contactSectie = b.id
+      ? `<div class="db-sectie">Contactpersonen (${contacten.length})</div>${contactenHtml || '<p class="db-mini">Nog geen contact.</p>'}
+         <div class="db-acties"><button class="db-btn" onclick="nieuwDbContact('${escAttr(b.id)}')">+ Contact toevoegen</button></div>`
+      : `<p class="db-mini" style="margin-top:12px">Bewaar het bedrijf eerst om contactpersonen toe te voegen.</p>`;
+    const aiBlok = `<details class="ai-vul">
+      <summary>✨ Velden invullen met AI (plak webinfo)</summary>
+      <textarea id="ai-paste-${b.__oid}" class="ai-paste" placeholder="Plak hier wat je op het web vindt (Google-resultaat, KBO, de contactpagina van de website…). AI haalt er adres, BTW, telefoon, e-mail, sector… uit."></textarea>
+      <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="db-btn prim" onclick="aiVulBedrijf('${b.__oid}')">✨ Velden invullen</button>
+        <span class="db-mini">Vult enkel lege velden; jij controleert en klikt daarna Bewaar bedrijf.</span>
+      </div>
+    </details>`;
+    body = `<div class="db-body">
+      ${aiBlok}
+      <div class="db-sectie">Bedrijfsgegevens</div>${bedrijfVelden}
+      ${contactSectie}
+    </div>`;
+  }
+  const key = b.id || b.__oid;
+  return `<div class="db-kaart">
+    <div class="db-kop" onclick="toggleDbBedrijf('${escAttr(key)}')">
+      <span class="db-caret">${open ? '▾' : '▸'}</span>
+      <span class="db-naam">${esc(b.naam || '(nieuw bedrijf)')}</span>
+      ${statusBadge}
+      <span class="db-badge" style="margin-left:auto">${contacten.length} contact${contacten.length !== 1 ? 'en' : ''}</span>
+    </div>${body}</div>`;
+}
+function dbContactBlok(c) {
+  if (!c.__oid) c.__oid = 'c_' + (c.id || Math.random().toString(36).slice(2));
+  return `<div class="db-contact">
+    <div class="db-contact-kop"><strong>${esc(contactNaam(c) || '(nieuw contact)')}</strong>${c.quickscan_ingevuld ? '<span class="db-badge" style="background:#e6f2ec;color:#1f7a4d">✓ scan</span>' : ''}</div>
+    <div class="db-grid">
+      ${dbSelect(c, 'aanspreektitel', 'Aanspreektitel', DB_TITELS, true)}
+      ${dbInput(c, 'voornaam', 'Voornaam')}
+      ${dbInput(c, 'achternaam', 'Achternaam')}
+      ${dbInput(c, 'functie', 'Functie')}
+      ${dbInput(c, 'email', 'E-mail')}
+      ${dbInput(c, 'gsm', 'GSM')}
+      ${dbInput(c, 'linkedin_url', 'LinkedIn-URL')}
+      ${dbSelect(c, 'taal', 'Correspondentietaal', DB_TALEN, true)}
+      ${dbSelect(c, 'cat1', 'Categorie 1', dbCat1, true)}
+      ${dbSelect(c, 'cat2', 'Categorie 2', dbCat2, true)}
+      ${dbInput(c, 'volgende_stap', 'Volgende stap')}
+      ${dbInput(c, 'volgende_stap_datum', 'Volgende stap datum')}
+      ${dbInput(c, 'verloop', 'Verloop', 'textarea')}
+      ${dbInput(c, 'samenvatting', 'Samenvatting', 'textarea')}
+      ${dbInput(c, 'notities', 'Notities', 'textarea')}
+    </div>
+    <div class="db-acties">
+      ${dbCheck(c, 'quickscan_ingevuld', 'Quickscan ingevuld')}
+      ${dbCheck(c, 'nog_te_contacteren', 'Nog te contacteren')}
+      <button class="db-btn prim" onclick="bewaarDbContact('${c.__oid}')">Bewaar contact</button>
+      ${c.id ? `<button class="db-btn del" onclick="verwijderDbContact('${c.__oid}')">Verwijder</button>` : ''}
+    </div>
+  </div>`;
+}
+function toggleDbBedrijf(key) { dbOpen[key] = !dbOpen[key]; renderDatabase(); }
+
+const BEDRIJF_VELDEN = ['naam', 'status', 'sector', 'aantal_medewerkers', 'straat', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land', 'telefoon', 'email', 'btw_nummer', 'notities'];
+const CONTACT_VELDEN = ['aanspreektitel', 'voornaam', 'achternaam', 'functie', 'email', 'gsm', 'linkedin_url', 'taal', 'cat1', 'cat2',
+  'volgende_stap', 'volgende_stap_datum', 'verloop', 'samenvatting', 'notities', 'quickscan_ingevuld', 'nog_te_contacteren'];
+function plukVelden(obj, velden) {
+  const p = {};
+  velden.forEach(k => { let v = obj[k]; if (typeof v === 'string') v = v.trim() || null; if (v === undefined) v = null; p[k] = v; });
+  return p;
+}
+async function bewaarDbBedrijf(oid) {
+  const b = dbFind(oid); if (!b) return;
+  if (!(b.naam || '').trim()) { dbStatus('Geef het bedrijf een naam.', 'err'); return; }
+  // Slimme check: bij een NIEUW bedrijf waarschuwen als het op een bestaand lijkt.
+  if (!b.id) {
+    try {
+      const match = await TNL.zoekGelijkaardigeBedrijven(b.naam.trim(), 0.4);
+      if (match && match.length) {
+        const lijst = match.map(m => '  • ' + m.naam + '  (' + Math.round(m.gelijkenis * 100) + '% · ' + m.aantal_contacten + ' contact' + (m.aantal_contacten !== 1 ? 'en' : '') + ')').join('\n');
+        if (!confirm('"' + b.naam.trim() + '" lijkt op bestaand(e) bedrijf/bedrijven:\n\n' + lijst + '\n\nToch een NIEUW bedrijf aanmaken?\n(Annuleer om in de plaats het bestaande te gebruiken.)')) {
+          dbStatus('Opslaan geannuleerd — gebruik het bestaande bedrijf uit de lijst.', 'err'); return;
+        }
+      }
+    } catch (e) { /* check faalt niet-blokkerend */ }
+  }
+  dbStatus('<span class="spin"></span>Bewaren…');
+  try {
+    const patch = plukVelden(b, BEDRIJF_VELDEN);
+    if (b.id) await TNL.updateBedrijf(b.id, patch);
+    else await TNL.insertBedrijf({ ...patch, bron: 'manueel' });
+    await laadDatabase(); dbStatus('Bedrijf bewaard.', 'ok');
+  } catch (e) { dbStatus('Bewaren mislukt: ' + (e.message || e), 'err'); }
+}
+async function verwijderDbBedrijf(oid) {
+  const b = dbFind(oid); if (!b || !b.id) return;
+  const n = (dbData.contactenPer[b.id] || []).length;
+  if (!confirm('"' + (b.naam || '') + '" en ' + n + ' contact(en) verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+  dbStatus('<span class="spin"></span>Verwijderen…');
+  try { await TNL.deleteBedrijf(b.id); delete dbOpen[b.id]; await laadDatabase(); dbStatus('Bedrijf verwijderd.', 'ok'); }
+  catch (e) { dbStatus('Verwijderen mislukt: ' + (e.message || e), 'err'); }
+}
+async function bewaarDbContact(oid) {
+  const c = dbFind(oid); if (!c) return;
+  dbStatus('<span class="spin"></span>Bewaren…');
+  try {
+    const patch = plukVelden(c, CONTACT_VELDEN);
+    patch.quickscan_ingevuld = !!c.quickscan_ingevuld;   // NOT NULL in DB
+    patch.nog_te_contacteren = !!c.nog_te_contacteren;
+    if (c.id) await TNL.updateContact(c.id, patch);
+    else await TNL.insertContact({ bedrijf_id: c.bedrijf_id, ...patch, bron: 'manueel' });
+    await laadDatabase(); dbStatus('Contact bewaard.', 'ok');
+  } catch (e) { dbStatus('Bewaren mislukt: ' + (e.message || e), 'err'); }
+}
+async function verwijderDbContact(oid) {
+  const c = dbFind(oid); if (!c || !c.id) return;
+  if (!confirm(contactNaam(c) + ' verwijderen?')) return;
+  dbStatus('<span class="spin"></span>Verwijderen…');
+  try { await TNL.deleteContact(c.id); await laadDatabase(); dbStatus('Contact verwijderd.', 'ok'); }
+  catch (e) { dbStatus('Verwijderen mislukt: ' + (e.message || e), 'err'); }
+}
+function nieuwDbContact(bedrijfId) {
+  const arr = dbData.contactenPer[bedrijfId] = dbData.contactenPer[bedrijfId] || [];
+  arr.push({ bedrijf_id: bedrijfId, __oid: 'c_new_' + Math.random().toString(36).slice(2) });
+  dbOpen[bedrijfId] = true; renderDatabase();
+}
+function nieuwDbBedrijf() {
+  const nb = { __oid: 'b_new_' + Math.random().toString(36).slice(2), status: 'prospect', naam: '' };
+  dbData.bedrijven.unshift(nb);
+  dbOpen[nb.__oid] = true; renderDatabase();
+  dbStatus('Nieuw bedrijf — vul de naam in en bewaar.', 'ok');
+}
+// ---- Plak + AI-invuller: bedrijfsgegevens uit geplakte webtekst halen ----
+// Gebruikt de Claude API rechtstreeks vanuit de browser (zoals de Prospectie-app).
+function getClaudeKey() {
+  let k = localStorage.getItem('tnl_claude_key');
+  if (!k) {
+    k = prompt('Plak je Claude API-sleutel (begint met sk-ant-…).\nWordt enkel lokaal in deze browser bewaard.');
+    if (k) { k = k.trim(); localStorage.setItem('tnl_claude_key', k); }
+  }
+  return k;
+}
+const AI_BEDRIJF_VELDEN = ['straat', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land', 'telefoon', 'email', 'btw_nummer', 'sector', 'aantal_medewerkers'];
+async function aiExtractBedrijf(tekst, naam, key) {
+  const sys = 'Je haalt uit geplakte webtekst de bedrijfsgegevens van een (meestal Belgisch) bedrijf. ' +
+    'Antwoord UITSLUITEND met geldige JSON met exact deze sleutels: ' +
+    'straat, huisnummer, bus, postcode, gemeente, land, telefoon, email, btw_nummer, sector, aantal_medewerkers. ' +
+    'Gebruik null wanneer een waarde niet in de tekst staat. Splits het adres correct (huisnummer en bus apart). ' +
+    'btw_nummer indien mogelijk in het formaat "BE 0xxx.xxx.xxx". telefoon = algemeen bedrijfsnummer, email = algemeen bedrijfsadres. ' +
+    'aantal_medewerkers als getal-als-tekst. Geen uitleg, geen markdown, enkel het JSON-object.';
+  const usr = 'Bedrijf: ' + (naam || 'onbekend') + '\n\nGeplakte tekst:\n' + tekst;
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json', 'x-api-key': key,
+      'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model: 'claude-opus-4-8', max_tokens: 1024, system: sys, messages: [{ role: 'user', content: usr }] })
+  });
+  if (!resp.ok) {
+    const t = await resp.text();
+    if (resp.status === 401) localStorage.removeItem('tnl_claude_key');
+    throw new Error('API ' + resp.status + ' — ' + t.slice(0, 160));
+  }
+  const data = await resp.json();
+  const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();
+  const m = txt.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('geen JSON in het antwoord');
+  return JSON.parse(m[0]);
+}
+async function aiVulBedrijf(oid) {
+  const b = dbFind(oid); if (!b) return;
+  const ta = document.getElementById('ai-paste-' + oid);
+  const tekst = (ta && ta.value || '').trim();
+  if (!tekst) { dbStatus('Plak eerst wat webtekst in het AI-veld.', 'err'); return; }
+  const key = getClaudeKey(); if (!key) return;
+  dbStatus('<span class="spin"></span>AI leest de gegevens…');
+  try {
+    const velden = await aiExtractBedrijf(tekst, b.naam, key);
+    let n = 0;
+    AI_BEDRIJF_VELDEN.forEach(k => {
+      const v = velden[k];
+      if (v != null && String(v).trim() && !String(b[k] || '').trim()) { b[k] = String(v).trim(); n++; }
+    });
+    renderDatabase();
+    dbStatus(n
+      ? '✨ AI vulde ' + n + ' leeg veld' + (n > 1 ? 'en' : '') + ' in — controleer en klik "Bewaar bedrijf".'
+      : 'AI vond geen nieuwe gegevens in de tekst.', n ? 'ok' : '');
+  } catch (e) {
+    dbStatus('AI mislukt: ' + (e.message || e), 'err');
+  }
+}
+
+// ---- Dubbels-scanner: bijna-dubbele bedrijven opsporen en samenvoegen ----
+let dbDubbels = [];
+async function zoekDubbels() {
+  const cont = document.getElementById('db-dubbels');
+  cont.innerHTML = '<div class="db-dubbel-kaart"><span class="db-mini">Zoeken naar gelijkaardige bedrijven…</span></div>';
+  try {
+    dbDubbels = await TNL.dubbeleBedrijven(0.5);
+    renderDubbels();
+  } catch (e) {
+    cont.innerHTML = '<div class="db-dubbel-kaart"><span style="color:var(--red)">Zoeken mislukt: ' + esc(e.message || e) + '</span></div>';
+  }
+}
+function renderDubbels() {
+  const cont = document.getElementById('db-dubbels');
+  if (!dbDubbels.length) {
+    cont.innerHTML = '<div class="db-dubbel-kaart"><span class="db-mini">Geen mogelijke dubbels gevonden. 👍</span></div>';
+    return;
+  }
+  const rijen = dbDubbels.map((d, i) => `<div class="db-dubbel-rij">
+    <span class="db-dubbel-sim">${Math.round(d.gelijkenis * 100)}%</span>
+    <span class="db-dubbel-paar"><b>${esc(d.naam_a)}</b> (${d.contacten_a}) &nbsp;↔&nbsp; <b>${esc(d.naam_b)}</b> (${d.contacten_b})</span>
+    <button class="db-btn" onclick="mergeBedrijven('${escAttr(d.id_a)}','${escAttr(d.id_b)}',${i})">Hou &ldquo;${escAttr(d.naam_a)}&rdquo;</button>
+    <button class="db-btn" onclick="mergeBedrijven('${escAttr(d.id_b)}','${escAttr(d.id_a)}',${i})">Hou &ldquo;${escAttr(d.naam_b)}&rdquo;</button>
+  </div>`).join('');
+  cont.innerHTML = `<div class="db-dubbel-kaart">
+    <div class="db-sectie" style="margin-top:0">Mogelijke dubbele bedrijven (${dbDubbels.length})</div>
+    <p class="db-mini" style="margin:0 0 6px">Kies welk bedrijf je behoudt; het andere wordt erin samengevoegd (contacten, scans en offertes verhuizen mee).</p>
+    ${rijen}
+  </div>`;
+}
+async function mergeBedrijven(behoudId, verwijderId, idx) {
+  const d = dbDubbels[idx]; if (!d) return;
+  const behoudNaam = (d.id_a === behoudId) ? d.naam_a : d.naam_b;
+  const wegNaam = (d.id_a === behoudId) ? d.naam_b : d.naam_a;
+  if (!confirm('"' + wegNaam + '" samenvoegen in "' + behoudNaam + '"?\n\nAlle contacten, scans en offertes van "' + wegNaam + '" verhuizen naar "' + behoudNaam + '", en "' + wegNaam + '" wordt verwijderd. Dit kan niet ongedaan gemaakt worden.')) return;
+  dbStatus('<span class="spin"></span>Samenvoegen…');
+  try {
+    await TNL.voegBedrijvenSamen(behoudId, verwijderId);
+    dbStatus('Samengevoegd.', 'ok');
+    await laadDatabase();
+    await zoekDubbels();   // lijst verversen
+  } catch (e) { dbStatus('Samenvoegen mislukt: ' + (e.message || e), 'err'); }
+}
+
+document.querySelector('nav button[data-tab="database"]').addEventListener('click', () => {
+  if (!dbData.bedrijven.length) laadDatabase();
 });
 </script>
 
@@ -2047,8 +2523,8 @@ async function bewaarKm() {
   catch (e) { if (st) st.innerHTML = '<span style="color:var(--red)">Bewaren mislukt: ' + (e.message||e) + '</span>'; }
 }
 
-// ---------- OFFERTE-TAB: klant kiezen (prospect of bestaande klant) ----------
-var offProspecten = [], offKlanten = [], offKlant = null, offGeladen = false;
+// ---------- OFFERTE-TAB: klant kiezen (bedrijf + contact uit het unified model) ----------
+var offBedrijven = [], offContacten = [], offBedrijf = null, offContact = null, offKlant = null, offGeladen = false;
 var offCatalogus = [], OFF_TARIEVEN = {}, offSelectie = {};
 var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', intro:'', betaling:'Betaling binnen 14 dagen na factuurdatum.', verplaatsingTekst:'', korting:0, btw:21 };
 var AFZENDER = {
@@ -2061,13 +2537,13 @@ function setOffStatus(msg, kind){ const el=document.getElementById('off-status')
 async function laadOfferteTab(){
   setOffStatus('<span class="spin"></span>Prospecten, klanten en Stepping Stones laden…');
   try {
-    const [pros, kl, cat, tar, km] = await Promise.all([
-      TNL.getProspects().catch(()=>[]), TNL.getKlanten(),
+    const [bedr, con, cat, tar, km] = await Promise.all([
+      TNL.getBedrijven(), TNL.getContacten(),
       TNL.getCatalogus({ alleenActief:false }), TNL.getTarieven(),
       TNL.getInstelling('km_vergoeding').catch(()=>null)
     ]);
-    offProspecten = pros || []; offKlanten = kl || []; offCatalogus = cat || []; OFF_TARIEVEN = tar || {}; KM_VERG = km || KM_VERG || {};
-    vulProspectDropdown(); vulKlantDropdown(); initOffMeta(); renderOffNextstones(); renderOffTotalen();
+    offBedrijven = bedr || []; offContacten = con || []; offCatalogus = cat || []; OFF_TARIEVEN = tar || {}; KM_VERG = km || KM_VERG || {};
+    vulBedrijfDropdown(); vulContactDropdown(); initOffMeta(); renderOffNextstones(); renderOffTotalen();
     offGeladen = true; setOffStatus('');
   } catch (e){ setOffStatus('Laden mislukt: ' + (e.message||e), 'err'); }
 }
@@ -2202,7 +2678,9 @@ function toonOfferte(){
   totHtml+=totRij('Totaal excl. btw', t.naKorting, true);
   totHtml+=totRij('Btw ('+t.btwPct+'%)', t.btw);
   totHtml+=totRij('Totaal incl. btw', t.totaal);
-  const kadres=[k.adres, k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).join('<br>');
+  const adrLijn1=[k.straat, k.huisnummer].filter(Boolean).join(' ')+(k.bus?(' bus '+k.bus):'');
+  const adrLijn2=[k.postcode, k.gemeente].filter(Boolean).join(' ');
+  const kadres=[adrLijn1.trim(), adrLijn2.trim(), k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).map(esc).join('<br>');
   const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
   const bodyHtml=`
     <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>
@@ -2242,75 +2720,110 @@ function toonOfferte(){
   if(w.document.readyState==='complete') start(); else w.onload=start;
  } catch(e){ console.error('toonOfferte fout:', e); setOffStatus('Fout bij PDF maken: '+(e.message||e),'err'); alert('Fout bij PDF maken: '+(e.message||e)); }
 }
-function vulProspectDropdown(){
-  const sel=document.getElementById('off-prospect'); if(!sel) return;
-  sel.innerHTML='<option value="">— kies een prospect —</option>'+offProspecten.map(p=>{
-    const naam=[p.voornaam,p.naam].filter(Boolean).join(' ');
-    const lbl=[p.bedrijf||'(zonder bedrijf)', naam].filter(Boolean).join(' — ');
-    return `<option value="${p.id}">${escAttr(lbl)}</option>`;
-  }).join('');
+function vulBedrijfDropdown(){
+  const sel=document.getElementById('off-bedrijf'); if(!sel) return;
+  const cur=offBedrijf&&offBedrijf.id;
+  const lijst=offBedrijven.slice().sort((a,b)=>(a.naam||'').localeCompare(b.naam||''));
+  sel.innerHTML='<option value="">— kies een bedrijf —</option>'
+    +lijst.map(b=>`<option value="${b.id}" ${cur===b.id?'selected':''}>${escAttr((b.naam||'(naamloos)')+(b.status==='klant'?' · klant':''))}</option>`).join('')
+    +'<option value="__nieuw">+ nieuw bedrijf…</option>';
 }
-function vulKlantDropdown(){
-  const sel=document.getElementById('off-klant'); if(!sel) return;
-  const cur=offKlant&&offKlant.id;
-  sel.innerHTML='<option value="">— kies een klant —</option>'+offKlanten.map(k=>
-    `<option value="${k.id}" ${cur===k.id?'selected':''}>${escAttr(k.bedrijf||'(naamloos)')}</option>`).join('');
+// Vul de contact-dropdown met de contacten van het gekozen bedrijf.
+function vulContactDropdown(){
+  const sel=document.getElementById('off-contact'); if(!sel) return;
+  const cons=offBedrijf ? offContacten.filter(c=>c.bedrijf_id===offBedrijf.id) : [];
+  const cur=offContact&&offContact.id;
+  sel.disabled=!offBedrijf;
+  sel.innerHTML = !offBedrijf
+    ? '<option value="">— kies eerst een bedrijf —</option>'
+    : (cons.length?'':'<option value="">— geen contact —</option>')
+      +cons.map(c=>`<option value="${c.id}" ${cur===c.id?'selected':''}>${escAttr(contactNaam(c)+(c.functie?' · '+c.functie:''))}</option>`).join('')
+      +'<option value="__nieuw">+ nieuw contact…</option>';
 }
-function kiesProspect(pid){
-  if(!pid) return;
-  const p=offProspecten.find(x=>String(x.id)===String(pid)); if(!p) return;
-  const bestaande=offKlanten.find(k=>(k.bedrijf||'').trim().toLowerCase()===(p.bedrijf||'').trim().toLowerCase());
-  const merge=(a,b)=>(a&&String(a).trim())?a:(b||'');
-  const volledigeNaam=[p.titel,p.voornaam,p.naam].filter(Boolean).join(' ');
-  offKlant = bestaande ? {
-    id:bestaande.id, bedrijf:bestaande.bedrijf||p.bedrijf||'',
-    contactpersoon:merge(bestaande.contactpersoon, volledigeNaam),
-    functie:bestaande.functie||'', email:merge(bestaande.email,p.email),
-    telefoon:merge(bestaande.telefoon,p.telefoon), adres:bestaande.adres||'',
-    btw_nummer:bestaande.btw_nummer||'', sector:bestaande.sector||'',
-    medewerkers:bestaande.medewerkers||'', notities:merge(bestaande.notities,p.notities),
-    prospect_id:String(p.id)
-  } : {
-    bedrijf:p.bedrijf||'', contactpersoon:volledigeNaam, functie:'', email:p.email||'',
-    telefoon:p.telefoon||'', adres:'', btw_nummer:'', sector:'', medewerkers:'',
-    notities:p.notities||'', prospect_id:String(p.id)
+// Bouw de "offKlant"-view (keys die toonOfferte verwacht) uit bedrijf+contact.
+function bouwOffKlant(){
+  const b=offBedrijf, c=offContact;
+  offKlant={
+    bedrijf_id:b?b.id:null, contact_id:c?c.id:null,
+    bedrijf:(b&&b.naam)||'', btw_nummer:(b&&b.btw_nummer)||'',
+    straat:(b&&b.straat)||'', huisnummer:(b&&b.huisnummer)||'', bus:(b&&b.bus)||'',
+    postcode:(b&&b.postcode)||'', gemeente:(b&&b.gemeente)||'',
+    sector:(b&&b.sector)||'', medewerkers:(b&&b.aantal_medewerkers)||'',
+    contactpersoon:c?contactNaam(c):'', functie:(c&&c.functie)||'',
+    email:(c&&c.email)||'', telefoon:(c&&c.gsm)||'',
+    _origNaam:c?contactNaam(c):''
   };
-  const ks=document.getElementById('off-klant'); if(ks) ks.value='';
-  renderKlantForm();
-  setOffStatus(bestaande
-    ? 'Bestaande klant "'+(p.bedrijf||'')+'" geladen — vul aan en bewaar.'
-    : 'Prospect "'+(p.bedrijf||'')+'" geladen — vul aan en bewaar als klant.', 'ok');
 }
-function kiesKlant(kid){
-  if(!kid) return;
-  const k=offKlanten.find(x=>String(x.id)===String(kid)); if(!k) return;
-  offKlant={...k};
-  const ps=document.getElementById('off-prospect'); if(ps) ps.value='';
-  renderKlantForm(); setOffStatus('Klant geladen.','ok');
+function kiesBedrijf(bid){
+  if(!bid){ offBedrijf=null; offContact=null; offKlant=null; vulContactDropdown(); renderKlantForm(); return; }
+  if(bid==='__nieuw'){
+    offBedrijf={ id:null, naam:'', status:'prospect' }; offContact=null;
+    bouwOffKlant(); vulContactDropdown(); renderKlantForm();
+    setOffStatus('Nieuw bedrijf — vul de gegevens in en bewaar.','ok'); return;
+  }
+  offBedrijf=offBedrijven.find(x=>String(x.id)===String(bid))||null;
+  const cons=offBedrijf?offContacten.filter(c=>c.bedrijf_id===offBedrijf.id):[];
+  offContact=cons.length===1?cons[0]:null;   // bij precies 1 contact meteen kiezen
+  bouwOffKlant(); vulContactDropdown(); renderKlantForm();
+  setOffStatus('Bedrijf "'+(offBedrijf?offBedrijf.naam:'')+'" geladen — kies een contact, vul aan en bewaar.','ok');
+}
+function kiesContact(cid){
+  if(cid==='__nieuw'){ offContact={ id:null, bedrijf_id:offBedrijf?offBedrijf.id:null }; bouwOffKlant(); renderKlantForm(); setOffStatus('Nieuw contact — vul de naam in en bewaar.','ok'); return; }
+  offContact=cid?(offContacten.find(x=>String(x.id)===String(cid))||null):null;
+  bouwOffKlant(); renderKlantForm();
 }
 function renderKlantForm(){
   const cont=document.getElementById('off-klant-form'); if(!cont) return;
   if(!offKlant){ cont.innerHTML=''; return; }
   const k=offKlant;
   const veld=(label,key)=>`<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">${label}<input style="width:100%" value="${escAttr(k[key]||'')}" oninput="offKlant['${key}']=this.value"></label>`;
-  cont.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px">
-    ${veld('Bedrijf','bedrijf')}${veld('Contactpersoon','contactpersoon')}${veld('Functie','functie')}
-    ${veld('E-mail','email')}${veld('Telefoon','telefoon')}${veld('Adres','adres')}
-    ${veld('BTW-nummer','btw_nummer')}${veld('Sector','sector')}
+  cont.innerHTML=`<div class="hint" style="margin-top:12px">Bedrijfsgegevens (bewaard op het <b>bedrijf</b>) en contactgegevens (bewaard op het <b>contact</b>).</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:8px">
+    ${veld('Bedrijf','bedrijf')}${veld('Sector','sector')}${veld('BTW-nummer','btw_nummer')}
+    ${veld('Straat','straat')}${veld('Nr','huisnummer')}${veld('Bus','bus')}${veld('Postcode','postcode')}${veld('Gemeente','gemeente')}
+    ${veld('Contactpersoon','contactpersoon')}${veld('Functie','functie')}${veld('E-mail','email')}${veld('Telefoon','telefoon')}
   </div>
   <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-    <button class="btn" onclick="bewaarKlant()">Klant opslaan</button>
-    ${k.prospect_id?'<span class="hint">Gekoppeld aan prospect #'+escAttr(k.prospect_id)+'</span>':''}
+    <button class="btn" onclick="bewaarKlantBC()">Opslaan</button>
+    ${offBedrijf&&offBedrijf.id?'<span class="hint">Bedrijf-id '+escAttr(String(offBedrijf.id).slice(0,8))+'…</span>':'<span class="hint">Nieuw bedrijf</span>'}
   </div>`;
 }
-async function bewaarKlant(){
+// Splits een ingetypte volledige naam in voornaam/achternaam (eerste woord = voornaam).
+function splitsNaam(volledig){
+  const s=(volledig||'').trim(); if(!s) return { voornaam:null, achternaam:null };
+  const i=s.indexOf(' ');
+  return i<0 ? { voornaam:s, achternaam:null } : { voornaam:s.slice(0,i), achternaam:s.slice(i+1).trim()||null };
+}
+async function bewaarKlantBC(){
   if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Geef minstens een bedrijfsnaam op.','err'); return; }
   setOffStatus('<span class="spin"></span>Opslaan…');
   try {
-    const saved=await TNL.upsertKlant(offKlant);
-    offKlant=saved; offGeladen=false; await laadOfferteTab();
-    const ks=document.getElementById('off-klant'); if(ks) ks.value=saved.id;
-    renderKlantForm(); setOffStatus('Klant bewaard.','ok');
+    const bp={ naam:offKlant.bedrijf.trim(), btw_nummer:offKlant.btw_nummer||null, sector:offKlant.sector||null,
+      straat:offKlant.straat||null, huisnummer:offKlant.huisnummer||null, bus:offKlant.bus||null,
+      postcode:offKlant.postcode||null, gemeente:offKlant.gemeente||null };
+    let bedrijf;
+    if(offBedrijf&&offBedrijf.id) bedrijf=await TNL.updateBedrijf(offBedrijf.id, bp);
+    else bedrijf=await TNL.insertBedrijf({ ...bp, status:'prospect', bron:'offerte' });
+
+    // Contact: bijwerken, aanmaken, of overslaan als er geen naam/contact is.
+    let contact=offContact;
+    const naamStr=(offKlant.contactpersoon||'').trim();
+    const cp={ functie:offKlant.functie||null, email:offKlant.email||null, gsm:offKlant.telefoon||null };
+    if(contact&&contact.id){
+      // Naam enkel hersplitsen als ze effectief gewijzigd is (behoudt anders aanspreektitel).
+      if(naamStr && naamStr!==offKlant._origNaam) Object.assign(cp, splitsNaam(naamStr), { aanspreektitel:null });
+      contact=await TNL.updateContact(contact.id, cp);
+    } else if(naamStr || offKlant.email){
+      contact=await TNL.insertContact({ bedrijf_id:bedrijf.id, ...splitsNaam(naamStr), ...cp, bron:'offerte' });
+    }
+
+    // Herladen + selectie herstellen.
+    offGeladen=false; await laadOfferteTab();
+    offBedrijf=offBedrijven.find(x=>x.id===bedrijf.id)||bedrijf;
+    offContact=contact?(offContacten.find(x=>x.id===contact.id)||contact):null;
+    bouwOffKlant();
+    vulBedrijfDropdown(); vulContactDropdown(); renderKlantForm();
+    setOffStatus('Bewaard.','ok');
   } catch(e){ setOffStatus('Opslaan mislukt: '+(e.message||e),'err'); }
 }
 

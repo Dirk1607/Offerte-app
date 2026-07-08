@@ -195,7 +195,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <body>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.47</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.48</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -930,7 +930,9 @@ function renderDossiers() {
   const lijst = document.getElementById('dossier-lijst');
   if (!lijst) return;
   const zoek = (document.getElementById('dossier-zoek').value || '').trim().toLowerCase();
-  let klanten = dossierData.klanten.slice();
+  // Enkel bedrijven met minstens één scan: dossiers zonder scan komen uit het
+  // Offerte-tabblad (prospect gekozen om een offerte te maken) en horen hier niet.
+  let klanten = dossierData.klanten.filter(k => (dossierData.scansPerKlant[k.id] || []).length > 0);
   if (zoek) klanten = klanten.filter(k => (k.bedrijf || '').toLowerCase().includes(zoek));
   // bedrijven met (meeste) scans eerst, dan alfabetisch
   klanten.sort((a, b) => {

@@ -231,6 +231,11 @@ const TNL = (() => {
     return check(await client().from('klant').insert(klant).select().single());
   }
 
+  // Werk enkele velden van een bedrijfsdossier bij (bv. prospect_id koppelen).
+  async function updateKlant(id, patch) {
+    return check(await client().from('klant').update(patch).eq('id', id).select().single());
+  }
+
   // ---------- prospecten (read-only uit het aparte Prospectie-project) ----------
   const PROSPECTIE = {
     url: 'https://pylfvfcieyrwegcvlwwa.supabase.co',
@@ -280,6 +285,12 @@ const TNL = (() => {
   async function getScansVanKlant(klantId) {
     return check(await client().from('quickscan')
       .select('*').eq('klant_id', klantId).order('datum', { ascending: false }));
+  }
+
+  // Alle scans in één keer (voor het dossier-overzicht; groeperen gebeurt in de UI).
+  async function getAlleScans() {
+    return check(await client().from('quickscan')
+      .select('*').order('datum', { ascending: false }));
   }
 
   async function getOffertes() {
@@ -378,7 +389,7 @@ const TNL = (() => {
     getLijnen,
     getStations, upsertStation, deleteStation,
     getCatalogus, getArtikel, upsertArtikel, updateArtikel, deleteArtikel,
-    getKlanten, vindKlantOpBedrijf, upsertKlant, saveGesprek, getScansVanKlant,
+    getKlanten, vindKlantOpBedrijf, upsertKlant, updateKlant, saveGesprek, getScansVanKlant, getAlleScans,
     getProspects,
     saveOfferte, getOffertes, getOfferte
   };

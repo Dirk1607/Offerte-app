@@ -195,7 +195,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <body>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.36</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.47</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -240,6 +240,75 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
           <span><span class="dot" style="background:var(--blue)"></span>Goed ontwikkeld (&le;3.5)</span>
           <span><span class="dot" style="background:var(--green)"></span>Sterke troef (&gt;3.5)</span>
         </div>
+      </div>
+    </div>
+
+    <div id="antwoorden-blok" style="display:none">
+      <div class="card">
+        <div class="score-titel" style="margin-top:0">Antwoorden per vraag</div>
+        <p class="sub" style="margin:2px 0 4px">De losse antwoorden van deze scan — enkel beschikbaar voor scans die via het automatische systeem binnenkwamen.</p>
+        <div id="antwoorden-lijst" class="antw-lijst"></div>
+      </div>
+    </div>
+
+    <!-- Dossier-overzicht: alle bedrijven met hun scans + koppelen aan prospect -->
+    <style>
+      .dossier-lijst{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+      .dossier{border:1px solid var(--lijn,#e2e8f0);border-radius:10px;overflow:hidden;background:#fff}
+      .dossier-kop{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;flex-wrap:wrap}
+      .dossier-kop:hover{background:#f8fafc}
+      .dossier-caret{color:var(--muted);width:12px;font-size:12px}
+      .dossier-naam{font-weight:600}
+      .dossier-meta{color:var(--muted);font-size:12px}
+      .dossier-badge{font-size:11px;font-weight:600;background:#eef2f7;color:#334;border-radius:20px;padding:2px 9px}
+      .dossier-badge.leeg{background:#fdf0e6;color:#b25a1a}
+      .dossier-koppel{margin-left:auto;display:flex;align-items:center;gap:6px}
+      .dossier-koppel select{max-width:230px;padding:5px 7px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-size:12px;background:#fff}
+      .dossier-koppel .kop-link{font-size:12px;color:var(--green);font-weight:600;white-space:nowrap}
+      .dossier-body{padding:0 13px 12px;border-top:1px solid #eef2f7}
+      .scan-tabel{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+      .scan-tabel th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:4px 8px}
+      .scan-tabel td{padding:6px 8px;border-top:1px solid #f1f5f9}
+      .scan-gem{font-weight:700}
+      .scan-bekijk{cursor:pointer;color:var(--navy,#1B3A6B);font-weight:600;font-size:12px;background:none;border:1px solid var(--lijn,#cdd7e3);border-radius:6px;padding:3px 9px}
+      .scan-bekijk:hover{background:#f1f5f9}
+      .dossier-zoek{width:100%;max-width:320px;padding:8px 11px;border:1px solid var(--lijn,#cdd7e3);border-radius:8px;margin-top:4px}
+      .koppel-btn{cursor:pointer;font-size:12px;background:#fff;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;padding:5px 10px;color:var(--navy,#1B3A6B);font-weight:600;white-space:nowrap;max-width:250px;overflow:hidden;text-overflow:ellipsis}
+      .koppel-btn:hover{background:#f1f5f9}
+      .koppel-btn.gekoppeld{border-color:var(--green,#2E7D52);color:var(--green,#2E7D52)}
+      .km-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding-top:8vh}
+      .km-panel{background:#fff;border-radius:12px;width:min(460px,92vw);max-height:76vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.28);overflow:hidden}
+      .km-kop{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;font-weight:700;border-bottom:1px solid #eef2f7}
+      .km-kop button{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)}
+      .km-zoek{margin:12px 16px 8px;padding:9px 12px;border:1px solid var(--lijn,#cdd7e3);border-radius:8px}
+      .km-lijst{overflow-y:auto;padding:0 8px 6px}
+      .km-item{padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+      .km-item:hover{background:#f1f5f9}
+      .km-item small{color:var(--muted);display:block;margin-top:1px}
+      .km-ontkoppel{margin:2px 16px 14px;font-size:12px;color:var(--red);cursor:pointer;background:none;border:none;text-align:left;padding:6px 0}
+      .antw-lijst{margin-top:6px}
+      .antw-rij{display:flex;gap:10px;padding:6px 0;border-top:1px solid #f1f5f9;font-size:13px;align-items:flex-start}
+      .antw-rij .a-dom{flex:0 0 42px;font-size:11px;font-weight:700;color:var(--muted);padding-top:1px}
+      .antw-rij .a-vraag{flex:1}
+      .antw-rij .a-ant{flex:0 0 135px;text-align:right;font-weight:600}
+    </style>
+    <div class="card" style="margin-top:22px">
+      <div class="score-titel" style="margin-top:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        Dossiers &amp; scans <span id="dossier-telling" class="dossier-badge"></span>
+        <button class="btn btn-ghost" style="margin-left:auto" onclick="laadDossiers()">↻ Vernieuwen</button>
+      </div>
+      <p class="sub" style="margin:2px 0 10px">Alle bedrijven waarvan een quickscan binnenkwam. Klap open om de scans (ook meerdere invullers) te vergelijken, en koppel het dossier aan de juiste prospect.</p>
+      <input id="dossier-zoek" class="dossier-zoek" placeholder="Zoek op bedrijf…" oninput="renderDossiers()">
+      <div id="dossier-lijst" class="dossier-lijst"><span style="color:var(--muted)">Nog niet geladen — klik ↻ Vernieuwen of open dit tabblad opnieuw.</span></div>
+    </div>
+
+    <!-- Zoek-picker om een dossier aan een prospect te koppelen -->
+    <div id="koppel-modal" class="km-overlay" style="display:none" onclick="if(event.target===this)sluitKoppel()">
+      <div class="km-panel">
+        <div class="km-kop"><span>Koppel dossier aan prospect</span><button onclick="sluitKoppel()" title="Sluiten">×</button></div>
+        <input id="km-zoek" class="km-zoek" placeholder="Zoek op bedrijf of contactpersoon…" oninput="renderKoppelLijst()">
+        <div id="km-lijst" class="km-lijst"></div>
+        <button id="km-ontkoppel" class="km-ontkoppel" onclick="kiesKoppelProspect('')" style="display:none">✕ Koppeling verwijderen</button>
       </div>
     </div>
 
@@ -486,16 +555,24 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .exp-rij label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .exp-rij input[type=range]{flex:1;min-width:70px}
 .exp-rij .exp-val{width:22px;text-align:right;font-weight:700;color:var(--dark)}
+.exp-rij .exp-inz{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);white-space:nowrap;cursor:pointer}
 .cons-chip{display:inline-flex;align-items:center;gap:6px;background:#eef2f8;border:1px solid #d5deea;border-radius:14px;padding:3px 10px;font-size:12px;margin:0 6px 6px 0}
 .cons-chip .x{cursor:pointer;color:var(--muted);font-weight:700}
 .cons-ta{width:100%;min-height:90px;resize:vertical;line-height:1.45;box-sizing:border-box}
+/* Openklappende invulcel in de consultant-editor (input-lijn -> groeit bij focus) */
+.grow-ta{padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:inherit;height:29px;min-height:29px;line-height:1.4;resize:none;overflow:hidden;box-sizing:border-box;transition:height .12s ease}
+.grow-ta.flex{flex:1;min-width:0}
+.grow-ta:focus{height:82px;overflow:auto}
 </style>
 <!-- Consultant-editor -->
 <div id="cons-modal" class="modal-overlay" style="display:none">
   <div class="modal">
     <div class="modal-kop">
-      <h3 id="cons-titel">Consultant</h3>
-      <button class="x" onclick="sluitConsultant()">×</button>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="x" onclick="sluitConsultant()" title="Terug naar het consultant-overzicht" style="font-size:20px">←</button>
+        <h3 id="cons-titel">Consultant</h3>
+      </div>
+      <button class="x" onclick="sluitConsultant()" title="Sluiten">×</button>
     </div>
     <div class="modal-body">
       <div class="subkop">Identiteit &amp; contact</div>
@@ -597,8 +674,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
     <div class="modal-voet">
       <button class="btn mini-danger btn-ghost" id="c-verwijder" onclick="verwijderConsultant()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" onclick="sluitConsultant()">Annuleren</button>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span id="c-saved" style="font-size:13px;color:var(--green);font-weight:600"></span>
+        <button class="btn btn-ghost" onclick="sluitConsultant()">Terug naar overzicht</button>
         <button class="btn" onclick="slaConsultantOp(false)">Opslaan</button>
         <button class="btn" style="background:var(--green)" onclick="slaConsultantOp(true)">Opslaan &amp; Genereer TNL Profiel</button>
       </div>
@@ -609,7 +687,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=16"></script>
+<script src="supabase/db.js?v=17"></script>
 <script>
 // ============================================================
 // STATE
@@ -779,6 +857,8 @@ function toonKlant() {
 
 function toonScores() {
   const blok = document.getElementById('scores-blok');
+  const ab = document.getElementById('antwoorden-blok');
+  if (ab) ab.style.display = 'none';   // enkel "Bekijk scores" toont de losse antwoorden
   const scores = gesprek.scores;
   if (!Object.keys(scores).length) { blok.style.display = 'none'; return; }
 
@@ -815,6 +895,228 @@ function wisMail() {
   document.getElementById('btn-opslaan').style.display = 'none';
   gesprek = { klant:{}, scores:{}, labels:{} };
 }
+
+// ============================================================
+// DOSSIER-OVERZICHT — alle bedrijven met hun scans, koppelen aan prospect
+// ============================================================
+let dossierData = { klanten: [], scansPerKlant: {}, prospects: [] };
+let dossierOpen = {};   // klant_id -> uitgeklapt?
+
+async function laadDossiers() {
+  const lijst = document.getElementById('dossier-lijst');
+  if (!lijst) return;
+  lijst.innerHTML = '<span style="color:var(--muted)">Laden…</span>';
+  try {
+    const [klanten, scans, prospects] = await Promise.all([
+      TNL.getKlanten(),
+      TNL.getAlleScans(),
+      TNL.getProspects().catch(() => [])   // prospect-project kan gepauzeerd zijn
+    ]);
+    const per = {};
+    scans.forEach(s => { (per[s.klant_id] = per[s.klant_id] || []).push(s); });
+    dossierData = { klanten, scansPerKlant: per, prospects };
+    renderDossiers();
+  } catch (e) {
+    lijst.innerHTML = '<span style="color:var(--red)">Kon dossiers niet laden: ' + esc(e.message || e) + '</span>';
+  }
+}
+
+function prospectLabel(p) {
+  const naam = [p.voornaam, p.naam].filter(Boolean).join(' ');
+  return p.bedrijf ? (p.bedrijf + (naam ? ' — ' + naam : '')) : (naam || '(naamloos)');
+}
+
+function renderDossiers() {
+  const lijst = document.getElementById('dossier-lijst');
+  if (!lijst) return;
+  const zoek = (document.getElementById('dossier-zoek').value || '').trim().toLowerCase();
+  let klanten = dossierData.klanten.slice();
+  if (zoek) klanten = klanten.filter(k => (k.bedrijf || '').toLowerCase().includes(zoek));
+  // bedrijven met (meeste) scans eerst, dan alfabetisch
+  klanten.sort((a, b) => {
+    const na = (dossierData.scansPerKlant[a.id] || []).length;
+    const nb = (dossierData.scansPerKlant[b.id] || []).length;
+    if (nb !== na) return nb - na;
+    return (a.bedrijf || '').localeCompare(b.bedrijf || '');
+  });
+  const totScans = Object.values(dossierData.scansPerKlant).reduce((s, a) => s + a.length, 0);
+  document.getElementById('dossier-telling').textContent = klanten.length + ' bedrijven · ' + totScans + ' scans';
+
+  if (!klanten.length) {
+    lijst.innerHTML = '<span style="color:var(--muted)">Geen dossiers' + (zoek ? ' voor "' + esc(zoek) + '"' : '') + '.</span>';
+    return;
+  }
+
+  lijst.innerHTML = klanten.map(k => {
+    const scans = dossierData.scansPerKlant[k.id] || [];
+    const open = !!dossierOpen[k.id];
+    const meta = [k.sector, k.medewerkers ? k.medewerkers + ' mw' : ''].filter(Boolean).join(' · ');
+    const gekoppeld = k.prospect_id ? dossierData.prospects.find(p => String(p.id) === String(k.prospect_id)) : null;
+    const koppelKnop = k.prospect_id
+      ? `<button class="koppel-btn gekoppeld" onclick="event.stopPropagation();openKoppel('${escAttr(k.id)}')" title="Gekoppeld — klik om te wijzigen">🔗 ${esc(gekoppeld ? prospectLabel(gekoppeld) : 'gekoppeld')}</button>`
+      : `<button class="koppel-btn" onclick="event.stopPropagation();openKoppel('${escAttr(k.id)}')">+ Koppel aan prospect…</button>`;
+    const badge = scans.length
+      ? `<span class="dossier-badge">${scans.length} scan${scans.length > 1 ? 's' : ''}</span>`
+      : `<span class="dossier-badge leeg">geen scan</span>`;
+    const body = open ? `<div class="dossier-body">${scanTabel(k, scans)}</div>` : '';
+    return `<div class="dossier">
+      <div class="dossier-kop" onclick="toggleDossier('${escAttr(k.id)}')">
+        <span class="dossier-caret">${open ? '▾' : '▸'}</span>
+        <span class="dossier-naam">${esc(k.bedrijf || '(onbekend)')}</span>
+        ${meta ? `<span class="dossier-meta">${esc(meta)}</span>` : ''}
+        ${badge}
+        <span class="dossier-koppel">${koppelKnop}</span>
+      </div>${body}</div>`;
+  }).join('');
+}
+
+function scanTabel(k, scans) {
+  if (!scans.length) return '<p class="sub" style="margin:8px 0 0">Nog geen scan voor dit bedrijf.</p>';
+  const rijen = scans.map(s => {
+    const gem = s.gemiddelde_score;
+    const z = gem != null ? zone(gem) : null;
+    const heeftRuw = s.antwoorden && Object.keys(s.antwoorden).length;
+    return `<tr>
+      <td>${esc(s.invuller || '—')}</td>
+      <td>${esc(s.invuller_functie || '')}</td>
+      <td>${esc(s.datum || '')}</td>
+      <td class="scan-gem" style="color:${z ? z.kleur : 'inherit'}">${gem != null ? Number(gem).toFixed(1) + ' / 4' : '—'}</td>
+      <td>${heeftRuw ? '<span title="ruwe antwoorden aanwezig">✓ ruw</span>' : '<span style="color:var(--muted)" title="oude/handmatige scan zonder ruwe antwoorden">—</span>'}</td>
+      <td style="text-align:right"><button class="scan-bekijk" onclick="toonScanDetail('${escAttr(k.id)}','${escAttr(s.id)}')">Bekijk scores ↑</button></td>
+    </tr>`;
+  }).join('');
+  return `<table class="scan-tabel">
+    <thead><tr><th>Invuller</th><th>Functie</th><th>Datum</th><th>Gem.</th><th>Ruw</th><th></th></tr></thead>
+    <tbody>${rijen}</tbody></table>`;
+}
+
+function toggleDossier(id) { dossierOpen[id] = !dossierOpen[id]; renderDossiers(); }
+
+async function koppelProspect(klantId, prospectId) {
+  try {
+    await TNL.updateKlant(klantId, { prospect_id: prospectId || null });
+    const k = dossierData.klanten.find(x => x.id === klantId);
+    if (k) k.prospect_id = prospectId || null;
+    renderDossiers();
+  } catch (e) {
+    alert('Koppelen mislukt: ' + (e.message || e));
+  }
+}
+
+// Toon de scores van één gekozen scan in het bestaande scores-blok bovenaan.
+function toonScanDetail(klantId, scanId) {
+  const k = dossierData.klanten.find(x => x.id === klantId);
+  const s = (dossierData.scansPerKlant[klantId] || []).find(x => x.id === scanId);
+  if (!k || !s) return;
+  gesprek = {
+    klant: {
+      naam: s.invuller, bedrijf: k.bedrijf, email: s.invuller_email || k.email,
+      functie: s.invuller_functie, medewerkers: k.medewerkers, sector: k.sector, tel: k.telefoon,
+      score: (s.gemiddelde_score != null ? Number(s.gemiddelde_score).toFixed(1) + ' / 4' : ''), datum: s.datum
+    },
+    scores: s.scores || {}, labels: s.labels || {}
+  };
+  toonKlant();
+  toonScores();
+  renderAntwoorden(s);
+  document.getElementById('klant-blok').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Vragenlijst van de quickscan (v2.4, 30 vragen) — index-gelijk met het `antwoorden`-object.
+// Alleen bedoeld om de opgeslagen antwoordwaarden leesbaar te labelen (geen DB-opslag per scan).
+// Wijzigen de quickscan-vragen ooit? Werk dan deze lijst bij (of vraag het mij).
+const QUICKSCAN_VRAGEN = [
+  { h:"FIN", t:"Ik heb onvoldoende zicht op de marges, cashpositie en rendabiliteit van het bedrijf." },
+  { h:"STR", t:"We verliezen energie en tijd aan interne discussies over prioriteiten en beslissingen." },
+  { h:"AFS", t:"Klanten haken af of komen niet terug omdat onze opvolging na de verkoop tekortschiet." },
+  { h:"IT",  t:"We verliezen tijd aan handmatig werk, losse Excel-bestanden of systemen die niet met elkaar praten." },
+  { h:"PM",  t:"Verbeterprojecten starten wel, maar verzanden of raken nooit echt af." },
+  { h:"OPS", t:"We zijn brandjes aan het blussen in plaats van de oorzaak aan te pakken." },
+  { h:"HR",  t:"Functies en verantwoordelijkheden zijn bij ons onvoldoende duidelijk afgebakend." },
+  { h:"SAF", t:"Bij drukte wordt er afgeweken van de veiligheidsafspraken." },
+  { h:"PROD",t:"Ons commercieel aanbod dreigt achterop te raken: we vernieuwen of verbeteren het te traag." },
+  { h:"MKT", t:"Te weinig potentiële klanten kennen ons of weten waarvoor we staan." },
+  { h:"LEAD",t:"Belangrijke beslissingen komen nog vaak bij dezelfde persoon terecht." },
+  { h:"QUA", t:"We moeten lastminute oplossingen bedenken of werk opnieuw doen om zaken correct af te werken." },
+  { h:"SAL", t:"We hebben weinig zicht op onze verkoopspijplijn; nieuwe orders komen onvoorspelbaar binnen." },
+  { h:"CHG", t:"Veranderingen worden bij ons moeilijk doorgevoerd: er is veel weerstand of ze verwateren." },
+  { h:"PROC",t:"Iedereen werkt op zijn eigen manier; processen liggen niet vast of worden niet gevolgd." },
+  { h:"AFS", t:"We volgen onze klanten na de verkoop te weinig proactief op; problemen of klachten komen niet tijdig tot ons." },
+  { h:"STR", t:"We hebben nog te weinig sterke strategische keuzes gemaakt." },
+  { h:"FIN", t:"We werken te weinig met budgetten om onze kosten en investeringen vooraf te plannen en op te volgen." },
+  { h:"OPS", t:"Wanneer het druk wordt, loopt onze werking vast en krijgen we het werk niet vlot georganiseerd." },
+  { h:"MKT", t:"We kunnen moeilijk in één zin uitleggen waarom een klant voor ons kiest en niet voor een concurrent." },
+  { h:"IT",  t:"Onze IT is kwetsbaar: systemen zijn verouderd en onvoldoende beveiligd." },
+  { h:"PROD",t:"Onze producten of diensten sluiten onvoldoende aan op wat onze klanten vandaag écht nodig hebben." },
+  { h:"HR",  t:"We hebben veel verloop, en goede mensen vinden is bovendien niet evident." },
+  { h:"SAF", t:"Veiligheid zit onvoldoende verankerd in onze werking; niet iedereen kent of volgt de afspraken." },
+  { h:"PM",  t:"Onze verbeterprojecten missen een duidelijke aanpak: geen heldere doelen, eigenaar of opvolging." },
+  { h:"LEAD",t:"Bij ons wordt er veel gezegd maar te weinig consequent uitgevoerd." },
+  { h:"QUA", t:"Onze kwaliteit is wisselvallig; klachten over kwaliteit komen regelmatig terug." },
+  { h:"CHG", t:"Bij veranderingen worden mensen te weinig betrokken of geïnformeerd; het overkomt hen." },
+  { h:"SAL", t:"Nieuwe klanten werven gebeurt bij ons te veel op toeval, zonder gestructureerde aanpak." },
+  { h:"PROC",t:"Onze manier van werken zit te veel in de hoofden van individuele mensen; bij vertrek of afwezigheid gaat kennis verloren." }
+];
+// Antwoordschaal (links→rechts). Alle vragen negatief ⇒ "Volledig akkoord" = meeste pijn.
+const ANTWOORD_LABELS = ['Helemaal niet akkoord', 'Niet akkoord', 'Akkoord', 'Volledig akkoord'];
+
+function renderAntwoorden(scan) {
+  const blok = document.getElementById('antwoorden-blok');
+  const lijst = document.getElementById('antwoorden-lijst');
+  const ant = scan.antwoorden || {};
+  if (!Object.keys(ant).length) { blok.style.display = 'none'; return; }
+  lijst.innerHTML = QUICKSCAN_VRAGEN.map((v, i) => {
+    const val = ant[i];
+    if (val == null) return '';
+    const lbl = ANTWOORD_LABELS[val - 1] || ('antwoord ' + val);
+    const kleur = val >= 4 ? 'var(--red)' : val === 3 ? 'var(--amber)' : val === 2 ? 'var(--blue)' : 'var(--green)';
+    return `<div class="antw-rij"><span class="a-dom">${esc(v.h)}</span><span class="a-vraag">${esc(v.t)}</span><span class="a-ant" style="color:${kleur}">${esc(lbl)}</span></div>`;
+  }).join('');
+  blok.style.display = 'block';
+}
+
+// ---- Zoek-picker: dossier aan prospect koppelen ----
+let koppelKlantId = null;
+function openKoppel(klantId) {
+  koppelKlantId = klantId;
+  const k = dossierData.klanten.find(x => x.id === klantId);
+  document.getElementById('km-zoek').value = '';
+  document.getElementById('km-ontkoppel').style.display = (k && k.prospect_id) ? 'block' : 'none';
+  document.getElementById('koppel-modal').style.display = 'flex';
+  renderKoppelLijst();
+  setTimeout(() => document.getElementById('km-zoek').focus(), 50);
+}
+function sluitKoppel() {
+  document.getElementById('koppel-modal').style.display = 'none';
+  koppelKlantId = null;
+}
+function renderKoppelLijst() {
+  const el = document.getElementById('km-lijst');
+  if (!dossierData.prospects.length) {
+    el.innerHTML = '<div class="km-item" style="color:var(--muted)">Geen prospecten geladen (het Prospectie-project is mogelijk gepauzeerd).</div>';
+    return;
+  }
+  const zoek = (document.getElementById('km-zoek').value || '').trim().toLowerCase();
+  let lijst = dossierData.prospects;
+  if (zoek) lijst = lijst.filter(p => ((p.bedrijf || '') + ' ' + (p.voornaam || '') + ' ' + (p.naam || '')).toLowerCase().includes(zoek));
+  lijst = lijst.slice(0, 60);
+  if (!lijst.length) { el.innerHTML = '<div class="km-item" style="color:var(--muted)">Geen prospect gevonden voor "' + esc(zoek) + '".</div>'; return; }
+  el.innerHTML = lijst.map(p => {
+    const naam = [p.voornaam, p.naam].filter(Boolean).join(' ');
+    const sub = [naam, p.email].filter(Boolean).join(' · ');
+    return `<div class="km-item" onclick="kiesKoppelProspect('${escAttr(p.id)}')"><strong>${esc(p.bedrijf || '(naamloos)')}</strong>${sub ? '<small>' + esc(sub) + '</small>' : ''}</div>`;
+  }).join('');
+}
+async function kiesKoppelProspect(prospectId) {
+  if (!koppelKlantId) return;
+  await koppelProspect(koppelKlantId, prospectId);
+  sluitKoppel();
+}
+
+// Laad de dossiers de eerste keer dat het tabblad geopend wordt.
+document.querySelector('nav button[data-tab="gesprek"]').addEventListener('click', () => {
+  if (!dossierData.klanten.length) laadDossiers();
+});
 </script>
 
 <script>
@@ -1894,7 +2196,7 @@ const METRO_DOMEINEN = {
 const METRO_LIJNEN = ["STR","PROD","MKT","SAL","OPS","AFS","HR","FIN","IT","QUA","SAF"];
 const METRO_VERSNELLERS = ["PM","PROC","LEAD","CHG"];
 const CONS_LEEG = { id:null, regios:[], skills:[], sectoren:[], kerncompetenties:[], kpi:[],
-  talen:[], ervaring:[], opleidingen:[], testimonials:[], expertise:{}, tool_ids:[], nextstone_ids:[] };
+  talen:[], ervaring:[], opleidingen:[], testimonials:[], expertise:{}, inzetbaar:{}, tool_ids:[], nextstone_ids:[] };
 const CONS_COLS = {
   kerncompetenties:[{k:'titel',ph:'titel',w:150},{k:'subtitel',ph:'omschrijving'}],
   kpi:[{k:'getal',ph:'cijfer (bv. 12+)',w:120},{k:'label',ph:'label (bv. Jaar ervaring)'}],
@@ -1942,6 +2244,7 @@ function bewerkConsultant(id) {
   ['regios','skills','sectoren','kerncompetenties','kpi','talen','ervaring','opleidingen','testimonials','tool_ids','nextstone_ids']
     .forEach(k => { if (!Array.isArray(consEdit[k])) consEdit[k] = []; });
   if (!consEdit.expertise || typeof consEdit.expertise !== 'object') consEdit.expertise = {};
+  if (!consEdit.inzetbaar || typeof consEdit.inzetbaar !== 'object') consEdit.inzetbaar = {};
   vulConsForm(c);
   document.getElementById('cons-titel').textContent = 'Consultant bewerken';
   document.getElementById('c-verwijder').style.display = 'inline-block';
@@ -1980,7 +2283,9 @@ function cRenderObj(veld, cid) {
     `<div class="proces-rij">${cols.map(col =>
       col.type==='check'
         ? `<label style="flex:none;display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);white-space:nowrap"><input type="checkbox" ${o[col.k]?'checked':''} onchange="consEdit.${veld}[${i}].${col.k}=this.checked"> ${escAttr(col.ph)}</label>`
-        : `<input ${col.w?`style="flex:none;width:${col.w}px"`:''} placeholder="${escAttr(col.ph)}" value="${escAttr(o[col.k]||'')}" oninput="consEdit.${veld}[${i}].${col.k}=this.value">`
+        : col.w
+          ? `<textarea class="grow-ta" style="flex:none;width:${col.w}px" placeholder="${escAttr(col.ph)}" oninput="consEdit.${veld}[${i}].${col.k}=this.value">${escAttr(o[col.k]||'')}</textarea>`
+          : `<textarea class="grow-ta flex" placeholder="${escAttr(col.ph)}" oninput="consEdit.${veld}[${i}].${col.k}=this.value">${escAttr(o[col.k]||'')}</textarea>`
     ).join('')}<button class="x" onclick="consEdit.${veld}.splice(${i},1);cRenderObj('${veld}','${cid}')">×</button></div>`
   ).join('') : '<div class="leeg">Niets toegevoegd.</div>';
 }
@@ -2020,11 +2325,14 @@ function renderExpertise() {
 }
 function expRij(code) {
   const v = Number(consEdit.expertise[code]||0);
+  const inz = !!(consEdit.inzetbaar||{})[code];
   return `<div class="exp-rij"><label title="${escAttr(METRO_DOMEINEN[code]||code)}">${escAttr(METRO_DOMEINEN[code]||code)}</label>
     <input type="range" min="0" max="10" step="1" value="${v}" oninput="setExp('${code}',this.value)">
-    <span class="exp-val" id="expval-${code}">${v}</span></div>`;
+    <span class="exp-val" id="expval-${code}">${v}</span>
+    <label class="exp-inz" title="Kan ik hiervoor effectief ingezet worden? (kleurt de balk blauw op het profiel)"><input type="checkbox" ${inz?'checked':''} onchange="setInz('${code}',this.checked)"> inzetbaar</label></div>`;
 }
 function setExp(code, val) { consEdit.expertise[code]=Number(val); document.getElementById('expval-'+code).textContent=val; }
+function setInz(code, val) { consEdit.inzetbaar = consEdit.inzetbaar || {}; consEdit.inzetbaar[code] = !!val; }
 
 // tool- en NextStone-chips
 function renderConsTools() {
@@ -2083,7 +2391,7 @@ async function slaConsultantOp(genereer) {
     ervaring:(consEdit.ervaring||[]).filter(e=>(e.rol||'').trim()||(e.bedrijf||'').trim()),
     opleidingen:(consEdit.opleidingen||[]).filter(o=>(o.titel||'').trim()),
     testimonials:(consEdit.testimonials||[]).filter(t=>(t.quote||'').trim()),
-    expertise:consEdit.expertise||{}, tool_ids:consEdit.tool_ids||[], nextstone_ids:consEdit.nextstone_ids||[],
+    expertise:consEdit.expertise||{}, inzetbaar:consEdit.inzetbaar||{}, tool_ids:consEdit.tool_ids||[], nextstone_ids:consEdit.nextstone_ids||[],
     tarief, foto_url:consEdit.foto_url||null, cv_url:consEdit.cv_url||null, cv_naam:consEdit.cv_naam||null,
     mgmt_profile_url:consEdit.mgmt_profile_url||null, mgmt_profile_naam:consEdit.mgmt_profile_naam||null
   };
@@ -2091,8 +2399,13 @@ async function slaConsultantOp(genereer) {
   try {
     const opgeslagen = await TNL.upsertConsultant(c);
     consEdit.id = opgeslagen.id;
-    if (genereer) { const r = await genereerProfiel(opgeslagen, 'kort'); window.open(r.url, '_blank'); }
-    sluitConsultant(); await laadConsultants();
+    // Modal open laten staan (je blijft op de consultant); enkel titel/knoppen in 'bewerken'-stand + overzicht erachter verversen.
+    document.getElementById('cons-titel').textContent = 'Consultant bewerken';
+    document.getElementById('c-verwijder').style.display = 'inline-block';
+    const sv = document.getElementById('c-saved');
+    if (sv) { sv.textContent = '✓ Opgeslagen'; setTimeout(() => { if (sv.textContent === '✓ Opgeslagen') sv.textContent = ''; }, 3500); }
+    if (genereer) { const r = await genereerProfiel(opgeslagen, 'kort'); window.open(r.url + '?t=' + Date.now(), '_blank'); }
+    await laadConsultants();
   } catch (e) { alert('Opslaan mislukt: ' + (e.message||e)); }
 }
 async function verwijderConsultant() {
@@ -2104,7 +2417,7 @@ async function verwijderConsultant() {
 async function regenereerProfiel(id, mode) {
   const c = consCache.find(x => x.id===id); if (!c) return;
   const st = document.getElementById('cons-status'); st.textContent = (mode==='detail'?'Detailprofiel':'Profiel') + ' genereren…';
-  try { const r = await genereerProfiel(c, mode); st.textContent = (mode==='detail'?'Detailprofiel':'Profiel') + ' bijgewerkt.'; await laadConsultants(); window.open(r.url, '_blank'); }
+  try { const r = await genereerProfiel(c, mode); st.textContent = (mode==='detail'?'Detailprofiel':'Profiel') + ' bijgewerkt.'; await laadConsultants(); window.open(r.url + '?t=' + Date.now(), '_blank'); }
   catch (e) { st.innerHTML = '<span style="color:var(--red)">Genereren mislukt: ' + (e.message||e) + '</span>'; }
 }
 async function genereerProfiel(c, mode) {
@@ -2161,19 +2474,12 @@ function buildProfielPdf(c, extras, mode) {
     doc.setFillColor(255,255,255); doc.rect(M,9,box,box,'F');
     try { doc.addImage(foto.data,'PNG', M+(box-fw)/2, 9+(box-fh)/2, fw, fh); } catch(e){}
     doc.setDrawColor(255,255,255); doc.setLineWidth(0.6); doc.rect(M,9,box,box); }
-  // Logo rechtsboven (wit badge) + QR eronder
-  let rechtsBreedte = 0, logoBottom = 6;
-  if (logo) { const hL=12, wL=Math.min(46, hL*((logo.w||1)/(logo.h||1))); const lx=RIGHT-wL, ly=6;
-    doc.setFillColor(255,255,255); doc.roundedRect(lx-2, ly-2, wL+4, hL+4, 1.5, 1.5, 'F');
+  // Logo rechtsboven (wit badge). De QR is verhuisd naar de zijbalk zodat logo + QR elkaar niet meer verdringen.
+  let rechtsBreedte = 0;
+  if (logo) { const hL=14, wL=Math.min(50, hL*((logo.w||1)/(logo.h||1))); const lx=RIGHT-wL, ly=15-hL/2;
+    doc.setFillColor(255,255,255); doc.roundedRect(lx-2.5, ly-2.5, wL+5, hL+5, 1.5, 1.5, 'F');
     try { doc.addImage(logo.data,'PNG', lx, ly, wL, hL); } catch(e){}
-    rechtsBreedte = Math.max(rechtsBreedte, wL+4); logoBottom = ly+hL+4; }
-  const q=19;
-  if (qrData) { const qx=RIGHT-q, qy=(logo?logoBottom+1:7);
-    doc.setFillColor(255,255,255); doc.rect(qx-1.5,qy-1.5,q+3,q+3,'F');
-    try { doc.addImage(qrData,'PNG',qx,qy,q,q); } catch(e){}
-    doc.setTextColor(255,255,255); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-    doc.text('Scan mijn LinkedIn', qx+q/2, qy+q+3, {align:'center'});
-    rechtsBreedte = Math.max(rechtsBreedte, q+3); }
+    rechtsBreedte = wL+5; }
   const rechtsGrens = rechtsBreedte>0 ? (RIGHT-rechtsBreedte-4) : RIGHT;
   doc.setTextColor(255,255,255);
   if (c.titel) { doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
@@ -2187,29 +2493,40 @@ function buildProfielPdf(c, extras, mode) {
   const SB_BGW = 78, SBW = 58, MAINX = 86, MAINW = RIGHT - MAINX;
   const colTop = 50;
   const PALET=[[110,140,180],[130,170,150],[190,170,120],[170,140,160],[150,160,190],[180,150,140],[140,175,175],[165,165,150],[175,160,175],[150,175,160]];
-  doc.setFillColor(244,247,251); doc.rect(0, 44, SB_BGW, 253, 'F');
-  const sb   = { x:M,     w:SBW,   y:colTop, main:false };
-  const main = { x:MAINX, w:MAINW, y:colTop, main:true  };
-  const colNewPage = col => { doc.addPage(); if (col.main) { col.x=M; col.w=RIGHT-M; } col.y = 20; };
-  const H = (col, title) => { if (col.y+12>BOT2) colNewPage(col); col.y += 2.5;
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...BLUE);
+  const tekenZijbalkBg = (vanaf) => { doc.setFillColor(244,247,251); doc.rect(0, vanaf, SB_BGW, 297-vanaf, 'F'); };
+  tekenZijbalkBg(44);
+  const sb   = { x:M,     w:SBW,   y:colTop, main:false, page:1 };
+  const main = { x:MAINX, w:MAINW, y:colTop, main:true,  page:1 };
+  // Pagina-bewuste 2-koloms doorloop: elke kolom houdt zijn eigen geometrie én paginateller.
+  // Zo blijft de zijbalk links (smal, lichte achtergrond) en het verhaal rechts, ook op pagina 2 — geen losse 3e pagina.
+  const bgDone = { 1:true };   // pagina 1 heeft al een zijbalk-achtergrond (hierboven getekend)
+  const colNewPage = col => {
+    col.page = (col.page||1) + 1;
+    if (doc.getNumberOfPages() < col.page) doc.addPage();
+    doc.setPage(col.page);
+    if (!bgDone[col.page]) { tekenZijbalkBg(0); bgDone[col.page] = true; }
+    col.y = 18;   // kolom-geometrie (x/w) blijft behouden
+  };
+  const H = (col, title) => { if (col.y+12>BOT2) colNewPage(col); col.y += 1.6;
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...BLUE);
     doc.text(String(title).toUpperCase(), col.x, col.y); col.y += 1.3;
-    doc.setDrawColor(...BLUE); doc.setLineWidth(0.3); doc.line(col.x, col.y, col.x+col.w, col.y); col.y += 4.4; };
+    doc.setDrawColor(...BLUE); doc.setLineWidth(0.3); doc.line(col.x, col.y, col.x+col.w, col.y); col.y += 3.6; };
   const P = (col, t, o) => { if (t==null||t==='') return; o=o||{};
     doc.setFont('helvetica', o.italic?'italic':(o.bold?'bold':'normal')); doc.setFontSize(o.size||9.5); doc.setTextColor(...(o.color||TXT));
     const lh=(o.size||9.5)*0.42+0.9;
     doc.splitTextToSize(String(t), col.w).forEach(ln=>{ if(col.y+lh>BOT2) colNewPage(col); doc.text(ln, col.x, col.y); col.y+=lh; }); };
-  const barsCol = (col, codes) => { const labelW=28, gap=3, bw=col.w-labelW-gap-8;
+  // Balklengte = kennisniveau (0-10). Kleur = inzetbaarheid: GROEN = inzetbaar, BLAUW = wel expertise maar minder ingezet.
+  const GROEN=[39,174,96];   // feller groen (#27AE60) i.p.v. het gedempte huisstijlgroen
+  const barsCol = (col, codes) => { const labelW=28, gap=2.5, bw=col.w-labelW-gap-1;
     codes.forEach(code=>{ if(col.y+5>BOT2) colNewPage(col);
       const v=Math.max(0,Math.min(10,Number((c.expertise||{})[code]||0)));
-      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT);
-      doc.text(String(METRO_DOMEINEN[code]||code), col.x, col.y+2.2);
+      const inz=!!(c.inzetbaar||{})[code];
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...TXT);
+      doc.text(String(METRO_DOMEINEN[code]||code), col.x, col.y+1.9);
       const bx=col.x+labelW+gap;
-      doc.setFillColor(232,236,242); doc.rect(bx, col.y, bw, 2.6, 'F');
-      doc.setFillColor(...BLUE); doc.rect(bx, col.y, bw*v/10, 2.6, 'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...GREY);
-      doc.text(String(v), col.x+col.w-3, col.y+2.2, {align:'right'});
-      col.y+=4.5; }); };
+      doc.setFillColor(232,236,242); doc.rect(bx, col.y, bw, 2.3, 'F');
+      doc.setFillColor(...(inz?GROEN:BLUE)); doc.rect(bx, col.y, bw*v/10, 2.3, 'F');
+      col.y+=3.7; }); };
   const blokjesCol = (col, items) => { doc.setFontSize(8);
     items.forEach((it,i)=>{ if(col.y+4>BOT2) colNewPage(col);
       const cc=PALET[i%PALET.length]; doc.setFillColor(cc[0],cc[1],cc[2]); doc.rect(col.x, col.y-2.4, 2.8, 2.8, 'F');
@@ -2219,20 +2536,39 @@ function buildProfielPdf(c, extras, mode) {
     (items.length?items:['—']).forEach(it=>{ doc.splitTextToSize('•  '+it, col.w).forEach(ln=>{ if(col.y+4>BOT2) colNewPage(col); doc.text(ln, col.x, col.y); col.y+=4; }); }); };
 
   // ----- ZIJBALK (feiten) -----
-  const contactLijnen = [c.telefoon, c.email, c.linkedin_url, (c.regios||[]).join(' · ')].filter(Boolean);
+  // Contact: regio krijgt het label "Regio"; de LinkedIn-URL komt niet als losse regel (de QR toont dat).
+  const regioTxt = (c.regios||[]).filter(Boolean).join(' · ');
+  const contactLijnen = [c.telefoon, c.email, regioTxt ? 'Regio: '+regioTxt : null].filter(Boolean);
   if (contactLijnen.length) { H(sb,'Contact'); contactLijnen.forEach(v=>P(sb, v, {size:8.5})); }
-  const tal=(c.talen||[]).filter(t=>(t.taal||'').trim());
-  if (tal.length) { H(sb,'Talen'); tal.forEach(t=>P(sb, t.taal+(t.niveau?' — '+t.niveau:''), {size:8.5})); }
+  // LinkedIn-QR onder Contact (uit de kopband gehaald zodat logo en QR elkaar niet verdringen)
+  if (qrData) { if (sb.y+22>BOT2) colNewPage(sb); const qs=18; sb.y+=1;
+    try { doc.addImage(qrData,'PNG', sb.x, sb.y, qs, qs); } catch(e){}
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...TXT);
+    doc.text('Scan mijn', sb.x+qs+3, sb.y+7); doc.text('LinkedIn', sb.x+qs+3, sb.y+11.5);
+    sb.y += qs+9; }   // ruime witlijn tussen QR en de expertise-sectie
+  // Inzetbaarheid & expertise (metrolijnen + versnellers) met kleurlegende
+  H(sb,'Inzetbaarheid & expertise');
+  { let ly = sb.y + 1.4; doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT);
+    doc.setFillColor(...GROEN); doc.rect(sb.x, ly-1.9, 6, 2.2, 'F'); doc.text('inzetbaar', sb.x+8, ly); ly += 4;
+    doc.setFillColor(...BLUE);  doc.rect(sb.x, ly-1.9, 6, 2.2, 'F'); doc.text('wel expertise, minder ingezet', sb.x+8, ly);
+    sb.y = ly + 6.5; }   // extra ruimte tussen legende en de metrolijnen
+  P(sb, 'Metrolijnen', {size:8, bold:true, color:NAVY}); sb.y+=1; barsCol(sb, METRO_LIJNEN);
+  sb.y+=1.5; P(sb, 'Versnellers', {size:8, bold:true, color:NAVY}); sb.y+=1; barsCol(sb, METRO_VERSNELLERS);
+  // Kerncompetenties (titel + korte omschrijving) horen nog op pagina 1, onder de expertise
+  const kc=(c.kerncompetenties||[]).filter(k=>(k.titel||'').trim());
+  if (kc.length) { H(sb,'Kerncompetenties');
+    kc.forEach(k=>{ P(sb, k.titel, {bold:true, size:9}); if(k.subtitel) P(sb, k.subtitel, {size:8, color:GREY}); sb.y+=1.4; }); }
+  // Sectoren (blokjes) + Talen komen bewust op pagina 2 (guard: nooit een 3e pagina)
   const sec=(c.sectoren||[]).filter(Boolean);
-  if (sec.length) { H(sb,'Sectoren'); blokjesCol(sb, sec); }
-  H(sb,'Expertise — metrolijnen'); barsCol(sb, METRO_LIJNEN);
-  H(sb,'Expertise — versnellers'); barsCol(sb, METRO_VERSNELLERS);
-  const pTools=(c.tool_ids||[]).map(id=>{const t=consToolsCache.find(x=>x.id===id);return t?t.naam:null;}).filter(Boolean);
-  if (pTools.length) { H(sb,'Tools die ik implementeer'); bulletsCol(sb, pTools); }
-  const pNs=(c.nextstone_ids||[]).map(id=>{const a=consNextstonesCache.find(x=>x.id===id);return a?nsNaam(a):null;}).filter(Boolean);
-  if (pNs.length) { H(sb,'Stepping Stones die ik lever'); bulletsCol(sb, pNs); }
+  const tal=(c.talen||[]).filter(t=>(t.taal||'').trim());
+  if (sec.length || tal.length) {
+    if (sb.page < 2) colNewPage(sb); else sb.y += 5;
+    if (sec.length) { H(sb,'Sectoren'); blokjesCol(sb, sec); }
+    if (tal.length) { sb.y += 3; H(sb,'Talen'); tal.forEach(t=>P(sb, t.taal+(t.niveau?', '+t.niveau:''), {size:8.5})); }
+  }
 
-  // ----- HOOFDKOLOM (verhaal) -----
+  // ----- HOOFDKOLOM (verhaal) — begint altijd bovenaan pagina 1 (de zijbalk kan de 'huidige pagina' al op 2 hebben gezet) -----
+  doc.setPage(1); main.page = 1; main.y = colTop;
   const kpi = (c.kpi||[]).filter(k=>String(k.getal||'').trim()).slice(0,4);
   if (kpi.length) { const n=kpi.length, gap=3, tw=(main.w-gap*(n-1))/n; let x=main.x;
     kpi.forEach(k=>{ doc.setFillColor(238,242,248); doc.rect(x, main.y, tw, 16, 'F');
@@ -2249,6 +2585,7 @@ function buildProfielPdf(c, extras, mode) {
   const tst=(c.testimonials||[]).filter(t=>(t.quote||'').trim());
   if (tst.length) { H(main,'Wat klanten zeggen'); tst.forEach(t=>{ P(main, '"'+t.quote+'"', {italic:true}); P(main, [t.naam,t.functie].filter(Boolean).join(', '), {size:8.5, color:GREY}); main.y+=1; }); }
   if (c.verwachting) { H(main,'Wat u van mij mag verwachten'); P(main, c.verwachting, {italic:true}); }
+
 
   // ----- DETAIL (dormant): volledige loopbaan/opleiding op vervolgpagina -----
   if (mode === 'detail') {

@@ -195,7 +195,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <body>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.49</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.50</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -806,6 +806,10 @@ function leesMail() {
   gesprek = { klant, scores, labels, gemiddelde, ruweMail: tekst };
   toonKlant();
   toonScores();
+  // Antwoorden per vraag meteen afleiden uit het berekeningsblok (indien meegeplakt).
+  const recIn = reconstructAntwoorden(tekst);
+  if (recIn) renderAntwoorden({ antwoorden: recIn.antwoorden }, recIn.onzeker, true);
+  else document.getElementById('antwoorden-blok').style.display = 'none';
   document.getElementById('btn-opslaan').style.display = (scoreCount || Object.keys(klant).length) ? 'inline-block' : 'none';
   const delen = [];
   if (scoreCount) delen.push(`${scoreCount} scores`);

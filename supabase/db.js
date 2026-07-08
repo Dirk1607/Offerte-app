@@ -236,6 +236,26 @@ const TNL = (() => {
     return check(await client().from('klant').update(patch).eq('id', id).select().single());
   }
 
+  // ---------- bedrijf + contact (unified CRM-model, migratie 0020) ----------
+  async function getBedrijven() {
+    return check(await client().from('bedrijf').select('*').order('naam'));
+  }
+  async function getContacten() {
+    return check(await client().from('contact').select('*').order('achternaam'));
+  }
+  async function updateBedrijf(id, patch) {
+    return check(await client().from('bedrijf')
+      .update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id).select().single());
+  }
+  async function updateContact(id, patch) {
+    return check(await client().from('contact')
+      .update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id).select().single());
+  }
+  // Werk enkele velden van een scan bij (bv. een scan aan een contact/bedrijf koppelen).
+  async function updateQuickscan(id, patch) {
+    return check(await client().from('quickscan').update(patch).eq('id', id).select().single());
+  }
+
   // ---------- prospecten (read-only uit het aparte Prospectie-project) ----------
   const PROSPECTIE = {
     url: 'https://pylfvfcieyrwegcvlwwa.supabase.co',
@@ -390,6 +410,7 @@ const TNL = (() => {
     getStations, upsertStation, deleteStation,
     getCatalogus, getArtikel, upsertArtikel, updateArtikel, deleteArtikel,
     getKlanten, vindKlantOpBedrijf, upsertKlant, updateKlant, saveGesprek, getScansVanKlant, getAlleScans,
+    getBedrijven, getContacten, updateBedrijf, updateContact, updateQuickscan,
     getProspects,
     saveOfferte, getOffertes, getOfferte
   };

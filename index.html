@@ -195,7 +195,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <body>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.50</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.51</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -262,6 +262,17 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       .dossier-meta{color:var(--muted);font-size:12px}
       .dossier-badge{font-size:11px;font-weight:600;background:#eef2f7;color:#334;border-radius:20px;padding:2px 9px}
       .dossier-badge.leeg{background:#fdf0e6;color:#b25a1a}
+      .dossier-badge.scan{background:#e6f2ec;color:#1f7a4d}
+      .dossier-badge.status-prospect{background:#eaf1fb;color:#2a4f8a}
+      .dossier-badge.status-klant{background:#e6f2ec;color:#1f7a4d}
+      .dossier-filter{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+      .dossier-filter button{font-size:12px;font-weight:600;background:#fff;border:1px solid var(--lijn,#cdd7e3);color:var(--muted);border-radius:20px;padding:4px 12px;cursor:pointer}
+      .dossier-filter button:hover{background:#f1f5f9}
+      .dossier-filter button.actief{background:var(--navy,#1B3A6B);border-color:var(--navy,#1B3A6B);color:#fff}
+      .dossier-sectie{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 2px}
+      .contact-tabel td .c-cat,.contact-tabel .c-cat{color:var(--muted);font-size:12px}
+      .c-qs{font-size:11px;font-weight:600;color:var(--green,#2E7D52);background:#e6f2ec;border-radius:20px;padding:2px 8px;white-space:nowrap}
+      .dossier.los .dossier-naam{color:#b25a1a}
       .dossier-koppel{margin-left:auto;display:flex;align-items:center;gap:6px}
       .dossier-koppel select{max-width:230px;padding:5px 7px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-size:12px;background:#fff}
       .dossier-koppel .kop-link{font-size:12px;color:var(--green);font-weight:600;white-space:nowrap}
@@ -297,18 +308,24 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         Dossiers &amp; scans <span id="dossier-telling" class="dossier-badge"></span>
         <button class="btn btn-ghost" style="margin-left:auto" onclick="laadDossiers()">↻ Vernieuwen</button>
       </div>
-      <p class="sub" style="margin:2px 0 10px">Alle bedrijven waarvan een quickscan binnenkwam. Klap open om de scans (ook meerdere invullers) te vergelijken, en koppel het dossier aan de juiste prospect.</p>
-      <input id="dossier-zoek" class="dossier-zoek" placeholder="Zoek op bedrijf…" oninput="renderDossiers()">
+      <p class="sub" style="margin:2px 0 10px">Alle bedrijven uit de gedeelde database (prospecten én klanten). Klap een bedrijf open voor zijn contactpersonen en quickscans; koppel losse scans aan het juiste contact.</p>
+      <div class="dossier-filter">
+        <button data-f="alle" class="actief" onclick="zetDossierFilter('alle')">Alle</button>
+        <button data-f="scan" onclick="zetDossierFilter('scan')">Met scan</button>
+        <button data-f="prospect" onclick="zetDossierFilter('prospect')">Prospecten</button>
+        <button data-f="klant" onclick="zetDossierFilter('klant')">Klanten</button>
+      </div>
+      <input id="dossier-zoek" class="dossier-zoek" placeholder="Zoek op bedrijf of contact…" oninput="renderDossiers()">
       <div id="dossier-lijst" class="dossier-lijst"><span style="color:var(--muted)">Nog niet geladen — klik ↻ Vernieuwen of open dit tabblad opnieuw.</span></div>
     </div>
 
-    <!-- Zoek-picker om een dossier aan een prospect te koppelen -->
+    <!-- Zoek-picker om een scan aan het juiste contact te koppelen -->
     <div id="koppel-modal" class="km-overlay" style="display:none" onclick="if(event.target===this)sluitKoppel()">
       <div class="km-panel">
-        <div class="km-kop"><span>Koppel dossier aan prospect</span><button onclick="sluitKoppel()" title="Sluiten">×</button></div>
-        <input id="km-zoek" class="km-zoek" placeholder="Zoek op bedrijf of contactpersoon…" oninput="renderKoppelLijst()">
+        <div class="km-kop"><span>Koppel scan aan contact</span><button onclick="sluitKoppel()" title="Sluiten">×</button></div>
+        <input id="km-zoek" class="km-zoek" placeholder="Zoek op contact, bedrijf of e-mail…" oninput="renderKoppelLijst()">
         <div id="km-lijst" class="km-lijst"></div>
-        <button id="km-ontkoppel" class="km-ontkoppel" onclick="kiesKoppelProspect('')" style="display:none">✕ Koppeling verwijderen</button>
+        <button id="km-ontkoppel" class="km-ontkoppel" onclick="ontkoppelScan()" style="display:none">✕ Koppeling verwijderen</button>
       </div>
     </div>
 
@@ -687,7 +704,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=17"></script>
+<script src="supabase/db.js?v=18"></script>
 <script>
 // ============================================================
 // STATE
@@ -901,127 +918,205 @@ function wisMail() {
 }
 
 // ============================================================
-// DOSSIER-OVERZICHT — alle bedrijven met hun scans, koppelen aan prospect
+// DOSSIER-OVERZICHT (CRM) — alle bedrijven met hun contacten + scans
+// Leest de nieuwe unified tabellen bedrijf + contact + quickscan (migratie 0020).
 // ============================================================
-let dossierData = { klanten: [], scansPerKlant: {}, prospects: [] };
-let dossierOpen = {};   // klant_id -> uitgeklapt?
+let dossierData = {
+  bedrijven: [], contacten: [], scans: [],
+  contactenPer: {},   // bedrijf_id -> [contact]
+  scansPer: {},       // bedrijf_id -> [scan]
+  losseScans: [],     // scans zonder bedrijf_id
+  bedrijfById: {}, contactById: {}, scanById: {}
+};
+let dossierOpen = {};       // bedrijf_id (of '__los') -> uitgeklapt?
+let dossierFilter = 'alle'; // 'alle' | 'scan' | 'prospect' | 'klant'
 
 async function laadDossiers() {
   const lijst = document.getElementById('dossier-lijst');
   if (!lijst) return;
   lijst.innerHTML = '<span style="color:var(--muted)">Laden…</span>';
   try {
-    const [klanten, scans, prospects] = await Promise.all([
-      TNL.getKlanten(),
-      TNL.getAlleScans(),
-      TNL.getProspects().catch(() => [])   // prospect-project kan gepauzeerd zijn
+    const [bedrijven, contacten, scans] = await Promise.all([
+      TNL.getBedrijven(),
+      TNL.getContacten(),
+      TNL.getAlleScans()
     ]);
-    const per = {};
-    scans.forEach(s => { (per[s.klant_id] = per[s.klant_id] || []).push(s); });
-    dossierData = { klanten, scansPerKlant: per, prospects };
+    const contactenPer = {}, scansPer = {}, losseScans = [];
+    const bedrijfById = {}, contactById = {}, scanById = {};
+    bedrijven.forEach(b => { bedrijfById[b.id] = b; });
+    contacten.forEach(c => {
+      contactById[c.id] = c;
+      if (c.bedrijf_id) (contactenPer[c.bedrijf_id] = contactenPer[c.bedrijf_id] || []).push(c);
+    });
+    scans.forEach(s => {
+      scanById[s.id] = s;
+      if (s.bedrijf_id) (scansPer[s.bedrijf_id] = scansPer[s.bedrijf_id] || []).push(s);
+      else losseScans.push(s);
+    });
+    dossierData = { bedrijven, contacten, scans, contactenPer, scansPer, losseScans, bedrijfById, contactById, scanById };
     renderDossiers();
   } catch (e) {
     lijst.innerHTML = '<span style="color:var(--red)">Kon dossiers niet laden: ' + esc(e.message || e) + '</span>';
   }
 }
 
-function prospectLabel(p) {
-  const naam = [p.voornaam, p.naam].filter(Boolean).join(' ');
-  return p.bedrijf ? (p.bedrijf + (naam ? ' — ' + naam : '')) : (naam || '(naamloos)');
+function contactNaam(c) {
+  if (!c) return '';
+  return [c.aanspreektitel, c.voornaam, c.achternaam].filter(Boolean).join(' ').trim() || '(naamloos)';
+}
+function bedrijfNaamVan(c) {
+  const b = c && dossierData.bedrijfById[c.bedrijf_id];
+  return b ? (b.naam || '') : '';
+}
+
+function zetDossierFilter(f) {
+  dossierFilter = f;
+  document.querySelectorAll('.dossier-filter button').forEach(btn =>
+    btn.classList.toggle('actief', btn.dataset.f === f));
+  renderDossiers();
 }
 
 function renderDossiers() {
   const lijst = document.getElementById('dossier-lijst');
   if (!lijst) return;
   const zoek = (document.getElementById('dossier-zoek').value || '').trim().toLowerCase();
-  // Enkel bedrijven met minstens één scan: dossiers zonder scan komen uit het
-  // Offerte-tabblad (prospect gekozen om een offerte te maken) en horen hier niet.
-  let klanten = dossierData.klanten.filter(k => (dossierData.scansPerKlant[k.id] || []).length > 0);
-  if (zoek) klanten = klanten.filter(k => (k.bedrijf || '').toLowerCase().includes(zoek));
-  // bedrijven met (meeste) scans eerst, dan alfabetisch
-  klanten.sort((a, b) => {
-    const na = (dossierData.scansPerKlant[a.id] || []).length;
-    const nb = (dossierData.scansPerKlant[b.id] || []).length;
-    if (nb !== na) return nb - na;
-    return (a.bedrijf || '').localeCompare(b.bedrijf || '');
+  const nScans = id => (dossierData.scansPer[id] || []).length;
+  const nContacten = id => (dossierData.contactenPer[id] || []).length;
+
+  let bedrijven = dossierData.bedrijven.slice();
+  if (dossierFilter === 'scan')     bedrijven = bedrijven.filter(b => nScans(b.id) > 0);
+  else if (dossierFilter === 'prospect') bedrijven = bedrijven.filter(b => b.status === 'prospect');
+  else if (dossierFilter === 'klant')    bedrijven = bedrijven.filter(b => b.status === 'klant');
+  if (zoek) bedrijven = bedrijven.filter(b =>
+    (b.naam || '').toLowerCase().includes(zoek) ||
+    (dossierData.contactenPer[b.id] || []).some(c =>
+      contactNaam(c).toLowerCase().includes(zoek) || (c.email || '').toLowerCase().includes(zoek)));
+
+  // Meeste scans eerst, dan meeste contacten, dan alfabetisch.
+  bedrijven.sort((a, b) => {
+    if (nScans(b.id) !== nScans(a.id)) return nScans(b.id) - nScans(a.id);
+    if (nContacten(b.id) !== nContacten(a.id)) return nContacten(b.id) - nContacten(a.id);
+    return (a.naam || '').localeCompare(b.naam || '');
   });
-  const totScans = Object.values(dossierData.scansPerKlant).reduce((s, a) => s + a.length, 0);
-  document.getElementById('dossier-telling').textContent = klanten.length + ' bedrijven · ' + totScans + ' scans';
 
-  if (!klanten.length) {
-    lijst.innerHTML = '<span style="color:var(--muted)">Geen dossiers' + (zoek ? ' voor "' + esc(zoek) + '"' : '') + '.</span>';
-    return;
+  const totScans = dossierData.scans.length;
+  document.getElementById('dossier-telling').textContent =
+    bedrijven.length + ' van ' + dossierData.bedrijven.length + ' bedrijven · ' +
+    dossierData.contacten.length + ' contacten · ' + totScans + ' scans';
+
+  let html = '';
+  if (!bedrijven.length) {
+    html = '<span style="color:var(--muted)">Geen bedrijven' + (zoek ? ' voor "' + esc(zoek) + '"' : '') + '.</span>';
+  } else {
+    html = bedrijven.map(bedrijfKaart).join('');
   }
-
-  lijst.innerHTML = klanten.map(k => {
-    const scans = dossierData.scansPerKlant[k.id] || [];
-    const open = !!dossierOpen[k.id];
-    const meta = [k.sector, k.medewerkers ? k.medewerkers + ' mw' : ''].filter(Boolean).join(' · ');
-    const gekoppeld = k.prospect_id ? dossierData.prospects.find(p => String(p.id) === String(k.prospect_id)) : null;
-    const koppelKnop = k.prospect_id
-      ? `<button class="koppel-btn gekoppeld" onclick="event.stopPropagation();openKoppel('${escAttr(k.id)}')" title="Gekoppeld — klik om te wijzigen">🔗 ${esc(gekoppeld ? prospectLabel(gekoppeld) : 'gekoppeld')}</button>`
-      : `<button class="koppel-btn" onclick="event.stopPropagation();openKoppel('${escAttr(k.id)}')">+ Koppel aan prospect…</button>`;
-    const badge = scans.length
-      ? `<span class="dossier-badge">${scans.length} scan${scans.length > 1 ? 's' : ''}</span>`
-      : `<span class="dossier-badge leeg">geen scan</span>`;
-    const body = open ? `<div class="dossier-body">${scanTabel(k, scans)}</div>` : '';
-    return `<div class="dossier">
-      <div class="dossier-kop" onclick="toggleDossier('${escAttr(k.id)}')">
-        <span class="dossier-caret">${open ? '▾' : '▸'}</span>
-        <span class="dossier-naam">${esc(k.bedrijf || '(onbekend)')}</span>
-        ${meta ? `<span class="dossier-meta">${esc(meta)}</span>` : ''}
-        ${badge}
-        <span class="dossier-koppel">${koppelKnop}</span>
-      </div>${body}</div>`;
-  }).join('');
+  if (dossierData.losseScans.length) html += losseScansKaart();
+  lijst.innerHTML = html;
 }
 
-function scanTabel(k, scans) {
-  if (!scans.length) return '<p class="sub" style="margin:8px 0 0">Nog geen scan voor dit bedrijf.</p>';
-  const rijen = scans.map(s => {
-    const gem = s.gemiddelde_score;
-    const z = gem != null ? zone(gem) : null;
-    const heeftRuw = s.antwoorden && Object.keys(s.antwoorden).length;
-    const kanAfleiden = !heeftRuw && s.ruwe_mail && s.ruwe_mail.indexOf('BEREKENING PER DOMEIN') >= 0;
-    const ruwCel = heeftRuw ? '<span title="ruwe antwoorden aanwezig">✓ ruw</span>'
-      : kanAfleiden ? '<span style="color:var(--blue)" title="antwoorden afleidbaar uit de berekening in de mail">≈ afgeleid</span>'
-      : '<span style="color:var(--muted)" title="oude scan zonder losse antwoorden of berekening">—</span>';
+function bedrijfKaart(b) {
+  const contacten = dossierData.contactenPer[b.id] || [];
+  const scans = dossierData.scansPer[b.id] || [];
+  const open = !!dossierOpen[b.id];
+  const meta = [b.sector, b.aantal_medewerkers ? b.aantal_medewerkers + ' mw' : ''].filter(Boolean).join(' · ');
+  const statusBadge = `<span class="dossier-badge status-${b.status === 'klant' ? 'klant' : 'prospect'}">${b.status === 'klant' ? 'Klant' : 'Prospect'}</span>`;
+  const contactBadge = `<span class="dossier-badge">${contacten.length} contact${contacten.length !== 1 ? 'en' : ''}</span>`;
+  const scanBadge = scans.length ? `<span class="dossier-badge scan">${scans.length} scan${scans.length > 1 ? 's' : ''}</span>` : '';
+  const body = open ? `<div class="dossier-body">${contactenBlok(contacten)}${scans.length ? scanTabel(b, scans) : ''}</div>` : '';
+  return `<div class="dossier">
+    <div class="dossier-kop" onclick="toggleDossier('${escAttr(b.id)}')">
+      <span class="dossier-caret">${open ? '▾' : '▸'}</span>
+      <span class="dossier-naam">${esc(b.naam || '(onbekend)')}</span>
+      ${statusBadge}
+      ${meta ? `<span class="dossier-meta">${esc(meta)}</span>` : ''}
+      <span class="dossier-koppel">${contactBadge}${scanBadge}</span>
+    </div>${body}</div>`;
+}
+
+function contactenBlok(contacten) {
+  if (!contacten.length) return '<p class="sub" style="margin:8px 0 0">Nog geen contactpersoon voor dit bedrijf.</p>';
+  const rijen = contacten.map(c => {
+    const cats = [c.cat1, c.cat2].filter(Boolean).join(' · ');
+    const qs = c.quickscan_ingevuld ? '<span class="c-qs" title="Quickscan ingevuld">✓ scan</span>' : '';
     return `<tr>
-      <td>${esc(s.invuller || '—')}</td>
-      <td>${esc(s.invuller_functie || '')}</td>
-      <td>${esc(s.datum || '')}</td>
-      <td class="scan-gem" style="color:${z ? z.kleur : 'inherit'}">${gem != null ? Number(gem).toFixed(1) + ' / 4' : '—'}</td>
-      <td>${ruwCel}</td>
-      <td style="text-align:right"><button class="scan-bekijk" onclick="toonScanDetail('${escAttr(k.id)}','${escAttr(s.id)}')">Bekijk scores ↑</button></td>
+      <td>${esc(contactNaam(c))}</td>
+      <td>${esc(c.functie || '')}</td>
+      <td>${c.email ? `<a href="mailto:${escAttr(c.email)}">${esc(c.email)}</a>` : ''}</td>
+      <td>${esc(c.gsm || '')}</td>
+      <td class="c-cat">${esc(cats)}</td>
+      <td style="text-align:right">${qs}</td>
     </tr>`;
   }).join('');
-  return `<table class="scan-tabel">
-    <thead><tr><th>Invuller</th><th>Functie</th><th>Datum</th><th>Gem.</th><th>Ruw</th><th></th></tr></thead>
-    <tbody>${rijen}</tbody></table>`;
+  return `<div class="dossier-sectie">Contacten</div>
+    <table class="scan-tabel contact-tabel">
+      <thead><tr><th>Naam</th><th>Functie</th><th>E-mail</th><th>GSM</th><th>Categorie</th><th></th></tr></thead>
+      <tbody>${rijen}</tbody></table>`;
+}
+
+function scanRij(s, bedrijfId) {
+  const gem = s.gemiddelde_score;
+  const z = gem != null ? zone(gem) : null;
+  const heeftRuw = s.antwoorden && Object.keys(s.antwoorden).length;
+  const kanAfleiden = !heeftRuw && s.ruwe_mail && s.ruwe_mail.indexOf('BEREKENING PER DOMEIN') >= 0;
+  const ruwCel = heeftRuw ? '<span title="ruwe antwoorden aanwezig">✓ ruw</span>'
+    : kanAfleiden ? '<span style="color:var(--blue)" title="antwoorden afleidbaar uit de berekening in de mail">≈ afgeleid</span>'
+    : '<span style="color:var(--muted)" title="oude scan zonder losse antwoorden of berekening">—</span>';
+  const contact = s.contact_id ? dossierData.contactById[s.contact_id] : null;
+  const invNaam = contact ? contactNaam(contact) : (s.invuller || '—');
+  const koppel = s.contact_id ? ''
+    : `<button class="koppel-btn" onclick="event.stopPropagation();openKoppelContact('${escAttr(s.id)}')">+ contact</button>`;
+  return `<tr>
+    <td>${esc(invNaam)} ${koppel}</td>
+    <td>${esc((contact && contact.functie) || s.invuller_functie || '')}</td>
+    <td>${esc(s.datum || '')}</td>
+    <td class="scan-gem" style="color:${z ? z.kleur : 'inherit'}">${gem != null ? Number(gem).toFixed(1) + ' / 4' : '—'}</td>
+    <td>${ruwCel}</td>
+    <td style="text-align:right"><button class="scan-bekijk" onclick="toonScanDetail('${escAttr(s.id)}')">Bekijk scores ↑</button></td>
+  </tr>`;
+}
+
+function scanTabel(b, scans) {
+  if (!scans.length) return '';
+  return `<div class="dossier-sectie">Quickscans</div>
+    <table class="scan-tabel">
+      <thead><tr><th>Invuller</th><th>Functie</th><th>Datum</th><th>Gem.</th><th>Ruw</th><th></th></tr></thead>
+      <tbody>${scans.map(s => scanRij(s, b.id)).join('')}</tbody></table>`;
+}
+
+// Scans die (nog) aan geen enkel bedrijf hangen — koppelbaar via de contact-picker.
+function losseScansKaart() {
+  const scans = dossierData.losseScans;
+  const open = !!dossierOpen['__los'];
+  const body = open ? `<div class="dossier-body">
+    <table class="scan-tabel">
+      <thead><tr><th>Invuller</th><th>Functie</th><th>Datum</th><th>Gem.</th><th>Ruw</th><th></th></tr></thead>
+      <tbody>${scans.map(s => scanRij(s, null)).join('')}</tbody></table></div>` : '';
+  return `<div class="dossier los">
+    <div class="dossier-kop" onclick="toggleDossier('__los')">
+      <span class="dossier-caret">${open ? '▾' : '▸'}</span>
+      <span class="dossier-naam">Niet-gekoppelde scans</span>
+      <span class="dossier-meta">koppel elke scan aan het juiste contact</span>
+      <span class="dossier-koppel"><span class="dossier-badge leeg">${scans.length}</span></span>
+    </div>${body}</div>`;
 }
 
 function toggleDossier(id) { dossierOpen[id] = !dossierOpen[id]; renderDossiers(); }
 
-async function koppelProspect(klantId, prospectId) {
-  try {
-    await TNL.updateKlant(klantId, { prospect_id: prospectId || null });
-    const k = dossierData.klanten.find(x => x.id === klantId);
-    if (k) k.prospect_id = prospectId || null;
-    renderDossiers();
-  } catch (e) {
-    alert('Koppelen mislukt: ' + (e.message || e));
-  }
-}
-
 // Toon de scores van één gekozen scan in het bestaande scores-blok bovenaan.
-function toonScanDetail(klantId, scanId) {
-  const k = dossierData.klanten.find(x => x.id === klantId);
-  const s = (dossierData.scansPerKlant[klantId] || []).find(x => x.id === scanId);
-  if (!k || !s) return;
+function toonScanDetail(scanId) {
+  const s = dossierData.scanById[scanId];
+  if (!s) return;
+  const b = s.bedrijf_id ? dossierData.bedrijfById[s.bedrijf_id] : null;
+  const c = s.contact_id ? dossierData.contactById[s.contact_id] : null;
   gesprek = {
     klant: {
-      naam: s.invuller, bedrijf: k.bedrijf, email: s.invuller_email || k.email,
-      functie: s.invuller_functie, medewerkers: k.medewerkers, sector: k.sector, tel: k.telefoon,
+      naam: c ? contactNaam(c) : (s.invuller || ''),
+      bedrijf: b ? (b.naam || '') : '',
+      email: (c && c.email) || s.invuller_email || '',
+      functie: (c && c.functie) || s.invuller_functie || '',
+      medewerkers: b ? (b.aantal_medewerkers || '') : '',
+      sector: b ? (b.sector || '') : '',
+      tel: (c && c.gsm) || '',
       score: (s.gemiddelde_score != null ? Number(s.gemiddelde_score).toFixed(1) + ' / 4' : ''), datum: s.datum
     },
     scores: s.scores || {}, labels: s.labels || {}
@@ -1183,47 +1278,68 @@ function reconstructAntwoorden(ruweMail) {
   return { antwoorden, onzeker };
 }
 
-// ---- Zoek-picker: dossier aan prospect koppelen ----
-let koppelKlantId = null;
-function openKoppel(klantId) {
-  koppelKlantId = klantId;
-  const k = dossierData.klanten.find(x => x.id === klantId);
+// ---- Zoek-picker: een scan aan het juiste contact koppelen ----
+// Zet zowel contact_id als (afgeleid) bedrijf_id op de scan.
+let koppelScanId = null;
+function openKoppelContact(scanId) {
+  koppelScanId = scanId;
+  const s = dossierData.scanById[scanId];
   document.getElementById('km-zoek').value = '';
-  document.getElementById('km-ontkoppel').style.display = (k && k.prospect_id) ? 'block' : 'none';
+  document.getElementById('km-ontkoppel').style.display = (s && s.contact_id) ? 'block' : 'none';
   document.getElementById('koppel-modal').style.display = 'flex';
   renderKoppelLijst();
   setTimeout(() => document.getElementById('km-zoek').focus(), 50);
 }
 function sluitKoppel() {
   document.getElementById('koppel-modal').style.display = 'none';
-  koppelKlantId = null;
+  koppelScanId = null;
 }
 function renderKoppelLijst() {
   const el = document.getElementById('km-lijst');
-  if (!dossierData.prospects.length) {
-    el.innerHTML = '<div class="km-item" style="color:var(--muted)">Geen prospecten geladen (het Prospectie-project is mogelijk gepauzeerd).</div>';
+  if (!dossierData.contacten.length) {
+    el.innerHTML = '<div class="km-item" style="color:var(--muted)">Nog geen contacten in de database.</div>';
     return;
   }
   const zoek = (document.getElementById('km-zoek').value || '').trim().toLowerCase();
-  let lijst = dossierData.prospects;
-  if (zoek) lijst = lijst.filter(p => ((p.bedrijf || '') + ' ' + (p.voornaam || '') + ' ' + (p.naam || '')).toLowerCase().includes(zoek));
-  lijst = lijst.slice(0, 60);
-  if (!lijst.length) { el.innerHTML = '<div class="km-item" style="color:var(--muted)">Geen prospect gevonden voor "' + esc(zoek) + '".</div>'; return; }
-  el.innerHTML = lijst.map(p => {
-    const naam = [p.voornaam, p.naam].filter(Boolean).join(' ');
-    const sub = [naam, p.email].filter(Boolean).join(' · ');
-    return `<div class="km-item" onclick="kiesKoppelProspect('${escAttr(p.id)}')"><strong>${esc(p.bedrijf || '(naamloos)')}</strong>${sub ? '<small>' + esc(sub) + '</small>' : ''}</div>`;
+  let lijst = dossierData.contacten.slice();
+  if (zoek) lijst = lijst.filter(c =>
+    (contactNaam(c) + ' ' + (c.email || '') + ' ' + bedrijfNaamVan(c)).toLowerCase().includes(zoek));
+  // Bedrijven met een naam eerst gesorteerd op bedrijfsnaam, dan contactnaam.
+  lijst.sort((a, b) => bedrijfNaamVan(a).localeCompare(bedrijfNaamVan(b)) || contactNaam(a).localeCompare(contactNaam(b)));
+  lijst = lijst.slice(0, 80);
+  if (!lijst.length) { el.innerHTML = '<div class="km-item" style="color:var(--muted)">Geen contact gevonden voor "' + esc(zoek) + '".</div>'; return; }
+  el.innerHTML = lijst.map(c => {
+    const bn = bedrijfNaamVan(c);
+    const sub = [c.functie, c.email].filter(Boolean).join(' · ');
+    return `<div class="km-item" onclick="kiesKoppelContact('${escAttr(c.id)}')"><strong>${esc(contactNaam(c))}</strong>${bn ? ' — ' + esc(bn) : ''}${sub ? '<small>' + esc(sub) + '</small>' : ''}</div>`;
   }).join('');
 }
-async function kiesKoppelProspect(prospectId) {
-  if (!koppelKlantId) return;
-  await koppelProspect(koppelKlantId, prospectId);
-  sluitKoppel();
+async function kiesKoppelContact(contactId) {
+  if (!koppelScanId) return;
+  const c = dossierData.contactById[contactId];
+  if (!c) return;
+  try {
+    await TNL.updateQuickscan(koppelScanId, { contact_id: contactId, bedrijf_id: c.bedrijf_id || null });
+    sluitKoppel();
+    laadDossiers();
+  } catch (e) {
+    alert('Koppelen mislukt: ' + (e.message || e));
+  }
+}
+async function ontkoppelScan() {
+  if (!koppelScanId) return;
+  try {
+    await TNL.updateQuickscan(koppelScanId, { contact_id: null });
+    sluitKoppel();
+    laadDossiers();
+  } catch (e) {
+    alert('Ontkoppelen mislukt: ' + (e.message || e));
+  }
 }
 
 // Laad de dossiers de eerste keer dat het tabblad geopend wordt.
 document.querySelector('nav button[data-tab="gesprek"]').addEventListener('click', () => {
-  if (!dossierData.klanten.length) laadDossiers();
+  if (!dossierData.bedrijven.length) laadDossiers();
 });
 </script>
 

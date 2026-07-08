@@ -195,7 +195,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <body>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.48</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.49</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -246,7 +246,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div id="antwoorden-blok" style="display:none">
       <div class="card">
         <div class="score-titel" style="margin-top:0">Antwoorden per vraag</div>
-        <p class="sub" style="margin:2px 0 4px">De losse antwoorden van deze scan — enkel beschikbaar voor scans die via het automatische systeem binnenkwamen.</p>
+        <div id="antw-note" style="display:none;font-size:12px;color:var(--muted);margin:2px 0 6px">ℹ️ Deze scan bevatte geen losse antwoorden — onderstaande is <b>afgeleid uit de berekening</b> in de mail. Een <b style="color:var(--amber)">⚠</b> betekent dat het antwoord niet eenduidig af te leiden was (het paar staat vast, de volgorde niet).</div>
         <div id="antwoorden-lijst" class="antw-lijst"></div>
       </div>
     </div>
@@ -978,12 +978,16 @@ function scanTabel(k, scans) {
     const gem = s.gemiddelde_score;
     const z = gem != null ? zone(gem) : null;
     const heeftRuw = s.antwoorden && Object.keys(s.antwoorden).length;
+    const kanAfleiden = !heeftRuw && s.ruwe_mail && s.ruwe_mail.indexOf('BEREKENING PER DOMEIN') >= 0;
+    const ruwCel = heeftRuw ? '<span title="ruwe antwoorden aanwezig">✓ ruw</span>'
+      : kanAfleiden ? '<span style="color:var(--blue)" title="antwoorden afleidbaar uit de berekening in de mail">≈ afgeleid</span>'
+      : '<span style="color:var(--muted)" title="oude scan zonder losse antwoorden of berekening">—</span>';
     return `<tr>
       <td>${esc(s.invuller || '—')}</td>
       <td>${esc(s.invuller_functie || '')}</td>
       <td>${esc(s.datum || '')}</td>
       <td class="scan-gem" style="color:${z ? z.kleur : 'inherit'}">${gem != null ? Number(gem).toFixed(1) + ' / 4' : '—'}</td>
-      <td>${heeftRuw ? '<span title="ruwe antwoorden aanwezig">✓ ruw</span>' : '<span style="color:var(--muted)" title="oude/handmatige scan zonder ruwe antwoorden">—</span>'}</td>
+      <td>${ruwCel}</td>
       <td style="text-align:right"><button class="scan-bekijk" onclick="toonScanDetail('${escAttr(k.id)}','${escAttr(s.id)}')">Bekijk scores ↑</button></td>
     </tr>`;
   }).join('');
@@ -1020,7 +1024,14 @@ function toonScanDetail(klantId, scanId) {
   };
   toonKlant();
   toonScores();
-  renderAntwoorden(s);
+  // Antwoorden per vraag: echte ruwe antwoorden, anders afgeleid uit de berekening in de mail.
+  if (Object.keys(s.antwoorden || {}).length) {
+    renderAntwoorden(s, null, false);
+  } else {
+    const rec = reconstructAntwoorden(s.ruwe_mail || '');
+    if (rec) renderAntwoorden({ antwoorden: rec.antwoorden }, rec.onzeker, true);
+    else document.getElementById('antwoorden-blok').style.display = 'none';
+  }
   document.getElementById('klant-blok').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1028,53 +1039,144 @@ function toonScanDetail(klantId, scanId) {
 // Alleen bedoeld om de opgeslagen antwoordwaarden leesbaar te labelen (geen DB-opslag per scan).
 // Wijzigen de quickscan-vragen ooit? Werk dan deze lijst bij (of vraag het mij).
 const QUICKSCAN_VRAGEN = [
-  { h:"FIN", t:"Ik heb onvoldoende zicht op de marges, cashpositie en rendabiliteit van het bedrijf." },
-  { h:"STR", t:"We verliezen energie en tijd aan interne discussies over prioriteiten en beslissingen." },
-  { h:"AFS", t:"Klanten haken af of komen niet terug omdat onze opvolging na de verkoop tekortschiet." },
-  { h:"IT",  t:"We verliezen tijd aan handmatig werk, losse Excel-bestanden of systemen die niet met elkaar praten." },
-  { h:"PM",  t:"Verbeterprojecten starten wel, maar verzanden of raken nooit echt af." },
-  { h:"OPS", t:"We zijn brandjes aan het blussen in plaats van de oorzaak aan te pakken." },
-  { h:"HR",  t:"Functies en verantwoordelijkheden zijn bij ons onvoldoende duidelijk afgebakend." },
-  { h:"SAF", t:"Bij drukte wordt er afgeweken van de veiligheidsafspraken." },
-  { h:"PROD",t:"Ons commercieel aanbod dreigt achterop te raken: we vernieuwen of verbeteren het te traag." },
-  { h:"MKT", t:"Te weinig potentiële klanten kennen ons of weten waarvoor we staan." },
-  { h:"LEAD",t:"Belangrijke beslissingen komen nog vaak bij dezelfde persoon terecht." },
-  { h:"QUA", t:"We moeten lastminute oplossingen bedenken of werk opnieuw doen om zaken correct af te werken." },
-  { h:"SAL", t:"We hebben weinig zicht op onze verkoopspijplijn; nieuwe orders komen onvoorspelbaar binnen." },
-  { h:"CHG", t:"Veranderingen worden bij ons moeilijk doorgevoerd: er is veel weerstand of ze verwateren." },
-  { h:"PROC",t:"Iedereen werkt op zijn eigen manier; processen liggen niet vast of worden niet gevolgd." },
-  { h:"AFS", t:"We volgen onze klanten na de verkoop te weinig proactief op; problemen of klachten komen niet tijdig tot ons." },
-  { h:"STR", t:"We hebben nog te weinig sterke strategische keuzes gemaakt." },
-  { h:"FIN", t:"We werken te weinig met budgetten om onze kosten en investeringen vooraf te plannen en op te volgen." },
-  { h:"OPS", t:"Wanneer het druk wordt, loopt onze werking vast en krijgen we het werk niet vlot georganiseerd." },
-  { h:"MKT", t:"We kunnen moeilijk in één zin uitleggen waarom een klant voor ons kiest en niet voor een concurrent." },
-  { h:"IT",  t:"Onze IT is kwetsbaar: systemen zijn verouderd en onvoldoende beveiligd." },
-  { h:"PROD",t:"Onze producten of diensten sluiten onvoldoende aan op wat onze klanten vandaag écht nodig hebben." },
-  { h:"HR",  t:"We hebben veel verloop, en goede mensen vinden is bovendien niet evident." },
-  { h:"SAF", t:"Veiligheid zit onvoldoende verankerd in onze werking; niet iedereen kent of volgt de afspraken." },
-  { h:"PM",  t:"Onze verbeterprojecten missen een duidelijke aanpak: geen heldere doelen, eigenaar of opvolging." },
-  { h:"LEAD",t:"Bij ons wordt er veel gezegd maar te weinig consequent uitgevoerd." },
-  { h:"QUA", t:"Onze kwaliteit is wisselvallig; klachten over kwaliteit komen regelmatig terug." },
-  { h:"CHG", t:"Bij veranderingen worden mensen te weinig betrokken of geïnformeerd; het overkomt hen." },
-  { h:"SAL", t:"Nieuwe klanten werven gebeurt bij ons te veel op toeval, zonder gestructureerde aanpak." },
-  { h:"PROC",t:"Onze manier van werken zit te veel in de hoofden van individuele mensen; bij vertrek of afwezigheid gaat kennis verloren." }
+  { h:"FIN", n:["STR","OPS"],  t:"Ik heb onvoldoende zicht op de marges, cashpositie en rendabiliteit van het bedrijf." },
+  { h:"STR", n:["LEAD","PM"],  t:"We verliezen energie en tijd aan interne discussies over prioriteiten en beslissingen." },
+  { h:"AFS", n:["QUA","SAL"],  t:"Klanten haken af of komen niet terug omdat onze opvolging na de verkoop tekortschiet." },
+  { h:"IT",  n:["PROC","FIN"], t:"We verliezen tijd aan handmatig werk, losse Excel-bestanden of systemen die niet met elkaar praten." },
+  { h:"PM",  n:["CHG","LEAD"], t:"Verbeterprojecten starten wel, maar verzanden of raken nooit echt af." },
+  { h:"OPS", n:["PROC","AFS"], t:"We zijn brandjes aan het blussen in plaats van de oorzaak aan te pakken." },
+  { h:"HR",  n:["PROC","LEAD"],t:"Functies en verantwoordelijkheden zijn bij ons onvoldoende duidelijk afgebakend." },
+  { h:"SAF", n:["QUA","HR"],   t:"Bij drukte wordt er afgeweken van de veiligheidsafspraken." },
+  { h:"PROD",n:["STR","MKT"],  t:"Ons commercieel aanbod dreigt achterop te raken: we vernieuwen of verbeteren het te traag." },
+  { h:"MKT", n:["SAL","PROD"], t:"Te weinig potentiële klanten kennen ons of weten waarvoor we staan." },
+  { h:"LEAD",n:["OPS","HR"],   t:"Belangrijke beslissingen komen nog vaak bij dezelfde persoon terecht." },
+  { h:"QUA", n:["OPS","AFS"],  t:"We moeten lastminute oplossingen bedenken of werk opnieuw doen om zaken correct af te werken." },
+  { h:"SAL", n:["FIN","STR"],  t:"We hebben weinig zicht op onze verkoopspijplijn; nieuwe orders komen onvoorspelbaar binnen." },
+  { h:"CHG", n:["LEAD","PM"],  t:"Veranderingen worden bij ons moeilijk doorgevoerd: er is veel weerstand of ze verwateren." },
+  { h:"PROC",n:["HR","QUA"],   t:"Iedereen werkt op zijn eigen manier; processen liggen niet vast of worden niet gevolgd." },
+  { h:"AFS", n:["QUA","SAL"],  t:"We volgen onze klanten na de verkoop te weinig proactief op; problemen of klachten komen niet tijdig tot ons." },
+  { h:"STR", n:["HR","LEAD"],  t:"We hebben nog te weinig sterke strategische keuzes gemaakt." },
+  { h:"FIN", n:["SAL","STR"],  t:"We werken te weinig met budgetten om onze kosten en investeringen vooraf te plannen en op te volgen." },
+  { h:"OPS", n:["PROC","SAF"], t:"Wanneer het druk wordt, loopt onze werking vast en krijgen we het werk niet vlot georganiseerd." },
+  { h:"MKT", n:["STR","SAL"],  t:"We kunnen moeilijk in één zin uitleggen waarom een klant voor ons kiest en niet voor een concurrent." },
+  { h:"IT",  n:["PROC","OPS"], t:"Onze IT is kwetsbaar: systemen zijn verouderd en onvoldoende beveiligd." },
+  { h:"PROD",n:["MKT","STR"],  t:"Onze producten of diensten sluiten onvoldoende aan op wat onze klanten vandaag écht nodig hebben." },
+  { h:"HR",  n:["LEAD","STR"], t:"We hebben veel verloop, en goede mensen vinden is bovendien niet evident." },
+  { h:"SAF", n:["QUA","PROC"], t:"Veiligheid zit onvoldoende verankerd in onze werking; niet iedereen kent of volgt de afspraken." },
+  { h:"PM",  n:["PROC","CHG"], t:"Onze verbeterprojecten missen een duidelijke aanpak: geen heldere doelen, eigenaar of opvolging." },
+  { h:"LEAD",n:["HR","CHG"],   t:"Bij ons wordt er veel gezegd maar te weinig consequent uitgevoerd." },
+  { h:"QUA", n:["PROC","AFS"], t:"Onze kwaliteit is wisselvallig; klachten over kwaliteit komen regelmatig terug." },
+  { h:"CHG", n:["LEAD","HR"],  t:"Bij veranderingen worden mensen te weinig betrokken of geïnformeerd; het overkomt hen." },
+  { h:"SAL", n:["MKT","FIN"],  t:"Nieuwe klanten werven gebeurt bij ons te veel op toeval, zonder gestructureerde aanpak." },
+  { h:"PROC",n:["IT","SAF"],   t:"Onze manier van werken zit te veel in de hoofden van individuele mensen; bij vertrek of afwezigheid gaat kennis verloren." }
 ];
 // Antwoordschaal (links→rechts). Alle vragen negatief ⇒ "Volledig akkoord" = meeste pijn.
 const ANTWOORD_LABELS = ['Helemaal niet akkoord', 'Niet akkoord', 'Akkoord', 'Volledig akkoord'];
 
-function renderAntwoorden(scan) {
+function renderAntwoorden(scan, onzeker, afgeleid) {
+  onzeker = onzeker || {};
   const blok = document.getElementById('antwoorden-blok');
   const lijst = document.getElementById('antwoorden-lijst');
+  const note = document.getElementById('antw-note');
   const ant = scan.antwoorden || {};
   if (!Object.keys(ant).length) { blok.style.display = 'none'; return; }
+  const kleurVan = v => v >= 4 ? 'var(--red)' : v === 3 ? 'var(--amber)' : v === 2 ? 'var(--blue)' : 'var(--green)';
   lijst.innerHTML = QUICKSCAN_VRAGEN.map((v, i) => {
     const val = ant[i];
     if (val == null) return '';
-    const lbl = ANTWOORD_LABELS[val - 1] || ('antwoord ' + val);
-    const kleur = val >= 4 ? 'var(--red)' : val === 3 ? 'var(--amber)' : val === 2 ? 'var(--blue)' : 'var(--green)';
-    return `<div class="antw-rij"><span class="a-dom">${esc(v.h)}</span><span class="a-vraag">${esc(v.t)}</span><span class="a-ant" style="color:${kleur}">${esc(lbl)}</span></div>`;
+    let antHtml;
+    if (onzeker[i]) {
+      const opts = onzeker[i].map(o => ANTWOORD_LABELS[o - 1] || ('antw ' + o)).join(' óf ');
+      antHtml = `<span style="color:var(--amber)" title="Niet eenduidig af te leiden uit de berekening">⚠ ${esc(opts)}</span>`;
+    } else {
+      const lbl = ANTWOORD_LABELS[val - 1] || ('antwoord ' + val);
+      antHtml = `<span style="color:${kleurVan(val)}">${esc(lbl)}</span>`;
+    }
+    return `<div class="antw-rij"><span class="a-dom">${esc(v.h)}</span><span class="a-vraag">${esc(v.t)}</span><span class="a-ant">${antHtml}</span></div>`;
   }).join('');
+  if (note) note.style.display = afgeleid ? 'block' : 'none';
   blok.style.display = 'block';
+}
+
+// Reconstrueer de losse antwoorden uit het "BEREKENING PER DOMEIN"-blok van een
+// geplakte mail. Elke vraag is de hoofdvraag van precies één domein (het
+// "2×laagste+hoogste"-deel), de neven-waarden lossen de volgorde binnen een paar op.
+// Geeft { antwoorden:{i:rawAns}, onzeker:{i:[opties]} } of null als er geen blok is.
+function reconstructAntwoorden(ruweMail) {
+  if (!ruweMail || ruweMail.indexOf('BEREKENING PER DOMEIN') < 0) return null;
+  const NAAM2CODE = {
+    'Strategie':'STR', 'Product / R&D':'PROD', 'Marketing':'MKT', 'Sales':'SAL',
+    'Operations':'OPS', 'After Sales':'AFS', 'HR':'HR', 'Finance':'FIN', 'IT':'IT',
+    'Kwaliteit':'QUA', 'Veiligheid':'SAF', 'Project Management':'PM',
+    'Proces Management':'PROC', 'Leadership':'LEAD', 'Change Management':'CHG'
+  };
+  const perDom = {};   // code -> { lo, hi, neven:[...] }
+  ruweMail.split('\n').forEach(regel => {
+    const m = regel.match(/^\s*(.+?)\s*=\s*0,8[×x]\(2[×x](\d+)\+(\d+)\)\/3(?:\s*\+\s*0,2[×x]\(([\d+]+)\)\/\d+)?/);
+    if (!m) return;
+    const code = NAAM2CODE[m[1].trim()];
+    if (!code) return;
+    const neven = m[4] ? m[4].split('+').map(x => parseInt(x, 10)).filter(x => !isNaN(x)) : [];
+    perDom[code] = { lo: parseInt(m[2], 10), hi: parseInt(m[3], 10), neven };
+  });
+  if (Object.keys(perDom).length < 10) return null;
+
+  const hoofd = {};    // code -> [i1, i2]
+  QUICKSCAN_VRAGEN.forEach((v, i) => { (hoofd[v.h] = hoofd[v.h] || []).push(i); });
+  const revNeven = {}; // code -> [vraag-indexen met dit domein als neven]
+  QUICKSCAN_VRAGEN.forEach((v, i) => (v.n || []).forEach(d => { (revNeven[d] = revNeven[d] || []).push(i); }));
+
+  const vast = {};     // index -> scoreVal (zeker)
+  const pending = [];  // domeinen met lo != hi (volgorde onbekend)
+  Object.keys(perDom).forEach(code => {
+    const h = hoofd[code]; if (!h || h.length !== 2) return;
+    const d = perDom[code];
+    if (d.lo === d.hi) { vast[h[0]] = d.lo; vast[h[1]] = d.lo; }
+    else pending.push({ i1: h[0], i2: h[1], lo: d.lo, hi: d.hi });
+  });
+
+  function checkNeven(vals) {
+    for (const code in perDom) {
+      const obs = perDom[code].neven.slice().sort((a, b) => a - b);
+      const rev = revNeven[code] || [];
+      if (rev.length !== obs.length) continue;
+      const got = rev.map(i => vals[i]).sort((a, b) => a - b);
+      for (let k = 0; k < obs.length; k++) if (got[k] !== obs[k]) return false;
+    }
+    return true;
+  }
+
+  const oplossingen = [];
+  const N = pending.length;
+  for (let mask = 0; mask < (1 << N); mask++) {
+    const vals = Object.assign({}, vast);
+    for (let b = 0; b < N; b++) {
+      const p = pending[b];
+      if (mask & (1 << b)) { vals[p.i1] = p.hi; vals[p.i2] = p.lo; }
+      else { vals[p.i1] = p.lo; vals[p.i2] = p.hi; }
+    }
+    if (checkNeven(vals)) oplossingen.push(vals);
+    if (oplossingen.length > 500) break;
+  }
+
+  const antwoorden = {}, onzeker = {};
+  const sv2raw = sv => 5 - sv;   // alle vragen inv: scoreVal 4 = "Helemaal niet akkoord" = rawAns 1
+  if (oplossingen.length) {
+    for (let i = 0; i < QUICKSCAN_VRAGEN.length; i++) {
+      const set = [...new Set(oplossingen.map(o => o[i]))];
+      antwoorden[i] = sv2raw(set[0]);
+      if (set.length > 1) onzeker[i] = set.map(sv2raw);
+    }
+  } else {
+    // Geen sluitende oplossing: vaste vragen zeker, elk pending-paar onzeker.
+    Object.keys(vast).forEach(i => { antwoorden[i] = sv2raw(vast[i]); });
+    pending.forEach(p => {
+      const opts = [sv2raw(p.lo), sv2raw(p.hi)];
+      antwoorden[p.i1] = opts[0]; onzeker[p.i1] = opts;
+      antwoorden[p.i2] = opts[1]; onzeker[p.i2] = opts;
+    });
+  }
+  return { antwoorden, onzeker };
 }
 
 // ---- Zoek-picker: dossier aan prospect koppelen ----

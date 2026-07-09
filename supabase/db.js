@@ -266,6 +266,13 @@ const TNL = (() => {
   // Voeg twee contactpersonen samen: het te verwijderen contact z'n quickscans
   // verhuizen naar het behouden contact, lege velden op 'behoud' worden aangevuld
   // uit 'verwijder', daarna wordt het dubbele contact verwijderd.
+  // Zet het bedrijf_id van álle scans van een contact gelijk (bv. na verhuizen/losmaken),
+  // zodat de scan onder het juiste bedrijf blijft hangen.
+  async function zetScansBedrijf(contactId, bedrijfId) {
+    const scans = check(await client().from('quickscan').select('id').eq('contact_id', contactId));
+    for (const s of (scans || [])) check(await client().from('quickscan').update({ bedrijf_id: bedrijfId || null }).eq('id', s.id));
+    return (scans || []).length;
+  }
   async function voegContactenSamen(behoudId, verwijderId) {
     if (!behoudId || !verwijderId || behoudId === verwijderId) throw new Error('Ongeldige contact-selectie');
     const beh = check(await client().from('contact').select('*').eq('id', behoudId).single());
@@ -276,9 +283,9 @@ const TNL = (() => {
     ].forEach(f => { const bv = beh[f]; if ((bv == null || bv === '') && weg[f] != null && weg[f] !== '') patch[f] = weg[f]; });
     if (weg.quickscan_ingevuld) patch.quickscan_ingevuld = true;
     if (Object.keys(patch).length) check(await client().from('contact').update(patch).eq('id', behoudId));
-    // scans overzetten
+    // scans overzetten (naar het behouden contact + zijn bedrijf)
     const scans = check(await client().from('quickscan').select('id').eq('contact_id', verwijderId));
-    for (const s of (scans || [])) check(await client().from('quickscan').update({ contact_id: behoudId }).eq('id', s.id));
+    for (const s of (scans || [])) check(await client().from('quickscan').update({ contact_id: behoudId, bedrijf_id: beh.bedrijf_id || null }).eq('id', s.id));
     // openstaande wijzigingsvoorstellen op het weg-contact meeverhuizen
     try { check(await client().from('wijziging_voorstel').update({ record_id: behoudId }).eq('entiteit', 'contact').eq('record_id', verwijderId)); } catch (_) {}
     check(await client().from('contact').delete().eq('id', verwijderId));
@@ -507,7 +514,7 @@ const TNL = (() => {
     getCatalogus, getArtikel, upsertArtikel, updateArtikel, deleteArtikel,
     getKlanten, vindKlantOpBedrijf, upsertKlant, updateKlant, saveGesprek, registreerQuickscan, getScansVanKlant, getAlleScans,
     getBedrijven, getContacten, updateBedrijf, updateContact, insertBedrijf, insertContact,
-    deleteBedrijf, deleteContact, voegContactenSamen, updateQuickscan, deleteQuickscan,
+    deleteBedrijf, deleteContact, voegContactenSamen, zetScansBedrijf, updateQuickscan, deleteQuickscan,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,
     getTemplates, upsertTemplate,

@@ -90,7 +90,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .niveau-blok .nv-titel { font-weight:700; color:var(--orange); margin-bottom:8px; }
 .niveau-blok .nv-prijs { float:right; color:var(--navy); }
 
-/* Kop-velden van een Stepping Stone (label links, veld rechts, even lang) */
+/* Kop-velden van een Metroperron (label links, veld rechts, even lang) */
 .kop-grid { display:grid; grid-template-columns: 150px 1fr; gap:8px 12px; align-items:start; margin-bottom:18px; }
 .kop-grid > label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; padding-top:8px; }
 .kop-grid input, .kop-grid textarea { width:100%; border:1px solid var(--border); border-radius:7px; padding:8px 10px; font-size:13px; font-family:inherit; }
@@ -210,9 +210,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.79</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.81</span></h1></div>
   <nav>
-    <button class="actief" data-tab="catalogus">Stepping Stones</button>
+    <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
     <button data-tab="tarieven">Tarieven</button>
     <button data-tab="tools">Tools</button>
@@ -220,7 +220,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <button data-tab="prospecten">Prospecten</button>
     <button data-tab="mails">Mails</button>
     <button data-tab="database">Database</button>
-    <button data-tab="gesprek">Gespreksvoorbereiding</button>
+    <button data-tab="gesprek">Weergave Quickscan</button>
   </nav>
   <button id="logout-btn" title="Afmelden" onclick="doeAfmelden()" style="margin-left:auto; display:none; background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.32); padding:7px 14px; border-radius:7px; cursor:pointer; font-size:13px; white-space:nowrap;">Afmelden</button>
 </header>
@@ -228,8 +228,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <main>
   <!-- TAB 1 -->
   <section class="panel" id="tab-gesprek">
-    <h2>Gespreksvoorbereiding</h2>
-    <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden. <em>Welke Stepping Stone wordt jouw volgende stap?</em></p>
+    <h2>Weergave Quickscan</h2>
+    <p class="sub">Plak hier de quickscan-mail. De tool leest de klantgegevens en de scores uit, zodat je het gesprek kunt voorbereiden en bij de hand houden. <em>Welke Metroperron wordt jouw volgende stap?</em></p>
 
     <div class="card">
       <textarea id="mail-tekst" placeholder="Plak hier de volledige quickscan-mail (of het rapport-blok met de scores)…"></textarea>
@@ -353,8 +353,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
   <!-- TAB 2 -->
   <section class="panel actief" id="tab-catalogus">
-    <h2>TNL Stepping Stones <small style="font-weight:400;color:var(--muted);font-size:14px">— Your stepping stones to The Next Level</small></h2>
-    <p class="sub">Je verbeterprojecten: lijn → station → <b>Stepping Stone</b>. Elke Stepping Stone zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en Stepping Stones onder een station.</p>
+    <h2>TNL Metroperrons <small style="font-weight:400;color:var(--muted);font-size:14px">— Your steps to The Next Level</small></h2>
+    <p class="sub">Je verbeterprojecten: lijn → station → <b>Metroperron</b>. Elke Metroperron zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en Metroperrons onder een station.</p>
     <div class="status" id="cat-status">Laden…</div>
     <div id="cat-tree"></div>
   </section>
@@ -389,7 +389,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">Factor voor de uren
           <input id="km-factor" type="number" step="0.1" min="0.1" placeholder="2" style="width:130px" onchange="bewaarKm()"></label>
       </div>
-      <div class="hint" style="margin-top:8px">Reisuren = afstand ÷ snelheid. Reiskost = reisuren × uurtarief consultant ÷ factor (bv. factor 2 = reistijd aan half tarief). De afstand per Stepping Stone vullen we later in de offerte in.</div>
+      <div class="hint" style="margin-top:8px">Reisuren = afstand ÷ snelheid. Reiskost = reisuren × uurtarief consultant ÷ factor (bv. factor 2 = reistijd aan half tarief). De afstand per Metroperron vullen we later in de offerte in.</div>
     </div>
   </section>
 
@@ -420,7 +420,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
 
     <div class="card" style="margin-top:16px">
-      <div class="subkop">Stepping Stones in deze offerte</div>
+      <div class="subkop">Metroperrons in deze offerte</div>
       <div id="off-nextstones"></div>
     </div>
 
@@ -467,11 +467,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <style>
       .db-lijst{display:flex;flex-direction:column;gap:8px;margin-top:12px}
       .db-kaart{border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#eef2f7;overflow:hidden}
-      .db-kop{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer;flex-wrap:wrap}
+      .db-kop{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer;flex-wrap:nowrap}
       .db-kop:hover{background:#e6ebf2}
-      .db-kop-rechts{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-      .db-caret{color:var(--muted);width:12px;font-size:12px}
-      .db-naam{font-weight:600}
+      .db-kop-rechts{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:0 0 auto}
+      .db-caret{color:var(--muted);width:12px;font-size:12px;flex:0 0 auto}
+      .db-naam{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
       .db-badge{font-size:11px;font-weight:600;background:#eef2f7;color:#334;border-radius:20px;padding:2px 9px}
       .db-badge.status-prospect{background:#eaf1fb;color:#2a4f8a}
       .db-badge.status-klant{background:#e6f2ec;color:#1f7a4d}
@@ -767,17 +767,17 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <div id="art-modal" class="modal-overlay" style="display:none">
   <div class="modal">
     <div class="modal-kop">
-      <h3 id="art-titel">Stepping Stone</h3>
+      <h3 id="art-titel">Metroperron</h3>
       <button class="x" onclick="sluitArtikel()">×</button>
     </div>
     <div class="modal-body">
       <div class="kop-grid">
-        <label>Stepping Stone</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
-        <label>Stepping Stone Path</label><input id="a-volnaam" disabled>
-        <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze Stepping Stone relevant voor de klant?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+        <label>Metroperron</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
+        <label>Metroperron Path</label><input id="a-volnaam" disabled>
+        <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze Metroperron relevant voor de klant?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Meetbaar</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant." onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
-        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra de Stepping Stone geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra de Metroperron geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
       </div>
 
       <div class="subkop">Clusters</div>
@@ -983,7 +983,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
       <div class="subkop">Tools die ik kan implementeren</div>
       <div id="c-tools"></div>
-      <div class="subkop">Stepping Stones die ik lever</div>
+      <div class="subkop">Metroperrons die ik lever</div>
       <div id="c-nextstones"></div>
 
       <div class="subkop">Tarief (consultant — voor latere marge)</div>
@@ -1021,7 +1021,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=26"></script>
+<script src="supabase/db.js?v=27"></script>
 <script>
 // ============================================================
 // STATE
@@ -1070,7 +1070,7 @@ async function boot() {
     });
     Object.assign(NAAM_NAAR_CODE, NAAM_ALIASSEN);
     if (conn) conn.textContent = `✓ Verbonden (${LIJNEN.length} lijnen)`;
-    // Stepping Stones is de standaard-tab bij opstarten -> meteen laden
+    // Metroperrons is de standaard-tab bij opstarten -> meteen laden
     if (!catGeladen) laadCatalogus();
   } catch (e) {
     if (conn) conn.textContent = '✗ Geen verbinding met database';
@@ -1277,7 +1277,8 @@ async function opslaanGesprek() {
       gemiddelde: gesprek.gemiddelde ?? null,
       scores: gesprek.scores || {},
       labels: gesprek.labels || {},
-      ruwe_mail: gesprek.ruweMail || ''
+      ruwe_mail: gesprek.ruweMail || '',
+      koppel: 'ja'   // manueel ingelezen + toegewezen → wél meteen aan bedrijf/contact koppelen
     };
     if (/^\d{4}-\d{2}-\d{2}$/.test(k.datum || '')) payload.datum = k.datum;   // enkel een geldige ISO-datum meegeven
     // Bestaat er al een scan voor deze persoon op deze datum (bij een bestaand bedrijf)? → vraag om te overschrijven.
@@ -1842,6 +1843,13 @@ async function kiesKoppelContact(contactId) {
   const vanDb = koppelVanuitDb;
   try {
     await TNL.updateQuickscan(koppelScanId, { contact_id: contactId, bedrijf_id: c.bedrijf_id || null });
+    // Status van het contact op "Quickscan ingevuld" + sector overnemen naar het bedrijf (indien leeg).
+    await TNL.updateContact(contactId, { status: 'Quickscan ingevuld', quickscan_ingevuld: true });
+    const s = dossierData.scanById[koppelScanId];
+    if (c.bedrijf_id && s && s.sector) {
+      const b = dossierData.bedrijfById[c.bedrijf_id];
+      if (b && !String(b.sector || '').trim()) await TNL.updateBedrijf(c.bedrijf_id, { sector: s.sector });
+    }
     sluitKoppel();
     if (vanDb) laadDatabase(); else laadDossiers();
   } catch (e) {
@@ -1929,8 +1937,11 @@ function renderDatabase() {
     (losse.length ? ' · ' + losse.length + ' zonder bedrijf' : '');
   const losseScans = dbData.losseScans || [];
   // Aandacht-kaarten (nog te koppelen) BOVENAAN, zodat je niet moet scrollen.
+  const sectorBasis = (typeof SECTOREN_BASIS !== 'undefined' ? SECTOREN_BASIS : []).concat(typeof sectorCustom !== 'undefined' ? sectorCustom : []);
+  const sectorSet = Array.from(new Set(sectorBasis.concat(dbData.bedrijven.map(b => b.sector).filter(Boolean)))).sort((a, b) => a.localeCompare(b));
   let html = '<datalist id="db-bedrijf-namen">' +
-    dbData.bedrijven.filter(b => b.naam).map(b => `<option value="${escAttr(b.naam)}">`).join('') + '</datalist>';
+    dbData.bedrijven.filter(b => b.naam).map(b => `<option value="${escAttr(b.naam)}">`).join('') + '</datalist>' +
+    '<datalist id="db-sector-lijst">' + sectorSet.map(s => `<option value="${escAttr(s)}">`).join('') + '</datalist>';
   if (losse.length) html += dbLosseKaart(losse);
   if (losseScans.length) html += dbLosseScansKaart(losseScans);
   html += bedrijven.length ? bedrijven.map(dbKaart).join('') : ((losse.length || losseScans.length) ? '' : '<span style="color:var(--muted)">Geen bedrijven gevonden.</span>');
@@ -2060,16 +2071,18 @@ async function dbKoppelBedrijf(oid) {
     }
     if (!bedrijfId) { const nb = await TNL.insertBedrijf({ naam, status: 'prospect', bron: 'manueel' }); bedrijfId = nb.id; }
     await TNL.updateContact(c.id, { bedrijf_id: bedrijfId });
+    await TNL.zetScansBedrijf(c.id, bedrijfId);   // scans van dit contact mee verhuizen
     await laadDatabase(); dbStatus('Contact gekoppeld aan bedrijf.', 'ok');
   } catch (e) { dbStatus('Koppelen mislukt: ' + (e.message || e), 'err'); }
 }
 // Veld = enkel het invoervak; de kop staat als placeholder (grijs) IN het veld als het leeg is.
 // isB = hoort bij een bedrijf (true) of contact (false); w = breedte. Auto-opslaan bij tab/enter (change).
-function dbInput(obj, key, label, isB, w) {
+function dbInput(obj, key, label, isB, w, listId) {
   const v = obj[key] == null ? '' : obj[key];
   const oid = obj.__oid;
   const style = w ? ` style="width:${w}"` : '';
-  return `<input class="db-f"${style} value="${escAttr(v)}" placeholder="${escAttr(label)}" title="${escAttr(label)}" ` +
+  const listAttr = listId ? ` list="${listId}"` : '';
+  return `<input class="db-f"${style}${listAttr} value="${escAttr(v)}" placeholder="${escAttr(label)}" title="${escAttr(label)}" ` +
     `oninput="dbSet('${oid}','${key}',this.value)" onchange="dbSaveField('${oid}',${isB})">`;
 }
 // Notitie als klein 📝-icoon dat inline een tekstvak openklikt (gele markering = er staat iets in).
@@ -2202,7 +2215,7 @@ function dbKaart(b) {
     const bedrijfVelden = `<div class="db-row">
       ${dbInput(b, 'naam', 'Bedrijf', true, '200px')}
       ${dbSelect(b, 'status', 'Status', ['prospect', 'klant'], true, '110px', true)}
-      ${dbInput(b, 'sector', 'Sector', true, '150px')}
+      ${dbInput(b, 'sector', 'Sector', true, '150px', 'db-sector-lijst')}
       ${dbInput(b, 'aantal_medewerkers', 'Aantal mdw.', true, '95px')}
       ${dbInput(b, 'straat', 'Straat', true, '160px')}
       ${dbInput(b, 'huisnummer', 'Nr', true, '55px')}
@@ -2298,6 +2311,7 @@ async function dbOntkoppelBedrijf(oid) {
   dbStatus('<span class="spin"></span>Losmaken…');
   try {
     await TNL.updateContact(c.id, { bedrijf_id: null });
+    await TNL.zetScansBedrijf(c.id, null);   // scans mee losmaken
     await laadDatabase(); dbStatus('Contact losgemaakt van het bedrijf.', 'ok');
   } catch (e) { dbStatus('Losmaken mislukt: ' + (e.message || e), 'err'); }
 }
@@ -2548,9 +2562,9 @@ var edit = null;   // editor-state voor de open Fix
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// Vaste processtappen die in elke nieuwe Stepping Stone horen (werkwoord + van + …).
+// Vaste processtappen die in elke nieuwe Metroperron horen (werkwoord + van + …).
 const VASTE_PROCESSTAPPEN = ['Beschrijven van het proces', 'Coördineren van het project'];
-// Standaard-deliverables ("wat is af als het af is") voor een nieuwe Stepping Stone.
+// Standaard-deliverables ("wat is af als het af is") voor een nieuwe Metroperron.
 const STANDAARD_DELIVERABLES = ['Een beschreven proces', 'Een gecoördineerd project'];
 function eersteRol(){ return (TARIEF_ROLLEN[0] && TARIEF_ROLLEN[0].rol) || 'Sr'; }
 function leegDeliverable(extra){
@@ -2629,9 +2643,9 @@ function renderCatBeheer() {
             <span class="snaam">${s.naam}</span>
             <button class="btn btn-ghost mini" onclick="hernoemStation('${s.id}')">Hernoem</button>
             <button class="btn btn-ghost mini mini-danger" onclick="verwijderStation('${s.id}')">Verwijder</button>
-            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ Stepping Stone</button>
+            <button class="btn btn-ghost mini" onclick="nieuwArtikel('${s.id}')">+ Metroperron</button>
           </div>`;
-        if (!arts.length) html += `<div class="leeg">Nog geen Stepping Stones.</div>`;
+        if (!arts.length) html += `<div class="leeg">Nog geen Metroperrons.</div>`;
         arts.forEach(a => {
           const c = TNL.berekenFix(a, TARIEVEN);
           const onb = onbekendeRollen(a);
@@ -2681,7 +2695,7 @@ function nieuwArtikel(stationId) {
     processen: [],
     wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
   vulArtikelForm({});
-  document.getElementById('art-titel').textContent = 'Nieuwe Stepping Stone';
+  document.getElementById('art-titel').textContent = 'Nieuwe Metroperron';
   document.getElementById('a-verwijder').style.display = 'none';
   document.getElementById('art-modal').style.display = 'flex';
 }
@@ -2699,12 +2713,12 @@ function bewerkArtikel(id) {
     ])
   };
   vulArtikelForm(a);
-  document.getElementById('art-titel').textContent = 'Stepping Stone bewerken';
+  document.getElementById('art-titel').textContent = 'Metroperron bewerken';
   document.getElementById('a-verwijder').style.display = 'inline-block';
   document.getElementById('art-modal').style.display = 'flex';
 }
 function sluitArtikel() { document.getElementById('art-modal').style.display = 'none'; edit = null; }
-function terugNaarLijst() { sluitArtikel(); laadCatalogus(); }   // terug naar de Stepping Stones-lijst
+function terugNaarLijst() { sluitArtikel(); laadCatalogus(); }   // terug naar de Metroperrons-lijst
 
 function vulArtikelForm(a) {
   const f = id => document.getElementById(id);
@@ -3124,7 +3138,7 @@ function buildFicheHtml(t) {
   </div>`;
 }
 
-// koppeling tools <-> Stepping Stone (multi-select in de Stepping Stone-editor)
+// koppeling tools <-> Metroperron (multi-select in de Metroperron-editor)
 async function renderNextstoneTools() {
   const cont = document.getElementById('a-tools'); if (!cont) return;
   if (!toolsCache.length) { try { toolsCache = await TNL.getTools(); } catch (e) {} }
@@ -3210,7 +3224,7 @@ function renderTarieven() {
   document.getElementById('tar-lijst').innerHTML = kop + (TARIEF_ROLLEN.map(t => {
     const n = artikelenMetRol(t.rol).length;
     return `<div class="dyn-rij">
-    <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} Stepping Stone(s)</small>`:''}</span>
+    <span style="flex:1;font-weight:600;color:var(--navy)">${escAttr(t.rol)}${n?` <small style="color:var(--muted);font-weight:400">· in ${n} Metroperron(s)</small>`:''}</span>
     <input maxlength="4" style="width:70px" value="${escAttr(t.afkorting||'')}" placeholder="afk." onchange="wijzigTariefVeld('${escAttr(t.rol)}','afkorting',this.value)">
     <input type="number" style="width:100px" value="${t.uurprijs??''}"      onchange="wijzigTariefVeld('${escAttr(t.rol)}','uurprijs',this.value)">
     <input type="number" style="width:100px" value="${t.halvedagprijs??''}" onchange="wijzigTariefVeld('${escAttr(t.rol)}','halvedagprijs',this.value)">
@@ -3242,14 +3256,14 @@ var offBedrijven = [], offContacten = [], offBedrijf = null, offContact = null, 
 var offCatalogus = [], OFF_TARIEVEN = {}, offSelectie = {};
 var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', intro:'', betaling:'Betaling binnen 14 dagen na factuurdatum.', verplaatsingTekst:'', korting:0, btw:21 };
 var AFZENDER = {
-  logo:'LogoNextLevel_FINAAL.jpg', merk:'The Next Level', tagline:'Your stepping stones to The Next Level',
+  logo:'LogoNextLevel_FINAAL.jpg', merk:'The Next Level', tagline:'Your steps to The Next Level',
   bedrijf:'Ariadne BV', persoon:'Dirk Vander Eyken',
   adres:'Melkweg 8, 2980 Halle-Zoersel', btw:'BE 0502.581.150', tel:'+32 468 13 79 78'
 };
 function euro(n){ return '€ ' + (Number(n)||0).toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function setOffStatus(msg, kind){ const el=document.getElementById('off-status'); if(!el) return; el.className='status'+(kind?' '+kind:''); el.innerHTML=msg||''; }
 async function laadOfferteTab(){
-  setOffStatus('<span class="spin"></span>Prospecten, klanten en Stepping Stones laden…');
+  setOffStatus('<span class="spin"></span>Prospecten, klanten en Metroperrons laden…');
   try {
     const [bedr, con, cat, tar, km] = await Promise.all([
       TNL.getBedrijven(), TNL.getContacten(),
@@ -3281,7 +3295,7 @@ function offLijn(a){
 }
 function renderOffNextstones(){
   const cont=document.getElementById('off-nextstones'); if(!cont) return;
-  if(!offCatalogus.length){ cont.innerHTML='<div class="leeg">Nog geen Stepping Stones in de catalogus (tabblad Stepping Stones).</div>'; return; }
+  if(!offCatalogus.length){ cont.innerHTML='<div class="leeg">Nog geen Metroperrons in de catalogus (tabblad Metroperrons).</div>'; return; }
   cont.innerHTML=offCatalogus.map(a=>{
     const { bedrag, sel }=offLijn(a);
     return `<div class="dyn-rij" style="align-items:center;gap:10px;border-bottom:1px solid var(--border,#e5e7eb);padding:7px 0">
@@ -3353,7 +3367,7 @@ function toonOfferte(){
  try {
   if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); alert('Kies en bewaar eerst een klant (bovenaan het tabblad Offerte).'); return; }
   const t=offBerekenTotaal();
-  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één Stepping Stone.','err'); alert('Vink minstens één Stepping Stone aan in de lijst.'); return; }
+  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één Metroperron.','err'); alert('Vink minstens één Metroperron aan in de lijst.'); return; }
   const k=offKlant, m=offMeta, A=AFZENDER;
   const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
   const secties=t.lijnen.map(({a,opties})=>{
@@ -3624,7 +3638,7 @@ async function slaArtikelOp() {
 }
 async function verwijderArtikel() {
   if (!edit.id) return;
-  if (!confirm('Deze Stepping Stone definitief verwijderen?')) return;
+  if (!confirm('Deze Metroperron definitief verwijderen?')) return;
   try { await TNL.deleteArtikel(edit.id); sluitArtikel(); await laadCatalogus(); }
   catch(e){ alert('Mislukt: '+(e.message||e)); }
 }
@@ -3656,7 +3670,7 @@ const CONS_COLS = {
   opleidingen:[{k:'jaar',ph:'jaar',w:80},{k:'titel',ph:'titel'},{k:'instelling',ph:'instelling'}],
   testimonials:[{k:'quote',ph:'quote'},{k:'naam',ph:'naam',w:120},{k:'functie',ph:'functie/bedrijf'}]
 };
-function nsNaam(a){ return a.subnaam || a.naam || a.volledige_naam || a.kop || '(Stepping Stone)'; }
+function nsNaam(a){ return a.subnaam || a.naam || a.volledige_naam || a.kop || '(Metroperron)'; }
 
 document.querySelector('nav button[data-tab="consultants"]').addEventListener('click', laadConsultants);
 
@@ -3796,8 +3810,8 @@ function toggleConsTool(id) { const l=consEdit.tool_ids||(consEdit.tool_ids=[]);
 function renderConsNextstones() {
   const chosen = consEdit.nextstone_ids || (consEdit.nextstone_ids=[]);
   const chips = chosen.map(id => { const a=consNextstonesCache.find(x=>x.id===id); return a?`<span class="cons-chip">${escAttr(nsNaam(a))} <span class="x" onclick="toggleConsNs('${id}')">×</span></span>`:''; }).join('');
-  const opts = `<option value="">+ Stepping Stone toevoegen…</option>` + consNextstonesCache.filter(a=>!chosen.includes(a.id)).map(a=>`<option value="${a.id}">${escAttr(nsNaam(a))}</option>`).join('');
-  document.getElementById('c-nextstones').innerHTML = (chips||'<span style="color:var(--muted);font-size:13px">Nog geen Stepping Stone gekoppeld. </span>') + `<select class="tool-add" onchange="if(this.value){toggleConsNs(this.value);this.value=''}">${opts}</select>`;
+  const opts = `<option value="">+ Metroperron toevoegen…</option>` + consNextstonesCache.filter(a=>!chosen.includes(a.id)).map(a=>`<option value="${a.id}">${escAttr(nsNaam(a))}</option>`).join('');
+  document.getElementById('c-nextstones').innerHTML = (chips||'<span style="color:var(--muted);font-size:13px">Nog geen Metroperron gekoppeld. </span>') + `<select class="tool-add" onchange="if(this.value){toggleConsNs(this.value);this.value=''}">${opts}</select>`;
 }
 function toggleConsNs(id) { const l=consEdit.nextstone_ids||(consEdit.nextstone_ids=[]); const i=l.indexOf(id); if(i<0)l.push(id); else l.splice(i,1); renderConsNextstones(); }
 

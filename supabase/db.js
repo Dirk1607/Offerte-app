@@ -264,6 +264,9 @@ const TNL = (() => {
     return check(await client().from('contact').delete().eq('id', id));
   }
   // Werk enkele velden van een scan bij (bv. een scan aan een contact/bedrijf koppelen).
+  async function deleteQuickscan(id) {
+    return check(await client().from('quickscan').delete().eq('id', id));
+  }
   async function updateQuickscan(id, patch) {
     return check(await client().from('quickscan').update(patch).eq('id', id).select().single());
   }
@@ -474,7 +477,7 @@ const TNL = (() => {
     getCatalogus, getArtikel, upsertArtikel, updateArtikel, deleteArtikel,
     getKlanten, vindKlantOpBedrijf, upsertKlant, updateKlant, saveGesprek, getScansVanKlant, getAlleScans,
     getBedrijven, getContacten, updateBedrijf, updateContact, insertBedrijf, insertContact,
-    deleteBedrijf, deleteContact, updateQuickscan,
+    deleteBedrijf, deleteContact, updateQuickscan, deleteQuickscan,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,
     getTemplates, upsertTemplate,

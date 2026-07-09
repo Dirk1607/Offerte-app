@@ -279,6 +279,14 @@ const TNL = (() => {
     return check(await client().rpc('voeg_bedrijven_samen', { p_behoud: behoudId, p_verwijder: verwijderId }));
   }
 
+  // ---------- mailsjablonen (Prospecten/Mails-tab) ----------
+  async function getTemplates() {
+    return check(await client().from('templates').select('*').order('categorie'));
+  }
+  async function upsertTemplate(t) {
+    return check(await client().from('templates').upsert(t, { onConflict: 'categorie' }).select().single());
+  }
+
   // ---------- goedkeurings-queue (voorgestelde wijzigingen) ----------
   async function getVoorstellen(status = 'open') {
     let q = client().from('wijziging_voorstel').select('*').order('created_at', { ascending: false });
@@ -469,6 +477,7 @@ const TNL = (() => {
     deleteBedrijf, deleteContact, updateQuickscan,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,
+    getTemplates, upsertTemplate,
     getProspects,
     saveOfferte, getOffertes, getOfferte
   };

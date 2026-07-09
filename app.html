@@ -210,7 +210,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.72</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.73</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -1002,7 +1002,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=25"></script>
+<script src="supabase/db.js?v=26"></script>
 <script>
 // ============================================================
 // STATE
@@ -1177,6 +1177,27 @@ function leesMail() {
   status.innerHTML = `<span style="color:var(--green)">✓ Ingelezen: ${delen.join(' + ')} — ${new Date().toLocaleTimeString('nl-BE')}</span>`;
 }
 
+// Naam-normalisatie + fuzzy contact-match (voor de ontdubbel-suggestie bij inlezen).
+function normNaamStr(s) { return (s || '').toString().toLowerCase().replace(/\s+/g, ' ').trim(); }
+function volledigeNaam(c) { return ((c.voornaam || '') + ' ' + (c.achternaam || '')).trim(); }
+function besteContactMatch(contacten, naam, email) {
+  const nEmail = (email || '').toLowerCase().trim();
+  const nNaam = normNaamStr(naam);
+  const toks = nNaam.split(' ').filter(Boolean);
+  let beste = null;
+  for (const c of contacten) {
+    const cEmail = (c.email || '').toLowerCase().trim();
+    if (nEmail && cEmail && nEmail === cEmail) return { contact: c, exact: true };
+    const vol = normNaamStr(volledigeNaam(c));
+    if (vol && vol === nNaam) return { contact: c, exact: true };
+    const volToks = vol.split(' ').filter(Boolean);
+    if (toks.length && volToks.length && (toks.every(t => vol.includes(t)) || volToks.every(t => nNaam.includes(t)))) {
+      if (!beste) beste = { contact: c, exact: false };
+    }
+  }
+  return beste;
+}
+
 async function opslaanGesprek() {
   const status = document.getElementById('mail-status');
   if (!Object.keys(gesprek.scores).length && !Object.keys(gesprek.klant).length) {
@@ -1187,11 +1208,38 @@ async function opslaanGesprek() {
   btn.disabled = true; btn.textContent = 'Opslaan…';
   try {
     const k = gesprek.klant;
+    let bedrijfNaam = (k.bedrijf || '').trim() || '(onbekend)';
+    let invuller = (k.naam || '').trim();
+    // (1) Bijna-dubbel BEDRIJF? Bied aan om aan een bestaand bedrijf te koppelen
+    //     i.p.v. een nieuw, gelijkend bedrijf aan te maken.
+    let gekozenBedrijf = null;
+    if (bedrijfNaam && bedrijfNaam !== '(onbekend)') {
+      const bm = await TNL.zoekGelijkaardigeBedrijven(bedrijfNaam, 0.5).catch(() => []);
+      const exact = (bm || []).find(m => m.gelijkenis >= 0.999);
+      if (exact) { gekozenBedrijf = exact; bedrijfNaam = exact.naam; }
+      else if (bm && bm.length) {
+        const top = bm[0];
+        if (confirm('Er bestaat al een gelijkend bedrijf "' + top.naam + '" (' + Math.round(top.gelijkenis * 100) + '%).\n\nOK = koppel deze scan aan het bestaande "' + top.naam + '".\nAnnuleren = maak toch een nieuw bedrijf "' + bedrijfNaam + '".')) {
+          gekozenBedrijf = top; bedrijfNaam = top.naam;   // exacte naam → RPC koppelt aan bestaand bedrijf
+        }
+      }
+    }
+    // (2) Bijna-dubbel CONTACT binnen dat bedrijf? ("Evy" ~ "Evy Gordts")
+    if (gekozenBedrijf && invuller) {
+      const alle = await TNL.getContacten().catch(() => []);
+      const inBedrijf = (alle || []).filter(c => c.bedrijf_id === gekozenBedrijf.id);
+      const cm = besteContactMatch(inBedrijf, invuller, k.email);
+      if (cm && !cm.exact) {
+        if (confirm('Bij "' + bedrijfNaam + '" bestaat al contact "' + (volledigeNaam(cm.contact) || '(naamloos)') + '". Is dat dezelfde persoon als "' + invuller + '"?\n\nOK = koppel de scan aan dat bestaande contact.\nAnnuleren = maak een nieuw contact "' + invuller + '".')) {
+          invuller = volledigeNaam(cm.contact) || invuller;   // exacte naam → RPC koppelt aan bestaand contact
+        }
+      }
+    }
     // Zelfde pad als de automatische quickscan: registreer_quickscan maakt/vindt
     // bedrijf + contact en koppelt de scan (bedrijf_id + contact_id).
     const payload = {
-      bedrijf: k.bedrijf || '(onbekend)',
-      invuller: k.naam || '',
+      bedrijf: bedrijfNaam,
+      invuller: invuller,
       invuller_email: k.email || '',
       invuller_functie: k.functie || '',
       sector: k.sector || '',
@@ -1206,8 +1254,8 @@ async function opslaanGesprek() {
     const r = await TNL.registreerQuickscan(payload);
     gesprek.klantId = r && r.bedrijf_id;
     gesprek.scanId = r && r.quickscan_id;
-    const bnaam = esc(k.bedrijf || '(onbekend)');
-    const cnaam = esc(k.naam || 'het contact');
+    const bnaam = esc(bedrijfNaam || '(onbekend)');
+    const cnaam = esc(invuller || 'het contact');
     status.innerHTML = `<span style="color:var(--green)">✓ Opgeslagen. Bedrijf <b>${bnaam}</b> en contact <b>${cnaam}</b> staan nu in de <b>Database</b>-tab — klap het bedrijf open → sectie <b>Quickscans</b> → <b>Bekijk scores</b>.</span>`;
     if (typeof laadDatabase === 'function') laadDatabase();   // Database-tab alvast verversen
   } catch (e) {
@@ -1809,6 +1857,7 @@ async function laadDatabase() {
     dbData = { bedrijven, contactenPer: per, losseContacten: losse, voorstellen, bedrijfById, contactById, scansPer, scansPerContact, losseScans, scanById };
     renderDatabase();
     renderDbVoorstellen();
+    zoekDubbels(true);   // proactief: toon mogelijke dubbele bedrijven meteen (stil bij geen)
   } catch (e) {
     lijst.innerHTML = '<span style="color:var(--red)">Kon database niet laden: ' + esc(e.message || e) + '</span>';
   }
@@ -1993,6 +2042,52 @@ function dbFind(oid) {
 }
 function dbSet(oid, key, val) { const o = dbFind(oid); if (o) o[key] = val; }
 
+// Bijna-dubbele contacten binnen één bedrijf opsporen (zelfde e-mail, of de
+// naamdelen van de één zitten in de naam van de ander → "Evy" ~ "Evy Gordts").
+function dbDubbeleContactParen(contacten) {
+  const paren = [];
+  for (let i = 0; i < contacten.length; i++) {
+    for (let j = i + 1; j < contacten.length; j++) {
+      const a = contacten[i], b = contacten[j];
+      const ea = (a.email || '').toLowerCase().trim(), eb = (b.email || '').toLowerCase().trim();
+      const na = normNaamStr(volledigeNaam(a)), nb = normNaamStr(volledigeNaam(b));
+      const ta = na.split(' ').filter(Boolean), tb = nb.split(' ').filter(Boolean);
+      const zelfdeMail = ea && eb && ea === eb;
+      const naamOverlap = ta.length && tb.length && (ta.every(t => nb.includes(t)) || tb.every(t => na.includes(t)));
+      if (zelfdeMail || naamOverlap) paren.push({ a, b, reden: zelfdeMail ? 'zelfde e-mail' : 'gelijkende naam' });
+    }
+  }
+  return paren;
+}
+function dbDubbelContactenBlok(contacten) {
+  const paren = dbDubbeleContactParen(contacten);
+  if (!paren.length) return '';
+  const rijen = paren.map(p => {
+    const na = esc(volledigeNaam(p.a) || '(naamloos)'), nb = esc(volledigeNaam(p.b) || '(naamloos)');
+    return `<div class="db-dubbel-rij">
+      <span class="db-dubbel-sim">${esc(p.reden)}</span>
+      <span class="db-dubbel-paar"><b>${na}</b> ↔ <b>${nb}</b></span>
+      <button class="db-btn" onclick="mergeContacten('${escAttr(p.a.id)}','${escAttr(p.b.id)}')">Hou &ldquo;${na}&rdquo;</button>
+      <button class="db-btn" onclick="mergeContacten('${escAttr(p.b.id)}','${escAttr(p.a.id)}')">Hou &ldquo;${nb}&rdquo;</button>
+    </div>`;
+  }).join('');
+  return `<div class="db-dubbel-kaart" style="margin-top:10px">
+    <div class="db-sectie" style="margin-top:0">Mogelijk dezelfde persoon (${paren.length})</div>
+    <p class="db-mini" style="margin:0 0 6px">Kies welke naam je behoudt; de scans van de ander verhuizen mee en het dubbele contact wordt verwijderd.</p>
+    ${rijen}
+  </div>`;
+}
+async function mergeContacten(behoudId, verwijderId) {
+  const bC = (dbData.contactById || {})[behoudId] || {}, wC = (dbData.contactById || {})[verwijderId] || {};
+  if (!confirm('"' + (volledigeNaam(wC) || 'contact') + '" samenvoegen in "' + (volledigeNaam(bC) || 'contact') + '"?\n\nDe scans van "' + (volledigeNaam(wC) || '') + '" verhuizen mee en het dubbele contact wordt verwijderd. Dit kan niet ongedaan gemaakt worden.')) return;
+  dbStatus('<span class="spin"></span>Contacten samenvoegen…');
+  try {
+    await TNL.voegContactenSamen(behoudId, verwijderId);
+    dbStatus('Contacten samengevoegd.', 'ok');
+    await laadDatabase();
+  } catch (e) { dbStatus('Samenvoegen mislukt: ' + (e.message || e), 'err'); }
+}
+
 function dbKaart(b) {
   if (!b.__oid) b.__oid = 'b_' + (b.id || Math.random().toString(36).slice(2));
   const contacten = dbData.contactenPer[b.id] || [];
@@ -2035,10 +2130,12 @@ function dbKaart(b) {
     </details>`;
     const scans = dbData.scansPer && dbData.scansPer[b.id] || [];
     const scanSectie = scans.length ? `<div class="db-sectie">Quickscans (${scans.length})</div>${dbScanTabel(scans)}` : '';
+    const dubbelContacten = b.id ? dbDubbelContactenBlok(contacten) : '';
     body = `<div class="db-body">
       ${aiBlok}
       <div class="db-sectie">Bedrijfsgegevens</div>${bedrijfVelden}
       ${contactSectie}
+      ${dubbelContacten}
       ${scanSectie}
     </div>`;
   }
@@ -2221,20 +2318,22 @@ async function aiVulBedrijf(oid) {
 
 // ---- Dubbels-scanner: bijna-dubbele bedrijven opsporen en samenvoegen ----
 let dbDubbels = [];
-async function zoekDubbels() {
+// auto=true: stil draaien bij het openen van de tab (geen "zoeken…"/"geen dubbels"-ruis,
+// enkel tonen als er echt mogelijke dubbels zijn).
+async function zoekDubbels(auto) {
   const cont = document.getElementById('db-dubbels');
-  cont.innerHTML = '<div class="db-dubbel-kaart"><span class="db-mini">Zoeken naar gelijkaardige bedrijven…</span></div>';
+  if (!auto) cont.innerHTML = '<div class="db-dubbel-kaart"><span class="db-mini">Zoeken naar gelijkaardige bedrijven…</span></div>';
   try {
     dbDubbels = await TNL.dubbeleBedrijven(0.5);
-    renderDubbels();
+    renderDubbels(auto);
   } catch (e) {
-    cont.innerHTML = '<div class="db-dubbel-kaart"><span style="color:var(--red)">Zoeken mislukt: ' + esc(e.message || e) + '</span></div>';
+    if (!auto) cont.innerHTML = '<div class="db-dubbel-kaart"><span style="color:var(--red)">Zoeken mislukt: ' + esc(e.message || e) + '</span></div>';
   }
 }
-function renderDubbels() {
+function renderDubbels(auto) {
   const cont = document.getElementById('db-dubbels');
   if (!dbDubbels.length) {
-    cont.innerHTML = '<div class="db-dubbel-kaart"><span class="db-mini">Geen mogelijke dubbels gevonden. 👍</span></div>';
+    cont.innerHTML = auto ? '' : '<div class="db-dubbel-kaart"><span class="db-mini">Geen mogelijke dubbels gevonden. 👍</span></div>';
     return;
   }
   const rijen = dbDubbels.map((d, i) => `<div class="db-dubbel-rij">

@@ -210,7 +210,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.73</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.79</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -466,22 +466,41 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   <section class="panel" id="tab-database">
     <style>
       .db-lijst{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-      .db-kaart{border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff;overflow:hidden}
-      .db-kop{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;flex-wrap:wrap}
-      .db-kop:hover{background:#f8fafc}
+      .db-kaart{border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#eef2f7;overflow:hidden}
+      .db-kop{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer;flex-wrap:wrap}
+      .db-kop:hover{background:#e6ebf2}
+      .db-kop-rechts{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
       .db-caret{color:var(--muted);width:12px;font-size:12px}
       .db-naam{font-weight:600}
       .db-badge{font-size:11px;font-weight:600;background:#eef2f7;color:#334;border-radius:20px;padding:2px 9px}
       .db-badge.status-prospect{background:#eaf1fb;color:#2a4f8a}
       .db-badge.status-klant{background:#e6f2ec;color:#1f7a4d}
-      .db-body{padding:4px 14px 16px;border-top:1px solid #eef2f7}
+      main:has(#tab-database.actief){max-width:none;}   /* Database benut de volle schermbreedte */
+      .db-body{padding:4px 14px 16px;border-top:1px solid #dbe3ec;background:#fff}
       .db-sectie{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 6px}
-      .db-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+      .db-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 10px}
       .db-veld{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
       .db-veld input,.db-veld select,.db-veld textarea{width:100%;padding:6px 8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-size:13px;color:#111;background:#fff;font-family:inherit}
       .db-veld textarea{min-height:52px;resize:vertical}
       .db-veld.check{flex-direction:row;align-items:center;gap:6px;color:#111;font-size:13px}
       .db-veld.check input{width:auto}
+      /* Notitie = klein icoon dat inline openklikt (popover) */
+      .db-note{position:relative;flex-direction:row;align-items:center;gap:6px}
+      .db-note-lbl{font-size:12px;color:var(--muted)}
+      .db-note-btn{cursor:pointer;border:1px solid var(--lijn,#cdd7e3);background:#fff;border-radius:7px;padding:4px 9px;font-size:14px;line-height:1}
+      .db-note-btn.vol{background:#fff7e0;border-color:#e8c97a}
+      .db-note-ta{position:absolute;top:100%;left:0;margin-top:4px;width:340px;max-width:72vw;min-height:96px;padding:8px;border:1px solid var(--lijn,#cdd7e3);border-radius:8px;font-family:inherit;font-size:13px;color:#111;background:#fff;box-shadow:0 6px 22px rgba(0,0,0,.16);z-index:6;resize:vertical}
+      /* Compacte rij: velden op één lijn, kop = placeholder in het veld zelf */
+      .db-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:2px}
+      .db-rij-rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+      .db-rij-rechts .db-btn.del{margin-left:0}
+      .db-f{padding:6px 8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-size:13px;color:#111;background:#fff;font-family:inherit;max-width:100%}
+      .db-f::placeholder{color:#9aa7b4}
+      .db-f:focus{outline:2px solid #cfe0f5;border-color:#4A7CB5}
+      .verhuis{display:inline}
+      .verhuis>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:28px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;color:var(--navy,#1B3A6B);font-weight:700}
+      .verhuis>summary::-webkit-details-marker{display:none}
+      .verhuis[open]>summary{background:#eef2f7}
       .db-contact{border:1px solid #eef2f7;border-radius:9px;padding:11px 12px;margin-top:10px;background:#fcfdff}
       .db-contact-kop{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
       .db-contact-kop strong{font-size:13px}
@@ -1179,6 +1198,8 @@ function leesMail() {
 
 // Naam-normalisatie + fuzzy contact-match (voor de ontdubbel-suggestie bij inlezen).
 function normNaamStr(s) { return (s || '').toString().toLowerCase().replace(/\s+/g, ' ').trim(); }
+// "squash": alles behalve letters/cijfers weg → "Het Metaal" en "Hetmetaal" worden gelijk.
+function squashNaam(s) { return (s || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''); }
 function volledigeNaam(c) { return ((c.voornaam || '') + ' ' + (c.achternaam || '')).trim(); }
 function besteContactMatch(contacten, naam, email) {
   const nEmail = (email || '').toLowerCase().trim();
@@ -1214,9 +1235,17 @@ async function opslaanGesprek() {
     //     i.p.v. een nieuw, gelijkend bedrijf aan te maken.
     let gekozenBedrijf = null;
     if (bedrijfNaam && bedrijfNaam !== '(onbekend)') {
+      const alleBedr = await TNL.getBedrijven().catch(() => []);
+      const sq = squashNaam(bedrijfNaam);
+      const squashMatch = (alleBedr || []).find(x => squashNaam(x.naam) === sq);   // "Het Metaal" ~ "Hetmetaal"
       const bm = await TNL.zoekGelijkaardigeBedrijven(bedrijfNaam, 0.5).catch(() => []);
       const exact = (bm || []).find(m => m.gelijkenis >= 0.999);
       if (exact) { gekozenBedrijf = exact; bedrijfNaam = exact.naam; }
+      else if (squashMatch) {
+        if (confirm('Dit lijkt hetzelfde als het bestaande bedrijf "' + squashMatch.naam + '".\n\nOK = koppel deze scan aan "' + squashMatch.naam + '".\nAnnuleren = maak toch een nieuw bedrijf "' + bedrijfNaam + '".')) {
+          gekozenBedrijf = squashMatch; bedrijfNaam = squashMatch.naam;
+        }
+      }
       else if (bm && bm.length) {
         const top = bm[0];
         if (confirm('Er bestaat al een gelijkend bedrijf "' + top.naam + '" (' + Math.round(top.gelijkenis * 100) + '%).\n\nOK = koppel deze scan aan het bestaande "' + top.naam + '".\nAnnuleren = maak toch een nieuw bedrijf "' + bedrijfNaam + '".')) {
@@ -1251,6 +1280,20 @@ async function opslaanGesprek() {
       ruwe_mail: gesprek.ruweMail || ''
     };
     if (/^\d{4}-\d{2}-\d{2}$/.test(k.datum || '')) payload.datum = k.datum;   // enkel een geldige ISO-datum meegeven
+    // Bestaat er al een scan voor deze persoon op deze datum (bij een bestaand bedrijf)? → vraag om te overschrijven.
+    if (gekozenBedrijf && invuller) {
+      const datumKey = payload.datum || new Date().toISOString().slice(0, 10);
+      const bestaande = await TNL.getAlleScans().catch(() => []);
+      const dup = (bestaande || []).find(s =>
+        s.bedrijf_id === gekozenBedrijf.id &&
+        (s.invuller || '').toLowerCase().trim() === invuller.toLowerCase().trim() &&
+        (s.datum || '') === datumKey);
+      if (dup && !confirm('Er bestaat al een quickscan voor "' + invuller + '" bij "' + bedrijfNaam + '" op ' + datumKey + '.\n\nOK = overschrijven met deze inhoud.\nAnnuleren = niets doen.')) {
+        status.innerHTML = '<span style="color:var(--muted)">Opslaan geannuleerd — bestaande scan behouden.</span>';
+        btn.disabled = false; btn.textContent = 'Opslaan in dossier';
+        return;
+      }
+    }
     const r = await TNL.registreerQuickscan(payload);
     gesprek.klantId = r && r.bedrijf_id;
     gesprek.scanId = r && r.quickscan_id;
@@ -1318,6 +1361,7 @@ function wisMail() {
   document.getElementById('mail-status').textContent = '';
   document.getElementById('klant-blok').style.display = 'none';
   document.getElementById('scores-blok').style.display = 'none';
+  document.getElementById('antwoorden-blok').style.display = 'none';   // ook de per-vraag-resultaten wissen
   document.getElementById('btn-opslaan').style.display = 'none';
   gesprek = { klant:{}, scores:{}, labels:{} };
 }
@@ -1640,9 +1684,15 @@ function renderAntwoorden(scan, onzeker, afgeleid) {
   const ant = scan.antwoorden || {};
   if (!Object.keys(ant).length) { blok.style.display = 'none'; return; }
   const kleurVan = v => v >= 4 ? 'var(--red)' : v === 3 ? 'var(--amber)' : v === 2 ? 'var(--blue)' : 'var(--green)';
-  lijst.innerHTML = QUICKSCAN_VRAGEN.map((v, i) => {
+  // Sorteer op hoofddomein: eerst de metrolijnen, dan de versnellers (in hun vaste volgorde);
+  // de 2 vragen van eenzelfde domein komen zo automatisch per twee bijeen.
+  const domVolgorde = METRO_LIJNEN.concat(METRO_VERSNELLERS);
+  const rang = h => { const r = domVolgorde.indexOf(h); return r < 0 ? 999 : r; };
+  const items = QUICKSCAN_VRAGEN.map((v, i) => ({ v, i }))
+    .filter(x => ant[x.i] != null)
+    .sort((a, b) => (rang(a.v.h) - rang(b.v.h)) || (a.i - b.i));
+  lijst.innerHTML = items.map(({ v, i }) => {
     const val = ant[i];
-    if (val == null) return '';
     let antHtml;
     if (onzeker[i]) {
       const opts = onzeker[i].map(o => ANTWOORD_LABELS[o - 1] || ('antw ' + o)).join(' óf ');
@@ -1879,7 +1929,8 @@ function renderDatabase() {
     (losse.length ? ' · ' + losse.length + ' zonder bedrijf' : '');
   const losseScans = dbData.losseScans || [];
   // Aandacht-kaarten (nog te koppelen) BOVENAAN, zodat je niet moet scrollen.
-  let html = '';
+  let html = '<datalist id="db-bedrijf-namen">' +
+    dbData.bedrijven.filter(b => b.naam).map(b => `<option value="${escAttr(b.naam)}">`).join('') + '</datalist>';
   if (losse.length) html += dbLosseKaart(losse);
   if (losseScans.length) html += dbLosseScansKaart(losseScans);
   html += bedrijven.length ? bedrijven.map(dbKaart).join('') : ((losse.length || losseScans.length) ? '' : '<span style="color:var(--muted)">Geen bedrijven gevonden.</span>');
@@ -1932,24 +1983,25 @@ async function keurDbVoorstel(id, akkoord) {
 }
 
 function dbScanKleur(g) { return g == null ? '#999' : g < 2.2 ? '#c0392b' : g < 3 ? '#b07a10' : g < 3.6 ? '#1a7a4a' : '#0a7a6a'; }
-function dbScanTabel(scans, metVerwijder) {
+function dbScanTabel(scans, opts) {
+  opts = opts || {};
+  const metActies = opts.koppel || opts.verwijder;
   const rijen = scans.map(s => {
     const g = s.gemiddelde_score != null ? Number(s.gemiddelde_score) : null;
     const ruw = Object.keys(s.antwoorden || {}).length ? '✓ ruw' : (s.ruwe_mail ? '≈ afgeleid' : '');
-    const del = metVerwijder ? `<td style="white-space:nowrap"><button class="db-btn" style="padding:3px 8px" onclick="dbKoppelScan('${escAttr(s.id)}')">Koppel aan contact</button> <button class="db-btn del" style="padding:3px 8px" onclick="dbVerwijderScan('${escAttr(s.id)}')">Verwijder</button></td>` : '';
+    const koppelKnop = opts.koppel ? `<button class="db-btn" style="padding:3px 8px" onclick="dbKoppelScan('${escAttr(s.id)}')">Koppel aan contact</button> ` : '';
+    const verwijderKnop = opts.verwijder ? `<button class="db-btn del" style="padding:3px 8px" onclick="dbVerwijderScan('${escAttr(s.id)}')">Verwijder</button>` : '';
+    const acties = metActies ? `<td style="white-space:nowrap;text-align:right;width:100%">${koppelKnop}${verwijderKnop}</td>` : '<td style="width:100%"></td>';
     return `<tr>
-      <td style="padding:4px 8px">${esc(s.datum || '')}</td>
+      <td style="padding:4px 8px;white-space:nowrap">${esc(s.datum || '')}</td>
       <td style="padding:4px 8px">${esc(s.invuller || '')}</td>
-      <td style="padding:4px 8px;color:${dbScanKleur(g)};font-weight:600">${g != null ? g.toFixed(1) + ' / 4' : '—'}</td>
-      <td style="padding:4px 8px;color:var(--muted);font-size:11px">${ruw}</td>
-      <td style="padding:4px 8px"><button class="db-btn" style="padding:3px 8px" onclick="dbBekijkScores('${escAttr(s.id)}')">Bekijk scores</button></td>
-      ${del}
+      <td style="padding:4px 8px;color:${dbScanKleur(g)};font-weight:600;white-space:nowrap">${g != null ? g.toFixed(1) + ' / 4' : '—'}</td>
+      <td style="padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap">${ruw}</td>
+      <td style="padding:4px 8px;white-space:nowrap"><button class="db-btn" style="padding:3px 8px;white-space:nowrap" onclick="dbBekijkScores('${escAttr(s.id)}')">Bekijk scores</button></td>
+      ${acties}
     </tr>`;
   }).join('');
-  return `<table style="border-collapse:collapse;width:100%;font-size:12px;margin-top:4px">
-    <thead><tr style="color:var(--muted);font-size:11px;text-align:left">
-      <th style="padding:4px 8px">Datum</th><th style="padding:4px 8px">Invuller</th><th style="padding:4px 8px">Gem.</th><th style="padding:4px 8px">Antw.</th><th></th>${metVerwijder ? '<th></th>' : ''}
-    </tr></thead><tbody>${rijen}</tbody></table>`;
+  return `<table style="border-collapse:collapse;width:100%;font-size:12px;margin-top:4px"><tbody>${rijen}</tbody></table>`;
 }
 // Toon de scores van een scan in de Gespreksvoorbereiding-weergave (die hangt aan dossierData).
 function dbBekijkScores(scanId) {
@@ -1968,7 +2020,7 @@ async function dbVerwijderScan(id) {
 }
 function dbLosseScansKaart(scans) {
   const open = !!dbOpen['__losseScans'];
-  const body = open ? `<div class="db-body"><p class="db-mini" style="margin:6px 0">Scans die (nog) niet aan een bedrijf gekoppeld zijn. Normaal koppelt een nieuwe quickscan zichzelf automatisch; deze zijn uitzonderingen.</p>${dbScanTabel(scans, true)}</div>` : '';
+  const body = open ? `<div class="db-body"><p class="db-mini" style="margin:6px 0">Scans die (nog) niet aan een bedrijf gekoppeld zijn. Normaal koppelt een nieuwe quickscan zichzelf automatisch; deze zijn uitzonderingen.</p>${dbScanTabel(scans, { koppel: true, verwijder: true })}</div>` : '';
   return `<div class="db-kaart" style="border-color:#cdd7e3">
     <div class="db-kop" onclick="toggleDbBedrijf('__losseScans')">
       <span class="db-caret">${open ? '▾' : '▸'}</span>
@@ -1981,7 +2033,7 @@ function dbLosseKaart(losse) {
   const body = open ? '<div class="db-body">' + losse.map(c => dbContactBlok(c) +
     `<div style="margin:-6px 0 14px;padding:8px 12px;border:1px dashed var(--lijn,#cdd7e3);border-radius:8px;background:#fbfdff;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <span class="db-mini">Koppel aan een bedrijf:</span>
-      <input id="koppel-inp-${c.__oid}" class="db-zoek" style="max-width:220px" placeholder="bedrijfsnaam…">
+      <input list="db-bedrijf-namen" id="koppel-inp-${c.__oid}" class="db-zoek" style="max-width:220px" placeholder="kies of typ een bedrijf…">
       <button class="db-btn prim" onclick="dbKoppelBedrijf('${c.__oid}')">Koppel</button>
     </div>`).join('') + '</div>' : '';
   return `<div class="db-kaart" style="border-color:#f0d9b5">
@@ -2011,21 +2063,73 @@ async function dbKoppelBedrijf(oid) {
     await laadDatabase(); dbStatus('Contact gekoppeld aan bedrijf.', 'ok');
   } catch (e) { dbStatus('Koppelen mislukt: ' + (e.message || e), 'err'); }
 }
-function dbInput(obj, key, label, type) {
+// Veld = enkel het invoervak; de kop staat als placeholder (grijs) IN het veld als het leeg is.
+// isB = hoort bij een bedrijf (true) of contact (false); w = breedte. Auto-opslaan bij tab/enter (change).
+function dbInput(obj, key, label, isB, w) {
   const v = obj[key] == null ? '' : obj[key];
   const oid = obj.__oid;
-  if (type === 'textarea')
-    return `<label class="db-veld" style="grid-column:1/-1">${label}<textarea oninput="dbSet('${oid}','${key}',this.value)">${esc(v)}</textarea></label>`;
-  return `<label class="db-veld">${label}<input value="${escAttr(v)}" oninput="dbSet('${oid}','${key}',this.value)"></label>`;
+  const style = w ? ` style="width:${w}"` : '';
+  return `<input class="db-f"${style} value="${escAttr(v)}" placeholder="${escAttr(label)}" title="${escAttr(label)}" ` +
+    `oninput="dbSet('${oid}','${key}',this.value)" onchange="dbSaveField('${oid}',${isB})">`;
 }
-function dbSelect(obj, key, label, opties, metLeeg) {
+// Notitie als klein 📝-icoon dat inline een tekstvak openklikt (gele markering = er staat iets in).
+function dbNotitie(obj, key, label, isB) {
+  const oid = obj.__oid;
+  const heeft = String(obj[key] == null ? '' : obj[key]).trim();
+  const id = 'note-' + oid + '-' + key;
+  return `<div class="db-note">
+    <button type="button" class="db-note-btn ${heeft ? 'vol' : ''}" title="${heeft ? 'Notitie bekijken/bewerken' : 'Notitie toevoegen'}" onclick="dbToggleNote('${id}')">📝</button>
+    <textarea id="${id}" class="db-note-ta" style="display:none" oninput="dbSet('${oid}','${key}',this.value)" onchange="dbSaveField('${oid}',${isB})">${esc(obj[key] || '')}</textarea>
+  </div>`;
+}
+function dbToggleNote(id) {
+  const t = document.getElementById(id);
+  if (!t) return;
+  const toon = t.style.display === 'none';
+  t.style.display = toon ? 'block' : 'none';
+  if (toon) t.focus();
+}
+function dbSelect(obj, key, label, opties, isB, w, verplicht) {
   const v = obj[key] == null ? '' : obj[key];
   const oid = obj.__oid;
-  const lijst = (metLeeg && !opties.includes('') ? [''] : []).concat(opties);
-  const extra = (v && !lijst.includes(v)) ? [v] : [];   // bewaar een afwijkende bestaande waarde
+  const basis = (opties || []).filter(o => o !== '');
+  const lijst = verplicht ? basis : [''].concat(basis);   // verplicht veld (bv. status) krijgt GEEN lege optie
+  const extra = (v && !lijst.includes(v)) ? [v] : [];      // bewaar een afwijkende bestaande waarde
   const opts = lijst.concat(extra).map(o =>
-    `<option value="${escAttr(o)}" ${String(o) === String(v) ? 'selected' : ''}>${esc(o || '—')}</option>`).join('');
-  return `<label class="db-veld">${label}<select onchange="dbSet('${oid}','${key}',this.value)">${opts}</select></label>`;
+    `<option value="${escAttr(o)}" ${String(o) === String(v) ? 'selected' : ''}>${o === '' ? esc(label) : esc(o)}</option>`).join('');
+  const style = w ? ` style="width:${w}"` : '';
+  return `<select class="db-f"${style} title="${escAttr(label)}" onchange="dbSet('${oid}','${key}',this.value);dbSaveField('${oid}',${isB})">${opts}</select>`;
+}
+// Auto-opslaan van een bewerkt bedrijf/contact: bestaand → update; nieuw → insert zodra er genoeg ingevuld is.
+async function dbSaveField(oid, isB) {
+  const o = dbFind(oid); if (!o || o.__saving) return;
+  const wasNew = !o.id;
+  o.__saving = true;
+  try {
+    if (isB) {
+      if (!String(o.naam || '').trim()) { return; }   // bedrijf heeft minstens een naam nodig
+      const patch = plukVelden(o, BEDRIJF_VELDEN);
+      if (o.id) await TNL.updateBedrijf(o.id, patch);
+      else { const nb = await TNL.insertBedrijf({ ...patch, bron: 'manueel' }); o.id = nb.id; dbData.bedrijfById[o.id] = o; }
+    } else {
+      const heeftNaam = String(o.voornaam || '').trim() || String(o.achternaam || '').trim() || String(o.email || '').trim();
+      if (!o.id && (!o.bedrijf_id || !heeftNaam)) { return; }   // nieuw contact: wacht tot er een naam/e-mail is
+      const patch = plukVelden(o, CONTACT_VELDEN);
+      patch.quickscan_ingevuld = !!o.quickscan_ingevuld;
+      patch.nog_te_contacteren = !!o.nog_te_contacteren;
+      if (o.id) await TNL.updateContact(o.id, patch);
+      else { const nc = await TNL.insertContact({ bedrijf_id: o.bedrijf_id, ...patch, bron: 'manueel' }); o.id = nc.id; dbData.contactById[o.id] = o; }
+    }
+    dbFlash();
+    if (wasNew && o.id) renderDatabase();   // nieuw record net aangemaakt → toon knoppen (contact toevoegen/verwijderen)
+  } catch (e) { dbStatus('Auto-opslaan mislukt: ' + (e.message || e), 'err'); }
+  finally { o.__saving = false; }
+}
+let dbFlashTimer = null;
+function dbFlash() {
+  dbStatus('✓ opgeslagen', 'ok');
+  clearTimeout(dbFlashTimer);
+  dbFlashTimer = setTimeout(() => dbStatus(''), 1500);
 }
 function dbCheck(obj, key, label) {
   const oid = obj.__oid;
@@ -2095,41 +2199,40 @@ function dbKaart(b) {
   const statusBadge = `<span class="db-badge status-${b.status === 'klant' ? 'klant' : 'prospect'}">${b.status === 'klant' ? 'Klant' : 'Prospect'}</span>`;
   let body = '';
   if (open) {
-    const bedrijfVelden = `<div class="db-grid">
-      ${dbInput(b, 'naam', 'Bedrijf')}
-      ${dbSelect(b, 'status', 'Status', ['prospect', 'klant'], false)}
-      ${dbInput(b, 'sector', 'Sector')}
-      ${dbInput(b, 'aantal_medewerkers', 'Aantal medewerkers')}
-      ${dbInput(b, 'straat', 'Straat')}
-      ${dbInput(b, 'huisnummer', 'Nr')}
-      ${dbInput(b, 'bus', 'Bus')}
-      ${dbInput(b, 'postcode', 'Postcode')}
-      ${dbInput(b, 'gemeente', 'Gemeente')}
-      ${dbInput(b, 'land', 'Land')}
-      ${dbInput(b, 'telefoon', 'Algemeen telefoon')}
-      ${dbInput(b, 'email', 'Algemeen e-mail')}
-      ${dbInput(b, 'btw_nummer', 'BTW-nummer')}
-      ${dbInput(b, 'notities', 'Notities', 'textarea')}
-    </div>
-    <div class="db-acties">
-      <button class="db-btn prim" onclick="bewaarDbBedrijf('${b.__oid}')">Bewaar bedrijf</button>
-      ${b.id ? `<button class="db-btn del" onclick="verwijderDbBedrijf('${b.__oid}')">Verwijder bedrijf</button>` : ''}
+    const bedrijfVelden = `<div class="db-row">
+      ${dbInput(b, 'naam', 'Bedrijf', true, '200px')}
+      ${dbSelect(b, 'status', 'Status', ['prospect', 'klant'], true, '110px', true)}
+      ${dbInput(b, 'sector', 'Sector', true, '150px')}
+      ${dbInput(b, 'aantal_medewerkers', 'Aantal mdw.', true, '95px')}
+      ${dbInput(b, 'straat', 'Straat', true, '160px')}
+      ${dbInput(b, 'huisnummer', 'Nr', true, '55px')}
+      ${dbInput(b, 'bus', 'Bus', true, '55px')}
+      ${dbInput(b, 'postcode', 'Postcode', true, '85px')}
+      ${dbInput(b, 'gemeente', 'Gemeente', true, '130px')}
+      ${dbInput(b, 'land', 'Land', true, '80px')}
+      ${dbInput(b, 'telefoon', 'Telefoon', true, '130px')}
+      ${dbInput(b, 'email', 'E-mail', true, '190px')}
+      ${dbInput(b, 'btw_nummer', 'BTW', true, '135px')}
+      ${dbNotitie(b, 'notities', 'Notitie', true)}
+      ${b.id ? `<button class="db-btn del" onclick="verwijderDbBedrijf('${b.__oid}')">Verwijder bedrijf</button>`
+             : '<span class="db-mini">Vul de naam in — automatisch opgeslagen (tab/enter).</span>'}
     </div>`;
     const contactenHtml = contacten.map(dbContactBlok).join('');
     const contactSectie = b.id
       ? `<div class="db-sectie">Contactpersonen (${contacten.length})</div>${contactenHtml || '<p class="db-mini">Nog geen contact.</p>'}
          <div class="db-acties"><button class="db-btn" onclick="nieuwDbContact('${escAttr(b.id)}')">+ Contact toevoegen</button></div>`
-      : `<p class="db-mini" style="margin-top:12px">Bewaar het bedrijf eerst om contactpersonen toe te voegen.</p>`;
+      : `<p class="db-mini" style="margin-top:12px">Vul eerst de bedrijfsnaam in (wordt automatisch opgeslagen) om contactpersonen toe te voegen.</p>`;
     const aiBlok = `<details class="ai-vul">
-      <summary>✨ Velden invullen met AI (plak webinfo)</summary>
-      <textarea id="ai-paste-${b.__oid}" class="ai-paste" placeholder="Plak hier wat je op het web vindt (Google-resultaat, KBO, de contactpagina van de website…). AI haalt er adres, BTW, telefoon, e-mail, sector… uit."></textarea>
+      <summary>✨ Velden invullen met AI (plak webinfo of schermafbeelding)</summary>
+      <textarea id="ai-paste-${b.__oid}" class="ai-paste" onpaste="aiPaste(event,'${b.__oid}')" placeholder="Plak hier webtekst (Google, KBO, contactpagina…) OF een schermafbeelding/knipsel (Ctrl+V). AI haalt er adres, BTW, telefoon, e-mail, sector… uit."></textarea>
+      <div id="ai-thumb-${b.__oid}" style="margin-top:6px"></div>
       <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="db-btn prim" onclick="aiVulBedrijf('${b.__oid}')">✨ Velden invullen</button>
-        <span class="db-mini">Vult enkel lege velden; jij controleert en klikt daarna Bewaar bedrijf.</span>
+        <span class="db-mini">Vult enkel lege velden; wijzigingen worden automatisch opgeslagen.</span>
       </div>
     </details>`;
     const scans = dbData.scansPer && dbData.scansPer[b.id] || [];
-    const scanSectie = scans.length ? `<div class="db-sectie">Quickscans (${scans.length})</div>${dbScanTabel(scans)}` : '';
+    const scanSectie = scans.length ? `<div class="db-sectie">Quickscans (${scans.length})</div>${dbScanTabel(scans, { verwijder: true })}` : '';
     const dubbelContacten = b.id ? dbDubbelContactenBlok(contacten) : '';
     body = `<div class="db-body">
       ${aiBlok}
@@ -2146,9 +2249,11 @@ function dbKaart(b) {
     <div class="db-kop" onclick="toggleDbBedrijf('${escAttr(key)}')">
       <span class="db-caret">${open ? '▾' : '▸'}</span>
       <span class="db-naam">${esc(b.naam || '(nieuw bedrijf)')}</span>
-      ${statusBadge}
-      ${scanBadge}
-      <span class="db-badge" style="margin-left:auto">${contacten.length} contact${contacten.length !== 1 ? 'en' : ''}</span>
+      <span class="db-kop-rechts">
+        ${statusBadge}
+        ${scanBadge}
+        <span class="db-badge">${contacten.length} contact${contacten.length !== 1 ? 'en' : ''}</span>
+      </span>
     </div>${body}</div>`;
 }
 function dbContactBlok(c) {
@@ -2158,31 +2263,43 @@ function dbContactBlok(c) {
   const scanBadge = cScans.length
     ? `<button class="db-badge" style="background:#e6f2ec;color:#1f7a4d;border:none;cursor:pointer" title="Bekijk scores" onclick="dbBekijkScores('${escAttr(cScans[0].id)}')">📊 ${cScans.length} scan${cScans.length !== 1 ? 's' : ''} — bekijk</button>`
     : '';
+  const verhuis = (c.id && c.bedrijf_id) ? `<details class="verhuis">
+      <summary title="Verhuis naar een ander bedrijf">→</summary>
+      <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input list="db-bedrijf-namen" id="koppel-inp-${c.__oid}" class="db-zoek" style="max-width:240px" placeholder="kies een bestaand bedrijf of typ een nieuwe naam…">
+        <button class="db-btn prim" onclick="dbKoppelBedrijf('${c.__oid}')">Verhuis</button>
+        <button class="db-btn" onclick="dbOntkoppelBedrijf('${c.__oid}')">Losmaken</button>
+      </div>
+    </details>` : '';
   return `<div class="db-contact">
-    <div class="db-contact-kop"><strong>${esc(contactNaam(c) || '(nieuw contact)')}</strong>${scanBadge}</div>
-    <div class="db-grid">
-      ${dbSelect(c, 'aanspreektitel', 'Aanspreektitel', DB_TITELS, true)}
-      ${dbInput(c, 'voornaam', 'Voornaam')}
-      ${dbInput(c, 'achternaam', 'Achternaam')}
-      ${dbInput(c, 'functie', 'Functie')}
-      ${dbInput(c, 'email', 'E-mail')}
-      ${dbInput(c, 'gsm', 'GSM')}
-      ${dbInput(c, 'linkedin_url', 'LinkedIn-URL')}
-      ${dbSelect(c, 'taal', 'Correspondentietaal', DB_TALEN, true)}
-      ${dbSelect(c, 'cat1', 'Categorie 1', dbCat1, true)}
-      ${dbSelect(c, 'cat2', 'Categorie 2', dbCat2, true)}
-      ${dbInput(c, 'volgende_stap', 'Volgende stap')}
-      ${dbInput(c, 'volgende_stap_datum', 'Volgende stap datum')}
-      ${dbInput(c, 'verloop', 'Verloop', 'textarea')}
-      ${dbInput(c, 'samenvatting', 'Samenvatting', 'textarea')}
-      ${dbInput(c, 'notities', 'Notities', 'textarea')}
-    </div>
-    <div class="db-acties">
-      ${dbCheck(c, 'nog_te_contacteren', 'Nog te contacteren')}
-      <button class="db-btn prim" onclick="bewaarDbContact('${c.__oid}')">Bewaar contact</button>
-      ${c.id ? `<button class="db-btn del" onclick="verwijderDbContact('${c.__oid}')">Verwijder</button>` : ''}
+    <div class="db-row">
+      ${dbSelect(c, 'aanspreektitel', 'Titel', DB_TITELS, false, '72px')}
+      ${dbInput(c, 'voornaam', 'Voornaam', false, '115px')}
+      ${dbInput(c, 'achternaam', 'Achternaam', false, '135px')}
+      ${dbInput(c, 'functie', 'Functie', false, '150px')}
+      ${dbInput(c, 'email', 'E-mail', false, '200px')}
+      ${dbInput(c, 'gsm', 'GSM', false, '120px')}
+      ${dbInput(c, 'linkedin_url', 'LinkedIn', false, '130px')}
+      ${dbSelect(c, 'taal', 'Taal', DB_TALEN, false, '78px')}
+      ${dbSelect(c, 'cat1', 'Categorie 1', dbCat1, false, '130px')}
+      ${dbSelect(c, 'cat2', 'Categorie 2', dbCat2, false, '130px')}
+      <span class="db-rij-rechts">
+        ${scanBadge}
+        ${verhuis}
+        ${c.id ? `<button class="db-btn del" onclick="verwijderDbContact('${c.__oid}')">Verwijder</button>`
+               : '<span class="db-mini">Vul een naam of e-mail in — automatisch opgeslagen (tab/enter).</span>'}
+      </span>
     </div>
   </div>`;
+}
+async function dbOntkoppelBedrijf(oid) {
+  const c = dbFind(oid); if (!c || !c.id) return;
+  if (!confirm('Dit contact losmaken van het bedrijf? Het komt dan bovenaan bij "Contacten zonder bedrijf".')) return;
+  dbStatus('<span class="spin"></span>Losmaken…');
+  try {
+    await TNL.updateContact(c.id, { bedrijf_id: null });
+    await laadDatabase(); dbStatus('Contact losgemaakt van het bedrijf.', 'ok');
+  } catch (e) { dbStatus('Losmaken mislukt: ' + (e.message || e), 'err'); }
 }
 function toggleDbBedrijf(key) { dbOpen[key] = !dbOpen[key]; renderDatabase(); }
 
@@ -2266,21 +2383,67 @@ function getClaudeKey() {
   return k;
 }
 const AI_BEDRIJF_VELDEN = ['straat', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land', 'telefoon', 'email', 'btw_nummer', 'sector', 'aantal_medewerkers'];
-async function aiExtractBedrijf(tekst, naam, key) {
-  const sys = 'Je haalt uit geplakte webtekst de bedrijfsgegevens van een (meestal Belgisch) bedrijf. ' +
+// Schermafbeelding (knipsel) → base64 voor Claude vision. Per bedrijf-oid bewaard.
+const aiBedrijfImg = {};
+function blobToClaudeImage(blob, maxDim) {
+  maxDim = maxDim || 1568;
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const sc = Math.min(1, maxDim / Math.max(w, h));
+      w = Math.round(w * sc); h = Math.round(h * sc);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve({ media_type: 'image/jpeg', data: cv.toDataURL('image/jpeg', 0.9).split(',')[1] });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('kon afbeelding niet lezen')); };
+    img.src = url;
+  });
+}
+async function aiPaste(e, oid) {
+  const items = (e.clipboardData && e.clipboardData.items) || [];
+  for (const it of items) {
+    if (it.type && it.type.indexOf('image') === 0) {
+      e.preventDefault();
+      try {
+        const img = await blobToClaudeImage(it.getAsFile());
+        aiBedrijfImg[oid] = img;
+        const t = document.getElementById('ai-thumb-' + oid);
+        if (t) t.innerHTML = '<img src="data:' + img.media_type + ';base64,' + img.data + '" style="max-height:70px;border-radius:6px;border:1px solid #cdd7e3;vertical-align:middle"> ' +
+          '<button class="db-btn" style="padding:3px 8px" onclick="aiClearImg(\'' + oid + '\')">✕ afbeelding</button>';
+        dbStatus('Afbeelding geplakt — klik "Velden invullen".', 'ok');
+      } catch (err) { dbStatus('Afbeelding lezen mislukt: ' + (err.message || err), 'err'); }
+      return;
+    }
+  }
+  // geen afbeelding → gewone tekst-paste laten doorgaan
+}
+function aiClearImg(oid) {
+  delete aiBedrijfImg[oid];
+  const t = document.getElementById('ai-thumb-' + oid);
+  if (t) t.innerHTML = '';
+}
+async function aiExtractBedrijf(tekst, naam, key, image) {
+  const sys = 'Je haalt uit geplakte webtekst OF een schermafbeelding de bedrijfsgegevens van een (meestal Belgisch) bedrijf. ' +
     'Antwoord UITSLUITEND met geldige JSON met exact deze sleutels: ' +
     'straat, huisnummer, bus, postcode, gemeente, land, telefoon, email, btw_nummer, sector, aantal_medewerkers. ' +
-    'Gebruik null wanneer een waarde niet in de tekst staat. Splits het adres correct (huisnummer en bus apart). ' +
+    'Gebruik null wanneer een waarde niet te vinden is. Splits het adres correct (huisnummer en bus apart). ' +
     'btw_nummer indien mogelijk in het formaat "BE 0xxx.xxx.xxx". telefoon = algemeen bedrijfsnummer, email = algemeen bedrijfsadres. ' +
     'aantal_medewerkers als getal-als-tekst. Geen uitleg, geen markdown, enkel het JSON-object.';
-  const usr = 'Bedrijf: ' + (naam || 'onbekend') + '\n\nGeplakte tekst:\n' + tekst;
+  const usrText = 'Bedrijf: ' + (naam || 'onbekend') + (tekst ? '\n\nGeplakte tekst:\n' + tekst : '\n\n(lees de gegevens uit de bijgevoegde afbeelding)');
+  const content = image
+    ? [{ type: 'image', source: { type: 'base64', media_type: image.media_type, data: image.data } }, { type: 'text', text: usrText }]
+    : usrText;
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'content-type': 'application/json', 'x-api-key': key,
       'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'
     },
-    body: JSON.stringify({ model: 'claude-opus-4-8', max_tokens: 1024, system: sys, messages: [{ role: 'user', content: usr }] })
+    body: JSON.stringify({ model: 'claude-opus-4-8', max_tokens: 1024, system: sys, messages: [{ role: 'user', content }] })
   });
   if (!resp.ok) {
     const t = await resp.text();
@@ -2297,20 +2460,23 @@ async function aiVulBedrijf(oid) {
   const b = dbFind(oid); if (!b) return;
   const ta = document.getElementById('ai-paste-' + oid);
   const tekst = (ta && ta.value || '').trim();
-  if (!tekst) { dbStatus('Plak eerst wat webtekst in het AI-veld.', 'err'); return; }
+  const image = aiBedrijfImg[oid];
+  if (!tekst && !image) { dbStatus('Plak eerst webtekst of een schermafbeelding in het AI-veld.', 'err'); return; }
   const key = getClaudeKey(); if (!key) return;
   dbStatus('<span class="spin"></span>AI leest de gegevens…');
   try {
-    const velden = await aiExtractBedrijf(tekst, b.naam, key);
+    const velden = await aiExtractBedrijf(tekst, b.naam, key, image);
     let n = 0;
     AI_BEDRIJF_VELDEN.forEach(k => {
       const v = velden[k];
       if (v != null && String(v).trim() && !String(b[k] || '').trim()) { b[k] = String(v).trim(); n++; }
     });
+    aiClearImg(oid);
+    if (n && b.naam && String(b.naam).trim()) await dbSaveField(oid, true);   // AI-invulling meteen opslaan
     renderDatabase();
     dbStatus(n
       ? '✨ AI vulde ' + n + ' leeg veld' + (n > 1 ? 'en' : '') + ' in — controleer en klik "Bewaar bedrijf".'
-      : 'AI vond geen nieuwe gegevens in de tekst.', n ? 'ok' : '');
+      : 'AI vond geen nieuwe gegevens.', n ? 'ok' : '');
   } catch (e) {
     dbStatus('AI mislukt: ' + (e.message || e), 'err');
   }
@@ -3898,6 +4064,16 @@ function buildProfielPdf(c, extras, mode) {
      ============================================================ -->
 <script>
 let prosData = [], prosGeladen = false, prosSortField = null, prosSortDir = 1;
+let prosScanById = {}, prosBedrijfById = {}, prosContactById = {};
+// Toon de quickscan-scores van een contact (hergebruikt de Gespreksvoorbereiding-weergave).
+function prosBekijkScores(scanId) {
+  const btn = document.querySelector('nav button[data-tab="gesprek"]');
+  if (btn) btn.click();
+  dossierData.scanById = Object.assign({}, dossierData.scanById || {}, { [scanId]: prosScanById[scanId] });
+  dossierData.bedrijfById = Object.assign({}, dossierData.bedrijfById || {}, prosBedrijfById);
+  dossierData.contactById = Object.assign({}, dossierData.contactById || {}, prosContactById);
+  toonScanDetail(scanId);
+}
 let prosSel = new Set(), prosLastRows = [], prosBedrijfByNaam = {};
 function prosToggleSel(id, checked) { if (checked) prosSel.add(id); else prosSel.delete(id); prosUpdMailBtn(); }
 function prosSelAll(checked) { (prosLastRows || []).forEach(p => { if (checked) prosSel.add(p.id); else prosSel.delete(p.id); }); prosRender(); }
@@ -3919,10 +4095,16 @@ async function laadProspecten() {
   const st = document.getElementById('pr-status');
   st.textContent = 'Laden…';
   try {
-    const [contacten, bedrijven] = await Promise.all([TNL.getContacten(), TNL.getBedrijven()]);
+    const [contacten, bedrijven, scans] = await Promise.all([TNL.getContacten(), TNL.getBedrijven(), TNL.getAlleScans().catch(() => [])]);
     const bMap = Object.fromEntries(bedrijven.map(b => [b.id, b.naam]));
     prosBedrijfByNaam = {};
     bedrijven.forEach(b => { if (b.naam) prosBedrijfByNaam[b.naam.trim().toLowerCase()] = b.id; });
+    // Scans per contact + maps voor de scores-weergave (hergebruikt de Gespreksvoorbereiding-view).
+    prosScanById = {}; prosBedrijfById = {}; prosContactById = {};
+    const scanPerContact = {};
+    bedrijven.forEach(b => { prosBedrijfById[b.id] = b; });
+    contacten.forEach(c => { prosContactById[c.id] = c; });
+    (scans || []).forEach(s => { prosScanById[s.id] = s; if (s.contact_id) (scanPerContact[s.contact_id] = scanPerContact[s.contact_id] || []).push(s); });
     prosData = contacten.map(c => ({
       id: c.id,
       aanspreektitel: c.aanspreektitel || '', voornaam: c.voornaam || '', achternaam: c.achternaam || '',
@@ -3930,7 +4112,8 @@ async function laadProspecten() {
       bedrijf_id: c.bedrijf_id, bedrijf: bMap[c.bedrijf_id] || '',
       cat1: c.cat1 || '', cat2: c.cat2 || '', status: c.status || '',
       verloop: c.verloop || '', samenvatting: c.samenvatting || '',
-      volgende_stap: c.volgende_stap || '', volgende_stap_datum: c.volgende_stap_datum || ''
+      volgende_stap: c.volgende_stap || '', volgende_stap_datum: c.volgende_stap_datum || '',
+      scans: (scanPerContact[c.id] || []).map(s => s.id)
     }));
     prosGeladen = true; st.textContent = '';
     prosRender(); prosStats();
@@ -4007,7 +4190,10 @@ function prosRender() {
     </select></td>
     <td><input class="pr-in" list="prc1-list" style="width:110px" value="${prAttr(p.cat1)}" onchange="prosUpdate('${p.id}','cat1',this.value)" placeholder="cat 1…"></td>
     <td><input class="pr-in" list="prc2-list" style="width:120px;color:var(--muted)" value="${prAttr(p.cat2)}" onchange="prosUpdate('${p.id}','cat2',this.value)" placeholder="cat 2…"></td>
-    <td style="text-align:center"><button onclick="prosOpenOpv('${p.id}')" title="${opv(p) ? 'Heeft opvolging' : 'Opvolging toevoegen'}" style="background:none;border:none;cursor:pointer;font-size:15px;color:${opv(p) ? 'var(--orange,#E8812A)' : '#bbb'}">📝</button></td>
+    <td style="text-align:center;white-space:nowrap">
+      ${(p.scans && p.scans.length) ? `<button onclick="prosBekijkScores('${p.scans[0]}')" title="Bekijk quickscan-resultaten" style="background:none;border:none;cursor:pointer;font-size:15px">📊</button>` : ''}
+      <button onclick="prosOpenOpv('${p.id}')" title="${opv(p) ? 'Heeft opvolging' : 'Opvolging toevoegen'}" style="background:none;border:none;cursor:pointer;font-size:15px;color:${opv(p) ? 'var(--orange,#E8812A)' : '#bbb'}">📝</button>
+    </td>
     <td><button onclick="prosDelete('${p.id}')" title="Verwijder contact" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:14px">🗑️</button></td>
   </tr>`).join('');
 }

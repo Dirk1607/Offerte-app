@@ -210,7 +210,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.64</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.65</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -592,6 +592,12 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <button class="db-btn prim" onclick="prosVoegToe()">Toevoegen</button>
       </div>
       <div id="pr-add-status" class="db-mini" style="margin-top:6px"></div>
+    </div>
+    <div id="pr-imp" tabindex="0" style="border:2px dashed var(--blue,#4A7CB5);border-radius:10px;background:#fff;padding:10px 14px;margin-bottom:12px;cursor:pointer;font-size:13px;color:var(--muted);outline:none">
+      📷 <strong style="color:var(--navy,#1B3A6B)">Screenshot importeren</strong> — klik hier en druk <kbd>Ctrl</kbd>+<kbd>V</kbd> om een screenshot van een prospectenlijst te plakken (Claude leest 'm uit),
+      <a href="#" onclick="document.getElementById('pr-imp-file').click();return false" style="color:var(--blue,#4A7CB5)">of kies een afbeelding</a>.
+      <input type="file" id="pr-imp-file" accept="image/*" style="display:none" onchange="if(this.files[0]) prosImportImage(this.files[0])">
+      <span id="pr-imp-status" style="margin-left:8px;color:var(--navy,#1B3A6B)"></span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
       <span id="pr-telling" class="db-mini"></span>
@@ -3621,7 +3627,7 @@ function buildProfielPdf(c, extras, mode) {
      ============================================================ -->
 <script>
 let prosData = [], prosGeladen = false, prosSortField = null, prosSortDir = 1;
-let prosSel = new Set(), prosLastRows = [];
+let prosSel = new Set(), prosLastRows = [], prosBedrijfByNaam = {};
 function prosToggleSel(id, checked) { if (checked) prosSel.add(id); else prosSel.delete(id); prosUpdMailBtn(); }
 function prosSelAll(checked) { (prosLastRows || []).forEach(p => { if (checked) prosSel.add(p.id); else prosSel.delete(p.id); }); prosRender(); }
 function prosUpdMailBtn() { const b = document.getElementById('pr-mails-btn'); if (b) b.textContent = '✉ Mails (' + prosSel.size + ')'; }
@@ -3644,6 +3650,8 @@ async function laadProspecten() {
   try {
     const [contacten, bedrijven] = await Promise.all([TNL.getContacten(), TNL.getBedrijven()]);
     const bMap = Object.fromEntries(bedrijven.map(b => [b.id, b.naam]));
+    prosBedrijfByNaam = {};
+    bedrijven.forEach(b => { if (b.naam) prosBedrijfByNaam[b.naam.trim().toLowerCase()] = b.id; });
     prosData = contacten.map(c => ({
       id: c.id,
       aanspreektitel: c.aanspreektitel || '', voornaam: c.voornaam || '', achternaam: c.achternaam || '',
@@ -4018,6 +4026,114 @@ async function tplOpslaan() {
     mailHerlaad();
   } catch (e) { st.textContent = '✗ ' + (e.message || e); }
 }
+
+// ===== Screenshot → AI import (fase 2c-bis) — native op bedrijf+contact =====
+const PROS_CATMAP = {
+  'apptester': 'AppTester', 'app tester': 'AppTester',
+  'scanambassador': 'ScanAmbassador', 'scan ambassador': 'ScanAmbassador',
+  'koud contact': 'KoudContact', 'koudcontact': 'KoudContact', 'netwerk': 'Netwerk',
+  'warme lead': 'WarmeLead', 'warmelead': 'WarmeLead',
+  'na event / ontmoeting': 'NaEvent', 'na event': 'NaEvent', 'event': 'NaEvent', 'ontmoeting': 'NaEvent',
+  'opvolging': 'Opvolging', 'persoonlijk': 'Persoonlijk'
+};
+function prNormCat(c) { const k = String(c || '').toLowerCase().trim().replace(/\s+/g, ' '); return PROS_CATMAP[k] || String(c || '').trim(); }
+function prBlobBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1]);
+    r.onerror = () => rej(new Error('Bestand kon niet gelezen worden'));
+    r.readAsDataURL(file);
+  });
+}
+
+async function prosImportImage(file) {
+  const key = localStorage.getItem('tnl_api_key');
+  const st = document.getElementById('pr-imp-status');
+  if (!key) { prosApiModal(); return; }
+  st.textContent = '🤖 Claude leest de afbeelding…';
+  try {
+    const base64 = await prBlobBase64(file);
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 2000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: file.type || 'image/png', data: base64 } },
+          { type: 'text', text: 'Dit is een screenshot van een Excel of tabel met prospectgegevens. Lees alle rijen uit en geef ze terug als JSON array. Elke rij is een object met deze exacte veldnamen: titel, voornaam, naam, email, telefoon, bedrijf, categorie, notities, status. Titel is exact "Dhr." of "Mevr.". Voor categorie gebruik je EXACT één van deze waarden (kies de dichtstbijzijnde match): "KoudContact", "Netwerk", "WarmeLead", "NaEvent", "Opvolging", "ScanAmbassador", "AppTester". Geef ALLEEN de JSON array terug, geen uitleg, geen markdown backticks.' }
+        ]}]
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error ? data.error.message : 'API-fout: ' + resp.status);
+    const text = (data.content || []).map(b => b.text || '').join('');
+    let rows;
+    try { rows = JSON.parse(text.replace(/```json|```/g, '').trim()); }
+    catch (e) { throw new Error('AI kon de tabel niet uitlezen. Zorg dat de kolomhoofding zichtbaar is.'); }
+    if (!Array.isArray(rows) || !rows.length) throw new Error('Geen rijen gevonden in de afbeelding.');
+    await prosVerwerkRijen(rows, st);
+  } catch (e) {
+    st.textContent = '❌ ' + (e.message || e); console.error(e);
+  } finally {
+    const fi = document.getElementById('pr-imp-file'); if (fi) fi.value = '';
+  }
+}
+
+async function prosVerwerkRijen(rows, st) {
+  const bestaand = new Map();
+  prosData.forEach(p => { if (p.email) bestaand.set(p.email.toLowerCase(), p); });
+  let toegevoegd = 0, dubbel = 0, leeg = 0, fouten = 0;
+  st.textContent = '💾 ' + rows.length + ' rij(en) verwerken…';
+  for (const r of rows) {
+    const p = {
+      titel: String(r.titel || '').trim(), voornaam: String(r.voornaam || '').trim(), naam: String(r.naam || '').trim(),
+      email: String(r.email || '').trim(), telefoon: String(r.telefoon || '').trim(), bedrijf: String(r.bedrijf || '').trim(),
+      categorie: prNormCat(r.categorie), notities: String(r.notities || '').trim(), status: String(r.status || 'Nog te contacteren').trim()
+    };
+    if (!p.voornaam && !p.naam && !p.email) { leeg++; continue; }
+    if (p.email && bestaand.has(p.email.toLowerCase())) { dubbel++; continue; }
+    try {
+      let bedrijfId = null, bedrijfNaam = '';
+      if (p.bedrijf) {
+        const laag = p.bedrijf.toLowerCase();
+        if (prosBedrijfByNaam[laag]) { bedrijfId = prosBedrijfByNaam[laag]; bedrijfNaam = p.bedrijf; }
+        else {
+          const nb = await TNL.insertBedrijf({ naam: p.bedrijf, status: 'prospect', bron: 'import-screenshot' });
+          bedrijfId = nb.id; bedrijfNaam = nb.naam; prosBedrijfByNaam[laag] = nb.id;
+        }
+      }
+      const nc = await TNL.insertContact({
+        bedrijf_id: bedrijfId, aanspreektitel: p.titel || null, voornaam: p.voornaam || null, achternaam: p.naam || null,
+        email: p.email || null, gsm: p.telefoon || null, cat1: p.categorie || null, cat2: p.notities || null,
+        status: p.status || null, nog_te_contacteren: p.status === 'Nog te contacteren', bron: 'import-screenshot'
+      });
+      prosData.unshift({
+        id: nc.id, aanspreektitel: p.titel, voornaam: p.voornaam, achternaam: p.naam, email: p.email, gsm: p.telefoon,
+        bedrijf_id: bedrijfId, bedrijf: bedrijfNaam, cat1: p.categorie, cat2: p.notities, status: p.status,
+        verloop: '', samenvatting: '', volgende_stap: '', volgende_stap_datum: ''
+      });
+      if (p.email) bestaand.set(p.email.toLowerCase(), p);
+      toegevoegd++;
+    } catch (e) { fouten++; console.error('rij-fout', e); }
+  }
+  prosRender(); prosStats();
+  st.textContent = '✅ ' + toegevoegd + ' toegevoegd' + (dubbel ? ', ' + dubbel + ' dubbel overgeslagen' : '') + (leeg ? ', ' + leeg + ' leeg' : '') + (fouten ? ', ' + fouten + ' fout' : '');
+}
+
+// Plakken van een screenshot in de import-zone (paste op het gefocuste element).
+(function () {
+  const z = document.getElementById('pr-imp'); if (!z) return;
+  z.addEventListener('click', () => z.focus());
+  z.addEventListener('paste', e => {
+    const items = (e.clipboardData || {}).items || [];
+    for (const it of items) {
+      if (it.type && it.type.startsWith('image/')) {
+        const f = it.getAsFile();
+        if (f) { e.preventDefault(); prosImportImage(f); return; }
+      }
+    }
+  });
+})();
 
 document.querySelector('nav button[data-tab="mails"]').addEventListener('click', loadMails);
 document.querySelector('nav button[data-tab="prospecten"]').addEventListener('click', () => { if (!prosGeladen) laadProspecten(); });

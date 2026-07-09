@@ -347,6 +347,15 @@ const TNL = (() => {
     return { klant: k, quickscan: opgeslagen };
   }
 
+  // Registreer een quickscan via de SECURITY DEFINER-functie: maakt/vindt
+  // bedrijf + contact, koppelt de scan (bedrijf_id + contact_id) en zet
+  // conflicterende veldwaarden in de goedkeuringsqueue. Zelfde pad als de
+  // publieke quickscan → handmatig ingelezen én automatische scans komen
+  // identiek in het nieuwe bedrijf+contact-model terecht.
+  async function registreerQuickscan(payload) {
+    return check(await client().rpc('registreer_quickscan', { payload }));
+  }
+
   async function getScansVanKlant(klantId) {
     return check(await client().from('quickscan')
       .select('*').eq('klant_id', klantId).order('datum', { ascending: false }));
@@ -475,7 +484,7 @@ const TNL = (() => {
     getLijnen,
     getStations, upsertStation, deleteStation,
     getCatalogus, getArtikel, upsertArtikel, updateArtikel, deleteArtikel,
-    getKlanten, vindKlantOpBedrijf, upsertKlant, updateKlant, saveGesprek, getScansVanKlant, getAlleScans,
+    getKlanten, vindKlantOpBedrijf, upsertKlant, updateKlant, saveGesprek, registreerQuickscan, getScansVanKlant, getAlleScans,
     getBedrijven, getContacten, updateBedrijf, updateContact, insertBedrijf, insertContact,
     deleteBedrijf, deleteContact, updateQuickscan, deleteQuickscan,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,

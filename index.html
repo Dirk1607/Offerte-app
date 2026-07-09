@@ -193,9 +193,24 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </style>
 </head>
 <body>
+<!-- LOGIN-GATE: interne app, enkel voor aangemelde medewerkers (rol 'authenticated').
+     De publieke quickscan valt hier BUITEN (die schrijft via registreer_quickscan). -->
+<div id="login-overlay" style="position:fixed; inset:0; z-index:10000; background:var(--navy); display:flex; align-items:center; justify-content:center;">
+  <form id="login-form" style="background:#fff; padding:34px 32px; border-radius:14px; box-shadow:0 16px 50px rgba(0,0,0,.35); width:320px; max-width:90vw; text-align:center; font-family:inherit;">
+    <img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level" style="height:52px; margin-bottom:14px;">
+    <h2 style="margin:0 0 4px; font-size:19px; color:var(--navy);">Aanmelden</h2>
+    <p style="margin:0 0 18px; font-size:12.5px; color:#667;">Enkel voor medewerkers van The Next Level.</p>
+    <input id="login-email" type="email" autocomplete="username" placeholder="E-mailadres" value="login@thenextlevel.consulting" required
+      style="display:block; width:100%; box-sizing:border-box; margin-bottom:10px; padding:11px 12px; border:1px solid #cdd5e0; border-radius:8px; font-size:14px;">
+    <input id="login-pw" type="password" autocomplete="current-password" placeholder="Wachtwoord" required
+      style="display:block; width:100%; box-sizing:border-box; margin-bottom:14px; padding:11px 12px; border:1px solid #cdd5e0; border-radius:8px; font-size:14px;">
+    <button type="submit" style="width:100%; padding:11px; background:var(--orange); color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer;">Aanmelden</button>
+    <div id="login-err" style="margin-top:12px; color:#c0392b; font-size:13px; min-height:18px;"></div>
+  </form>
+</div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.57</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.58</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Stepping Stones</button>
     <button data-tab="offerte">Offerte</button>
@@ -205,6 +220,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <button data-tab="database">Database</button>
     <button data-tab="gesprek">Gespreksvoorbereiding</button>
   </nav>
+  <button id="logout-btn" title="Afmelden" onclick="doeAfmelden()" style="margin-left:auto; display:none; background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.32); padding:7px 14px; border-radius:7px; cursor:pointer; font-size:13px; white-space:nowrap;">Afmelden</button>
 </header>
 
 <main>
@@ -783,7 +799,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=21"></script>
+<script src="supabase/db.js?v=22"></script>
 <script>
 // ============================================================
 // STATE
@@ -816,9 +832,12 @@ document.querySelectorAll('nav button').forEach(b => {
 });
 
 // ============================================================
-// INIT — lijnen laden voor naam->code mapping
+// INIT — lijnen laden voor naam->code mapping (draait pas NA login)
 // ============================================================
-(async () => {
+let _appGebooot = false;
+async function boot() {
+  if (_appGebooot) return;   // maar één keer
+  _appGebooot = true;
   const conn = document.getElementById('conn');
   try {
     LIJNEN = await TNL.getLijnen();
@@ -835,6 +854,48 @@ document.querySelectorAll('nav button').forEach(b => {
     if (conn) conn.textContent = '✗ Geen verbinding met database';
     console.error(e);
   }
+}
+
+// ============================================================
+// LOGIN-GATE — app start pas na aanmelden (rol 'authenticated')
+// ============================================================
+async function doeAfmelden() {
+  await TNL.signOut();
+  location.reload();
+}
+(async () => {
+  const overlay  = document.getElementById('login-overlay');
+  const form     = document.getElementById('login-form');
+  const errEl    = document.getElementById('login-err');
+  const logoutBt = document.getElementById('logout-btn');
+  const toon    = () => { overlay.style.display = 'flex'; logoutBt.style.display = 'none'; };
+  const verberg = () => { overlay.style.display = 'none'; logoutBt.style.display = 'inline-block'; };
+  async function start() { verberg(); await boot(); }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.textContent = '';
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Bezig…';
+    try {
+      await TNL.signIn(document.getElementById('login-email').value.trim(),
+                       document.getElementById('login-pw').value);
+      await start();
+    } catch (err) {
+      errEl.textContent = 'Aanmelden mislukt — controleer e-mail/wachtwoord.';
+      console.error(err);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Aanmelden';
+    }
+  });
+
+  // Sessie verlopen/uitgelogd elders → overlay terug tonen.
+  TNL.onAuth((session) => { if (!session) toon(); });
+
+  try {
+    const sessie = await TNL.getSession();
+    if (sessie) await start(); else toon();
+  } catch (e) { toon(); console.error(e); }
 })();
 
 // ============================================================

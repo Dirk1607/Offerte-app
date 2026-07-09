@@ -433,8 +433,29 @@ const TNL = (() => {
     return { pad, url: data.publicUrl + '?t=' + Date.now() };
   }
 
+  // ---------- auth (login-beveiliging) ----------
+  // De interne apps vereisen een ingelogde gebruiker (rol 'authenticated').
+  // De publieke quickscan schrijft los hiervan via de SECURITY DEFINER-functie
+  // registreer_quickscan en heeft dus GEEN login nodig.
+  async function getSession() {
+    const { data } = await client().auth.getSession();
+    return data.session || null;
+  }
+  async function signIn(email, password) {
+    const { data, error } = await client().auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data.session;
+  }
+  async function signOut() {
+    try { await client().auth.signOut(); } catch (_) {}
+  }
+  function onAuth(cb) {
+    client().auth.onAuthStateChange((_evt, session) => cb(session || null));
+  }
+
   return {
     client, berekenNiveau, berekenFix,
+    getSession, signIn, signOut, onAuth,
     getTools, getTool, upsertTool, updateTool, deleteTool, uploadToolPdf, uploadToolDoc,
     getConsultants, getConsultant, upsertConsultant, updateConsultant, deleteConsultant,
     uploadConsultantFile, uploadConsultantPdf,

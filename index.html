@@ -210,7 +210,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.89</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.90</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -1055,6 +1055,13 @@ document.querySelectorAll('nav button').forEach(b => {
     document.getElementById('tab-' + b.dataset.tab).classList.add('actief');
   };
 });
+// Deep-link: open een tab op basis van de URL-hash (bv. #prospecten).
+function openTabUitHash() {
+  const t = (location.hash || '').replace('#', '').trim();
+  if (!t) return;
+  const btn = document.querySelector('nav button[data-tab="' + t + '"]');
+  if (btn) btn.click();
+}
 
 // ============================================================
 // INIT, lijnen laden voor naam->code mapping (draait pas NA login)
@@ -1075,6 +1082,7 @@ async function boot() {
     if (conn) conn.textContent = `✓ Verbonden (${LIJNEN.length} lijnen)`;
     // Metroperrons is de standaard-tab bij opstarten -> meteen laden
     if (!catGeladen) laadCatalogus();
+    openTabUitHash();   // deep-link, bv. #prospecten (o.a. vanuit de oude Prospectie-app-doorverwijzing)
   } catch (e) {
     if (conn) conn.textContent = '✗ Geen verbinding met database';
     console.error(e);

@@ -210,7 +210,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.82</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.86</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -885,11 +885,12 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
 <style>
 .exp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 18px;margin-top:6px}
-.exp-rij{display:flex;align-items:center;gap:8px;font-size:13px}
-.exp-rij label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.exp-rij input[type=range]{flex:1;min-width:70px}
-.exp-rij .exp-val{width:22px;text-align:right;font-weight:700;color:var(--dark)}
-.exp-rij .exp-inz{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);white-space:nowrap;cursor:pointer}
+.exp-rij{display:flex;align-items:center;gap:10px;font-size:13px}
+.exp-rij .exp-dom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exp-rij .exp-inz{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);white-space:nowrap;cursor:pointer}
+.exp-sterren{flex:none;display:inline-flex;gap:2px}
+.exp-ster{cursor:pointer;font-size:19px;line-height:1;color:#d3d9e0;user-select:none}
+.exp-ster.vol{color:#D4AF37}
 .cons-chip{display:inline-flex;align-items:center;gap:6px;background:#eef2f8;border:1px solid #d5deea;border-radius:14px;padding:3px 10px;font-size:12px;margin:0 6px 6px 0}
 .cons-chip .x{cursor:pointer;color:var(--muted);font-weight:700}
 .cons-ta{width:100%;min-height:90px;resize:vertical;line-height:1.45;box-sizing:border-box}
@@ -3665,7 +3666,7 @@ const CONS_LEEG = { id:null, regios:[], skills:[], sectoren:[], kerncompetenties
 const CONS_COLS = {
   kerncompetenties:[{k:'titel',ph:'titel',w:150},{k:'subtitel',ph:'omschrijving'}],
   kpi:[{k:'getal',ph:'cijfer (bv. 12+)',w:120},{k:'label',ph:'label (bv. Jaar ervaring)'}],
-  talen:[{k:'taal',ph:'taal',w:150},{k:'niveau',ph:'niveau (optioneel)'}],
+  talen:[{k:'taal',ph:'taal',w:150},{k:'niveau',type:'sterren',ph:'niveau'}],
   ervaring:[{k:'periode',ph:'periode',w:110},{k:'rol',ph:'rol',w:140},{k:'bedrijf',ph:'bedrijf',w:140},{k:'omschrijving',ph:'omschrijving'},{k:'top',type:'check',ph:'★ op profiel'}],
   opleidingen:[{k:'jaar',ph:'jaar',w:80},{k:'titel',ph:'titel'},{k:'instelling',ph:'instelling'}],
   testimonials:[{k:'quote',ph:'quote'},{k:'naam',ph:'naam',w:120},{k:'functie',ph:'functie/bedrijf'}]
@@ -3748,6 +3749,8 @@ function cRenderObj(veld, cid) {
     `<div class="proces-rij">${cols.map(col =>
       col.type==='check'
         ? `<label style="flex:none;display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);white-space:nowrap"><input type="checkbox" ${o[col.k]?'checked':''} onchange="consEdit.${veld}[${i}].${col.k}=this.checked"> ${escAttr(col.ph)}</label>`
+      : col.type==='sterren'
+        ? `<span class="exp-sterren" style="flex:none">${[1,2,3,4].map(n=>`<span class="exp-ster ${n<=Number(o[col.k]||0)?'vol':''}" onclick="cSetSter('${veld}',${i},'${col.k}',${n},'${cid}')" title="${n}">★</span>`).join('')}</span>`
         : col.w
           ? `<textarea class="grow-ta" style="flex:none;width:${col.w}px" placeholder="${escAttr(col.ph)}" oninput="consEdit.${veld}[${i}].${col.k}=this.value">${escAttr(o[col.k]||'')}</textarea>`
           : `<textarea class="grow-ta flex" placeholder="${escAttr(col.ph)}" oninput="consEdit.${veld}[${i}].${col.k}=this.value">${escAttr(o[col.k]||'')}</textarea>`
@@ -3755,6 +3758,7 @@ function cRenderObj(veld, cid) {
   ).join('') : '<div class="leeg">Niets toegevoegd.</div>';
 }
 function cObjRij(veld, cid) { const o={}; CONS_COLS[veld].forEach(c=>o[c.k]=''); (consEdit[veld]||(consEdit[veld]=[])).push(o); cRenderObj(veld,cid); }
+function cSetSter(veld, i, k, n, cid) { const cur=Number(consEdit[veld][i][k]||0); consEdit[veld][i][k] = (cur===n?0:n); cRenderObj(veld,cid); }
 
 // keuze-picker (dropdown uit vaste lijst + persistente 'andere') voor regio's & sectoren
 function enkelvoudVan(veld){ return veld==='regios' ? 'Regio' : 'Sector'; }
@@ -3782,7 +3786,7 @@ async function keuzeKies(veld, cid, sel) {
 }
 function keuzeVerwijder(veld, cid, i) { (consEdit[veld]||[]).splice(i,1); renderKeuze(veld, cid, enkelvoudVan(veld)); }
 
-// expertise-schuifjes 0–10
+// expertise = 1–4 sterren (aanklikken); inzetbaar = vinkje (blijft bestaan)
 function renderExpertise() {
   consEdit.expertise = consEdit.expertise || {};
   document.getElementById('c-exp-lijnen').innerHTML = METRO_LIJNEN.map(expRij).join('');
@@ -3791,12 +3795,19 @@ function renderExpertise() {
 function expRij(code) {
   const v = Number(consEdit.expertise[code]||0);
   const inz = !!(consEdit.inzetbaar||{})[code];
-  return `<div class="exp-rij"><label title="${escAttr(METRO_DOMEINEN[code]||code)}">${escAttr(METRO_DOMEINEN[code]||code)}</label>
-    <input type="range" min="0" max="10" step="1" value="${v}" oninput="setExp('${code}',this.value)">
-    <span class="exp-val" id="expval-${code}">${v}</span>
-    <label class="exp-inz" title="Kan ik hiervoor effectief ingezet worden? (kleurt de balk blauw op het profiel)"><input type="checkbox" ${inz?'checked':''} onchange="setInz('${code}',this.checked)"> inzetbaar</label></div>`;
+  const sterren = [1,2,3,4].map(n =>
+    `<span class="exp-ster ${n<=v?'vol':''}" onclick="setExp('${code}',${n})" title="${n} ster${n>1?'ren':''}">★</span>`).join('');
+  return `<div class="exp-rij">
+    <label class="exp-dom" title="${escAttr(METRO_DOMEINEN[code]||code)}">${escAttr(METRO_DOMEINEN[code]||code)}</label>
+    <label class="exp-inz" title="Kan ik hiervoor effectief ingezet worden?"><input type="checkbox" ${inz?'checked':''} onchange="setInz('${code}',this.checked)"> inzetbaar</label>
+    <span class="exp-sterren">${sterren}</span></div>`;
 }
-function setExp(code, val) { consEdit.expertise[code]=Number(val); document.getElementById('expval-'+code).textContent=val; }
+function setExp(code, val) {
+  val = Number(val);
+  if (Number(consEdit.expertise[code]||0) === val) val = 0;   // opnieuw op dezelfde ster klikken = wissen
+  consEdit.expertise[code] = val;
+  renderExpertise();
+}
 function setInz(code, val) { consEdit.inzetbaar = consEdit.inzetbaar || {}; consEdit.inzetbaar[code] = !!val; }
 
 // tool- en NextStone-chips
@@ -3941,7 +3952,7 @@ function buildProfielPdf(c, extras, mode) {
     doc.setDrawColor(255,255,255); doc.setLineWidth(0.6); doc.rect(M,9,box,box); }
   // Logo rechtsboven (wit badge). De QR is verhuisd naar de zijbalk zodat logo + QR elkaar niet meer verdringen.
   let rechtsBreedte = 0;
-  if (logo) { const hL=14, wL=Math.min(50, hL*((logo.w||1)/(logo.h||1))); const lx=RIGHT-wL, ly=15-hL/2;
+  if (logo) { const hL=14, wL=Math.min(50, hL*((logo.w||1)/(logo.h||1))); const lx=RIGHT-wL, ly=11.5;   // badge-top (ly-2.5=9) gelijk aan de foto-top
     doc.setFillColor(255,255,255); doc.roundedRect(lx-2.5, ly-2.5, wL+5, hL+5, 1.5, 1.5, 'F');
     try { doc.addImage(logo.data,'PNG', lx, ly, wL, hL); } catch(e){}
     rechtsBreedte = wL+5; }
@@ -3975,23 +3986,36 @@ function buildProfielPdf(c, extras, mode) {
   const H = (col, title) => { if (col.y+12>BOT2) colNewPage(col); col.y += 1.6;
     doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...BLUE);
     doc.text(String(title).toUpperCase(), col.x, col.y); col.y += 1.3;
-    doc.setDrawColor(...BLUE); doc.setLineWidth(0.3); doc.line(col.x, col.y, col.x+col.w, col.y); col.y += 3.6; };
+    doc.setDrawColor(...BLUE); doc.setLineWidth(0.3); doc.line(col.x, col.y, col.x+col.w, col.y); col.y += 5; };
   const P = (col, t, o) => { if (t==null||t==='') return; o=o||{};
     doc.setFont('helvetica', o.italic?'italic':(o.bold?'bold':'normal')); doc.setFontSize(o.size||9.5); doc.setTextColor(...(o.color||TXT));
     const lh=(o.size||9.5)*0.42+0.9;
     doc.splitTextToSize(String(t), col.w).forEach(ln=>{ if(col.y+lh>BOT2) colNewPage(col); doc.text(ln, col.x, col.y); col.y+=lh; }); };
-  // Balklengte = kennisniveau (0-10). Kleur = inzetbaarheid: GROEN = inzetbaar, BLAUW = wel expertise maar minder ingezet.
+  // Expertise = 1–4 sterren; inzetbaar = groen cirkel-vinkje ervoor.
   const GROEN=[39,174,96];   // feller groen (#27AE60) i.p.v. het gedempte huisstijlgroen
-  const barsCol = (col, codes) => { const labelW=28, gap=2.5, bw=col.w-labelW-gap-1;
+  const STER_VOL=[212,175,55], STER_LEEG=[214,219,226];   // goud
+  const tekenSter = (cx, cy, r, vol) => {
+    const pts=[]; for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5; const rr=(i%2===0)?r:r*0.42; pts.push([cx+rr*Math.cos(a), cy+rr*Math.sin(a)]); }
+    const d=pts.slice(1).map((p,i)=>[p[0]-pts[i][0], p[1]-pts[i][1]]); d.push([pts[0][0]-pts[9][0], pts[0][1]-pts[9][1]]);
+    const col=vol?STER_VOL:STER_LEEG; doc.setFillColor(col[0],col[1],col[2]); doc.setDrawColor(col[0],col[1],col[2]);
+    doc.lines(d, pts[0][0], pts[0][1], [1,1], 'F', true); };
+  const tekenInzet = (cx, cy, r, inz) => {
+    if(inz){ doc.setFillColor(...GROEN); doc.circle(cx,cy,r,'F');
+      doc.setDrawColor(255,255,255); doc.setLineWidth(0.45);
+      doc.line(cx-r*0.5, cy+r*0.05, cx-r*0.1, cy+r*0.5); doc.line(cx-r*0.1, cy+r*0.5, cx+r*0.55, cy-r*0.45);
+      doc.setLineWidth(0.2);
+    } else { doc.setDrawColor(198,204,212); doc.setLineWidth(0.3); doc.circle(cx,cy,r,'S'); doc.setLineWidth(0.2); } };
+  const barsCol = (col, codes) => { const labelW=25;
     codes.forEach(code=>{ if(col.y+5>BOT2) colNewPage(col);
-      const v=Math.max(0,Math.min(10,Number((c.expertise||{})[code]||0)));
+      const v=Math.max(0,Math.min(4,Number((c.expertise||{})[code]||0)));
       const inz=!!(c.inzetbaar||{})[code];
       doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...TXT);
-      doc.text(String(METRO_DOMEINEN[code]||code), col.x, col.y+1.9);
-      const bx=col.x+labelW+gap;
-      doc.setFillColor(232,236,242); doc.rect(bx, col.y, bw, 2.3, 'F');
-      doc.setFillColor(...(inz?GROEN:BLUE)); doc.rect(bx, col.y, bw*v/10, 2.3, 'F');
-      col.y+=3.7; }); };
+      doc.text(String(METRO_DOMEINEN[code]||code), col.x, col.y+2.3);
+      const cy=col.y+1.7;
+      tekenInzet(col.x+labelW+3.5, cy, 1.5, inz);
+      let sx=col.x+labelW+10;
+      for(let n=1;n<=4;n++){ tekenSter(sx, cy, 1.7, n<=v); sx+=4.2; }
+      col.y+=4.6; }); };
   const blokjesCol = (col, items) => { doc.setFontSize(8);
     items.forEach((it,i)=>{ if(col.y+4>BOT2) colNewPage(col);
       const cc=PALET[i%PALET.length]; doc.setFillColor(cc[0],cc[1],cc[2]); doc.rect(col.x, col.y-2.4, 2.8, 2.8, 'F');
@@ -4011,25 +4035,35 @@ function buildProfielPdf(c, extras, mode) {
     doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...TXT);
     doc.text('Scan mijn', sb.x+qs+3, sb.y+7); doc.text('LinkedIn', sb.x+qs+3, sb.y+11.5);
     sb.y += qs+9; }   // ruime witlijn tussen QR en de expertise-sectie
-  // Inzetbaarheid & expertise (metrolijnen + versnellers) met kleurlegende
+  // Inzetbaarheid & expertise (metrolijnen + versnellers) met legende
   H(sb,'Inzetbaarheid & expertise');
-  { let ly = sb.y + 1.4; doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT);
-    doc.setFillColor(...GROEN); doc.rect(sb.x, ly-1.9, 6, 2.2, 'F'); doc.text('inzetbaar', sb.x+8, ly); ly += 4;
-    doc.setFillColor(...BLUE);  doc.rect(sb.x, ly-1.9, 6, 2.2, 'F'); doc.text('wel expertise, minder ingezet', sb.x+8, ly);
+  { const ly = sb.y + 1.6; doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT);
+    const circleX = sb.x+28.5, starX = sb.x+35;   // gelijk aan de kolom-posities in barsCol
+    doc.text('inzetbaar', circleX-3, ly, {align:'right'});
+    tekenInzet(circleX, ly-0.6, 1.5, true);
+    tekenSter(starX, ly-0.6, 1.7, true);
+    doc.text('expertise', starX+3, ly);
     sb.y = ly + 6.5; }   // extra ruimte tussen legende en de metrolijnen
   P(sb, 'Metrolijnen', {size:8, bold:true, color:NAVY}); sb.y+=1; barsCol(sb, METRO_LIJNEN);
-  sb.y+=1.5; P(sb, 'Versnellers', {size:8, bold:true, color:NAVY}); sb.y+=1; barsCol(sb, METRO_VERSNELLERS);
+  sb.y+=4; P(sb, 'Versnellers', {size:8, bold:true, color:NAVY}); sb.y+=1; barsCol(sb, METRO_VERSNELLERS);
   // Kerncompetenties (titel + korte omschrijving) horen nog op pagina 1, onder de expertise
   const kc=(c.kerncompetenties||[]).filter(k=>(k.titel||'').trim());
-  if (kc.length) { H(sb,'Kerncompetenties');
+  if (kc.length) { sb.y += 7; H(sb,'Kerncompetenties');
     kc.forEach(k=>{ P(sb, k.titel, {bold:true, size:9}); if(k.subtitel) P(sb, k.subtitel, {size:8, color:GREY}); sb.y+=1.4; }); }
-  // Sectoren (blokjes) + Talen komen bewust op pagina 2 (guard: nooit een 3e pagina)
+  // Sectoren (blokjes) + Skills + Talen komen bewust op pagina 2 (guard: nooit een 3e pagina)
   const sec=(c.sectoren||[]).filter(Boolean);
+  const sk=(c.skills||[]).filter(Boolean);
   const tal=(c.talen||[]).filter(t=>(t.taal||'').trim());
-  if (sec.length || tal.length) {
+  if (sec.length || sk.length || tal.length) {
     if (sb.page < 2) colNewPage(sb); else sb.y += 5;
     if (sec.length) { H(sb,'Sectoren'); blokjesCol(sb, sec); }
-    if (tal.length) { sb.y += 3; H(sb,'Talen'); tal.forEach(t=>P(sb, t.taal+(t.niveau?', '+t.niveau:''), {size:8.5})); }
+    if (sk.length) { sb.y += 3; H(sb,'Skills'); bulletsCol(sb, sk); }
+    if (tal.length) { sb.y += 3; H(sb,'Talen'); tal.forEach(t=>{
+      const lvl=Math.max(0,Math.min(4,Number(t.niveau||0)));
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT);
+      doc.text(String(t.taal||''), sb.x, sb.y+1.6);
+      let sx=sb.x+24; for(let n=1;n<=4;n++){ tekenSter(sx, sb.y+0.9, 1.5, n<=lvl); sx+=4; }
+      sb.y+=4.6; }); }
   }
 
   // ----- HOOFDKOLOM (verhaal) — begint altijd bovenaan pagina 1 (de zijbalk kan de 'huidige pagina' al op 2 hebben gezet) -----
@@ -4042,10 +4076,10 @@ function buildProfielPdf(c, extras, mode) {
       doc.splitTextToSize(String(k.label||''), tw-3).slice(0,2).forEach((ln,i)=>doc.text(ln, x+tw/2, main.y+11+i*2.7, {align:'center'}));
       x+=tw+gap; }); main.y += 20; }
   const lead = (c.profiel_tekst||'').trim() || (c.achtergrond||'').trim();
-  if (lead) { H(main,'Profiel'); P(main, lead); }
+  if (lead) { H(main,'Profiel'); main.y += 2; P(main, lead); }
   const topErv = (c.ervaring||[]).filter(e=>e.top && ((e.rol||'').trim()||(e.bedrijf||'').trim()));
   const rollen = topErv.length ? topErv : (c.ervaring||[]).filter(e=>(e.rol||'').trim()||(e.bedrijf||'').trim()).slice(0,4);
-  if (rollen.length) { H(main,'Belangrijkste managementrollen & realisaties');
+  if (rollen.length) { H(main,'Realisaties'); main.y += 2;
     rollen.forEach(e=>{ P(main, [e.periode,e.rol,e.bedrijf].filter(Boolean).join(' — '), {bold:true}); if(e.omschrijving) P(main, e.omschrijving, {size:9, color:GREY}); main.y+=1; }); }
   const tst=(c.testimonials||[]).filter(t=>(t.quote||'').trim());
   if (tst.length) { H(main,'Wat klanten zeggen'); tst.forEach(t=>{ P(main, '"'+t.quote+'"', {italic:true}); P(main, [t.naam,t.functie].filter(Boolean).join(', '), {size:8.5, color:GREY}); main.y+=1; }); }
@@ -4067,7 +4101,8 @@ function buildProfielPdf(c, extras, mode) {
   // Voetnoot op elke pagina
   const paginas = doc.getNumberOfPages();
   for (let i=1;i<=paginas;i++){ doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GREY);
-    doc.text('The Next Level  ·  thenextlevel.consulting  ·  Vertrouwelijk – bestemd voor de klant', W/2, 290, {align:'center'}); }
+    doc.text('The Next Level', M, 290);   // in de blauwe zijbalk-zone
+    doc.text('www.thenextlevel.consulting  ·  Vertrouwelijk – bestemd voor de klant', MAINX, 290); }   // uitgelijnd met de 2e kolom
   return doc.output('blob');
 }
 </script>

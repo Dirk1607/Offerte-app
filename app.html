@@ -210,7 +210,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.86</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.88</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -339,15 +339,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
          (rolverdeling: Gespreksvoorbereiding = enkel een scan inlezen/bekijken). -->
     <p class="sub" style="margin-top:18px">💡 Het overzicht van alle bedrijven, contacten, scans en de <b>wijzigingen ter goedkeuring</b> vind je nu in de <b>Database</b>-tab. Daar koppel je ook losse scans en bekijk je scores.</p>
 
-    <!-- Zoek-picker om een scan aan het juiste contact te koppelen (wordt hergebruikt vanuit Database) -->
-    <div id="koppel-modal" class="km-overlay" style="display:none" onclick="if(event.target===this)sluitKoppel()">
-      <div class="km-panel">
-        <div class="km-kop"><span>Koppel scan aan contact</span><button onclick="sluitKoppel()" title="Sluiten">×</button></div>
-        <input id="km-zoek" class="km-zoek" placeholder="Zoek op contact, bedrijf of e-mail…" oninput="renderKoppelLijst()">
-        <div id="km-lijst" class="km-lijst"></div>
-        <button id="km-ontkoppel" class="km-ontkoppel" onclick="ontkoppelScan()" style="display:none">✕ Koppeling verwijderen</button>
-      </div>
-    </div>
+    <!-- (de koppel-scan-modal staat nu op top-niveau, buiten de tabs — zie onder </main>) -->
 
   </section>
 
@@ -759,6 +751,16 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
   </section>
 </main>
+
+<!-- Zoek-picker om een scan aan het juiste contact te koppelen (top-level: werkt vanuit elke tab) -->
+<div id="koppel-modal" class="km-overlay" style="display:none" onclick="if(event.target===this)sluitKoppel()">
+  <div class="km-panel">
+    <div class="km-kop"><span>Koppel scan aan contact</span><button onclick="sluitKoppel()" title="Sluiten">×</button></div>
+    <input id="km-zoek" class="km-zoek" placeholder="Zoek op contact, bedrijf of e-mail…" oninput="renderKoppelLijst()">
+    <div id="km-lijst" class="km-lijst"></div>
+    <button id="km-ontkoppel" class="km-ontkoppel" onclick="ontkoppelScan()" style="display:none">✕ Koppeling verwijderen</button>
+  </div>
+</div>
 
 <!-- Verborgen offerte-afdruk (alleen zichtbaar bij printen) -->
 <div id="offerte-print"></div>
@@ -1688,9 +1690,12 @@ function renderAntwoorden(scan, onzeker, afgeleid) {
   const kleurVan = v => v >= 4 ? 'var(--red)' : v === 3 ? 'var(--amber)' : v === 2 ? 'var(--blue)' : 'var(--green)';
   // Sorteer op hoofddomein: eerst de metrolijnen, dan de versnellers (in hun vaste volgorde);
   // de 2 vragen van eenzelfde domein komen zo automatisch per twee bijeen.
+  // Zelfbeschrijvende scan: gebruik de vragen die mét de scan zijn meegekomen;
+  // val terug op de hardgecodeerde lijst voor oudere scans (van vóór migratie 0030).
+  const vragen = (Array.isArray(scan.vragen) && scan.vragen.length) ? scan.vragen : QUICKSCAN_VRAGEN;
   const domVolgorde = METRO_LIJNEN.concat(METRO_VERSNELLERS);
   const rang = h => { const r = domVolgorde.indexOf(h); return r < 0 ? 999 : r; };
-  const items = QUICKSCAN_VRAGEN.map((v, i) => ({ v, i }))
+  const items = vragen.map((v, i) => ({ v, i }))
     .filter(x => ant[x.i] != null)
     .sort((a, b) => (rang(a.v.h) - rang(b.v.h)) || (a.i - b.i));
   lijst.innerHTML = items.map(({ v, i }) => {

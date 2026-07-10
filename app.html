@@ -210,7 +210,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.81</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.82</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -2005,7 +2005,7 @@ function dbScanTabel(scans, opts) {
     const acties = metActies ? `<td style="white-space:nowrap;text-align:right;width:100%">${koppelKnop}${verwijderKnop}</td>` : '<td style="width:100%"></td>';
     return `<tr>
       <td style="padding:4px 8px;white-space:nowrap">${esc(s.datum || '')}</td>
-      <td style="padding:4px 8px">${esc(s.invuller || '')}</td>
+      <td style="padding:4px 8px;white-space:nowrap">${esc(s.invuller || '')}</td>
       <td style="padding:4px 8px;color:${dbScanKleur(g)};font-weight:600;white-space:nowrap">${g != null ? g.toFixed(1) + ' / 4' : '—'}</td>
       <td style="padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap">${ruw}</td>
       <td style="padding:4px 8px;white-space:nowrap"><button class="db-btn" style="padding:3px 8px;white-space:nowrap" onclick="dbBekijkScores('${escAttr(s.id)}')">Bekijk scores</button></td>
@@ -3464,7 +3464,7 @@ function vulContactDropdown(){
   sel.disabled=!offBedrijf;
   sel.innerHTML = !offBedrijf
     ? '<option value="">— kies eerst een bedrijf —</option>'
-    : (cons.length?'':'<option value="">— geen contact —</option>')
+    : '<option value="" '+(!cur?'selected':'')+'>— geen contact —</option>'
       +cons.map(c=>`<option value="${c.id}" ${cur===c.id?'selected':''}>${escAttr(contactNaam(c)+(c.functie?' · '+c.functie:''))}</option>`).join('')
       +'<option value="__nieuw">+ nieuw contact…</option>';
 }
@@ -3491,7 +3491,7 @@ function kiesBedrijf(bid){
   }
   offBedrijf=offBedrijven.find(x=>String(x.id)===String(bid))||null;
   const cons=offBedrijf?offContacten.filter(c=>c.bedrijf_id===offBedrijf.id):[];
-  offContact=cons.length===1?cons[0]:null;   // bij precies 1 contact meteen kiezen
+  offContact=cons[0]||null;   // meteen het eerste contact kiezen (matcht de dropdown; te wijzigen/wissen)
   bouwOffKlant(); vulContactDropdown(); renderKlantForm();
   setOffStatus('Bedrijf "'+(offBedrijf?offBedrijf.naam:'')+'" geladen — kies een contact, vul aan en bewaar.','ok');
 }

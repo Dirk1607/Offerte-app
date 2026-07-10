@@ -210,7 +210,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.88</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.89</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -250,7 +250,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
     <div id="scores-blok" style="display:none">
       <div class="card">
-        <div class="score-titel" style="margin-top:0">Scores — zwakste eerst</div>
+        <div class="score-titel" style="margin-top:0">Scores, zwakste eerst</div>
         <div id="scores-metro"></div>
         <div id="scores-versn"></div>
         <div class="legenda">
@@ -265,7 +265,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div id="antwoorden-blok" style="display:none">
       <div class="card">
         <div class="score-titel" style="margin-top:0">Antwoorden per vraag</div>
-        <div id="antw-note" style="display:none;font-size:12px;color:var(--muted);margin:2px 0 6px">ℹ️ Deze scan bevatte geen losse antwoorden — onderstaande is <b>afgeleid uit de berekening</b> in de mail. Een <b style="color:var(--amber)">⚠</b> betekent dat het antwoord niet eenduidig af te leiden was (het paar staat vast, de volgorde niet).</div>
+        <div id="antw-note" style="display:none;font-size:12px;color:var(--muted);margin:2px 0 6px">ℹ️ Deze scan bevatte geen losse antwoorden, onderstaande is <b>afgeleid uit de berekening</b> in de mail. Een <b style="color:var(--amber)">⚠</b> betekent dat het antwoord niet eenduidig af te leiden was (het paar staat vast, de volgorde niet).</div>
         <div id="antwoorden-lijst" class="antw-lijst"></div>
       </div>
     </div>
@@ -339,13 +339,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
          (rolverdeling: Gespreksvoorbereiding = enkel een scan inlezen/bekijken). -->
     <p class="sub" style="margin-top:18px">💡 Het overzicht van alle bedrijven, contacten, scans en de <b>wijzigingen ter goedkeuring</b> vind je nu in de <b>Database</b>-tab. Daar koppel je ook losse scans en bekijk je scores.</p>
 
-    <!-- (de koppel-scan-modal staat nu op top-niveau, buiten de tabs — zie onder </main>) -->
+    <!-- (de koppel-scan-modal staat nu op top-niveau, buiten de tabs, zie onder </main>) -->
 
   </section>
 
   <!-- TAB 2 -->
   <section class="panel actief" id="tab-catalogus">
-    <h2>TNL Metroperrons <small style="font-weight:400;color:var(--muted);font-size:14px">— Your steps to The Next Level</small></h2>
+    <h2>TNL Metroperrons <small style="font-weight:400;color:var(--muted);font-size:14px">· Your steps to The Next Level</small></h2>
     <p class="sub">Je verbeterprojecten: lijn → station → <b>Metroperron</b>. Elke Metroperron zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en Metroperrons onder een station.</p>
     <div class="status" id="cat-status">Laden…</div>
     <div id="cat-tree"></div>
@@ -354,7 +354,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   <!-- TAB 4 -->
   <section class="panel" id="tab-tarieven">
     <h2>Tarieven &amp; rollen</h2>
-    <p class="sub">Bedrijfsbrede dagtarieven per rol. Elk artikel rekent z'n prijs hieruit — pas je een tarief aan, dan werkt dat overal door.</p>
+    <p class="sub">Bedrijfsbrede dagtarieven per rol. Elk artikel rekent z'n prijs hieruit, pas je een tarief aan, dan werkt dat overal door.</p>
     <div class="card">
       <div class="status" id="tar-status">Laden…</div>
       <div id="tar-lijst"></div>
@@ -393,9 +393,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="subkop">Klant</div>
       <div class="dyn-rij" style="flex-wrap:wrap;gap:14px;align-items:flex-end">
         <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:220px">Bedrijf
-          <select id="off-bedrijf" onchange="kiesBedrijf(this.value)"><option value="">— kies een bedrijf —</option></select></label>
+          <select id="off-bedrijf" onchange="kiesBedrijf(this.value)"><option value="">- kies een bedrijf -</option></select></label>
         <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:220px">Contactpersoon
-          <select id="off-contact" onchange="kiesContact(this.value)" disabled><option value="">— kies eerst een bedrijf —</option></select></label>
+          <select id="off-contact" onchange="kiesContact(this.value)" disabled><option value="">- kies eerst een bedrijf -</option></select></label>
       </div>
       <div class="status" id="off-status"></div>
       <div id="off-klant-form"></div>
@@ -432,9 +432,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
   </section>
 
-  <!-- TAB 5 — Tools -->
+  <!-- TAB 5, Tools -->
   <section class="panel" id="tab-tools">
-    <h2>Tools <small style="font-weight:400;color:var(--muted);font-size:14px">— productfiches</small></h2>
+    <h2>Tools <small style="font-weight:400;color:var(--muted);font-size:14px">· productfiches</small></h2>
     <p class="sub">Beheer de TNL-tools en genereer per tool een productfiche (PDF).</p>
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
       <button class="btn" onclick="nieuwTool()">+ Nieuwe tool</button>
@@ -443,9 +443,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div id="tools-lijst"></div>
   </section>
 
-  <!-- TAB 6 — Consultants -->
+  <!-- TAB 6, Consultants -->
   <section class="panel" id="tab-consultants">
-    <h2>Consultants <small style="font-weight:400;color:var(--muted);font-size:14px">— profielenbibliotheek</small></h2>
+    <h2>Consultants <small style="font-weight:400;color:var(--muted);font-size:14px">· profielenbibliotheek</small></h2>
     <p class="sub">Beheer de consultantprofielen en genereer per consultant een TNL-profiel (1-pager PDF). De consultant vult zijn gegevens, expertise en tarief in.</p>
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
       <button class="btn" onclick="nieuwConsultant()">+ Nieuwe consultant</button>
@@ -454,7 +454,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div id="cons-lijst"></div>
   </section>
 
-  <!-- TAB 7 — Database (volledig bewerkbaar overzicht bedrijf + contacten) -->
+  <!-- TAB 7, Database (volledig bewerkbaar overzicht bedrijf + contacten) -->
   <section class="panel" id="tab-database">
     <style>
       .db-lijst{display:flex;flex-direction:column;gap:8px;margin-top:12px}
@@ -513,7 +513,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       .ai-vul>summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--navy,#1B3A6B)}
       .ai-paste{width:100%;min-height:70px;margin-top:8px;padding:8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-family:inherit;font-size:13px;resize:vertical}
     </style>
-    <h2>Database <small style="font-weight:400;color:var(--muted);font-size:14px">— alle bedrijven &amp; contacten</small></h2>
+    <h2>Database <small style="font-weight:400;color:var(--muted);font-size:14px">· alle bedrijven &amp; contacten</small></h2>
     <p class="sub">Het volledige gedeelde adresboek. Klap een bedrijf open om alle velden van het bedrijf én zijn contactpersonen te bekijken en te corrigeren (bv. een foute aanspreektitel). Elke wijziging bewaar je per bedrijf of per contact.</p>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
       <input id="db-zoek" class="db-zoek" placeholder="Zoek op bedrijf of contact…" oninput="renderDatabase()">
@@ -534,7 +534,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
     <div id="db-dubbels"></div>
     <div id="db-status" class="status"></div>
-    <div id="db-lijst" class="db-lijst"><span style="color:var(--muted)">Nog niet geladen — open dit tabblad of klik ↻ Vernieuwen.</span></div>
+    <div id="db-lijst" class="db-lijst"><span style="color:var(--muted)">Nog niet geladen, open dit tabblad of klik ↻ Vernieuwen.</span></div>
   </section>
 
   <!-- TAB PROSPECTEN (fase 1 van de app-merge; native op bedrijf+contact) -->
@@ -547,7 +547,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       main:has(#tab-prospecten.actief){max-width:none;}
       .pr-tabelwrap{overflow-x:auto;border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff}
       table.pr-tabel{border-collapse:collapse;width:100%;font-size:12px;table-layout:fixed}
-      /* Kolombreedtes (%) — samen 100%. Kolom 1 = selectievakje. */
+      /* Kolombreedtes (%), samen 100%. Kolom 1 = selectievakje. */
       table.pr-tabel th:nth-child(1),table.pr-tabel td:nth-child(1){width:3%;text-align:center}
       table.pr-tabel th:nth-child(2),table.pr-tabel td:nth-child(2){width:20%}
       table.pr-tabel th:nth-child(3),table.pr-tabel td:nth-child(3){width:13%}
@@ -573,7 +573,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       .pr-filter th{padding-top:4px;padding-bottom:6px}
       .pr-filter input,.pr-filter select{width:100%;box-sizing:border-box;border:1px solid var(--lijn,#dbe3ec);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit}
     </style>
-    <h2>Prospecten <small style="font-weight:400;color:var(--muted);font-size:14px">— contacten uit het gedeelde adresboek</small></h2>
+    <h2>Prospecten <small style="font-weight:400;color:var(--muted);font-size:14px">· contacten uit het gedeelde adresboek</small></h2>
     <p class="sub">Overzicht van alle contactpersonen (bedrijf + contact). Je kunt hier rechtstreeks corrigeren of een contact toevoegen; elke wijziging wordt meteen bewaard. <em>Opvolging en mails volgen in de volgende fase.</em></p>
     <div id="pr-add" style="border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff;padding:12px 14px;margin-bottom:12px">
       <div style="font-weight:600;color:var(--navy,#1B3A6B);font-size:13px;margin-bottom:8px">➕ Contact toevoegen</div>
@@ -592,7 +592,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="pr-add-status" class="db-mini" style="margin-top:6px"></div>
     </div>
     <div id="pr-imp" tabindex="0" style="border:2px dashed var(--blue,#4A7CB5);border-radius:10px;background:#fff;padding:10px 14px;margin-bottom:12px;cursor:pointer;font-size:13px;color:var(--muted);outline:none">
-      📷 <strong style="color:var(--navy,#1B3A6B)">Screenshot importeren</strong> — klik hier en druk <kbd>Ctrl</kbd>+<kbd>V</kbd> om een screenshot van een prospectenlijst te plakken (Claude leest 'm uit),
+      📷 <strong style="color:var(--navy,#1B3A6B)">Screenshot importeren</strong>, klik hier en druk <kbd>Ctrl</kbd>+<kbd>V</kbd> om een screenshot van een prospectenlijst te plakken (Claude leest 'm uit),
       <a href="#" onclick="document.getElementById('pr-imp-file').click();return false" style="color:var(--blue,#4A7CB5)">of kies een afbeelding</a>.
       <input type="file" id="pr-imp-file" accept="image/*" style="display:none" onchange="if(this.files[0]) prosImportImage(this.files[0])">
       <span id="pr-imp-status" style="margin-left:8px;color:var(--navy,#1B3A6B)"></span>
@@ -634,7 +634,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
             <th></th><th></th>
           </tr>
         </thead>
-        <tbody id="pr-body"><tr><td colspan="10" style="padding:16px;color:var(--muted)">Nog niet geladen — open dit tabblad of klik ↻ Vernieuwen.</td></tr></tbody>
+        <tbody id="pr-body"><tr><td colspan="10" style="padding:16px;color:var(--muted)">Nog niet geladen, open dit tabblad of klik ↻ Vernieuwen.</td></tr></tbody>
       </table>
     </div>
     <datalist id="prc1-list"></datalist>
@@ -665,7 +665,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
             <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Samenvatting</span>
             <button id="pr-opv-ai" class="db-btn" onclick="prosSamenvat()" style="font-weight:600">🤖 Samenvatten</button>
           </div>
-          <div id="pr-opv-samenvatting" style="white-space:pre-wrap;font-size:13px;color:#333;background:#f8fafc;border:1px solid #eef2f7;border-radius:7px;padding:10px;min-height:40px">—</div>
+          <div id="pr-opv-samenvatting" style="white-space:pre-wrap;font-size:13px;color:#333;background:#f8fafc;border:1px solid #eef2f7;border-radius:7px;padding:10px;min-height:40px">-</div>
         </div>
         <div style="padding:12px 18px;border-top:1px solid #eef2f7;text-align:right">
           <button class="db-btn prim" onclick="prosSluitOpv()">Sluiten</button>
@@ -688,7 +688,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
   </section>
 
-  <!-- TAB MAILS (fase 2c) — mails opstellen voor de geselecteerde contacten -->
+  <!-- TAB MAILS (fase 2c), mails opstellen voor de geselecteerde contacten -->
   <section class="panel" id="tab-mails">
     <style>
       #tab-mails .mail-ws{display:grid;grid-template-columns:260px 1fr;gap:16px;margin-top:10px}
@@ -708,7 +708,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       #tab-mails .tpl-edit{margin-top:18px;border:1px dashed var(--lijn,#cdd7e3);border-radius:9px;padding:10px 14px;background:#fbfdff}
       #tab-mails .tpl-edit>summary{cursor:pointer;font-weight:600;color:var(--navy,#1B3A6B);font-size:13px}
     </style>
-    <h2>Mails <small style="font-weight:400;color:var(--muted);font-size:14px">— voor de aangevinkte contacten</small></h2>
+    <h2>Mails <small style="font-weight:400;color:var(--muted);font-size:14px">· voor de aangevinkte contacten</small></h2>
     <p class="sub">Vink contacten aan in de <em>Prospecten</em>-tab en stel hier per contact een mail op uit een sjabloon. Velden als <code>[VOORNAAM]</code>, <code>[NAAM]</code>, <code>[BEDRIJF]</code>, <code>[TITEL_FORMEEL]</code> worden automatisch ingevuld.</p>
     <div id="mail-leeg" style="color:var(--muted);padding:14px 0">Nog geen contacten geselecteerd. Ga naar <strong>Prospecten</strong>, vink contacten aan en klik <strong>✉ Mails</strong>.</div>
     <div id="mail-workspace" class="mail-ws" style="display:none">
@@ -786,7 +786,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="a-clusters"></div>
       <button class="btn btn-ghost mini" onclick="clusterRij()">+ Cluster</button>
 
-      <div class="subkop">WBS — Work Breakdown Structure</div>
+      <div class="subkop">WBS, Work Breakdown Structure</div>
       <div id="a-wbs"></div>
       <datalist id="scope-suggesties"></datalist>
       <div id="wbs-syntax" class="wbs-syntax"></div>
@@ -834,7 +834,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       </div>
 
       <div class="subkop">Beschrijving</div>
-      <textarea id="t-kernwaarde" class="kop-uit" style="width:100%" placeholder="Kernwaarde — waarvoor dient deze tool?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+      <textarea id="t-kernwaarde" class="kop-uit" style="width:100%" placeholder="Kernwaarde, waarvoor dient deze tool?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
       <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:12px 2px 4px">Unieke kenmerken</div>
       <div id="t-kenmerken"></div>
       <button class="btn btn-ghost mini" onclick="lijstRij('unieke_kenmerken','t-kenmerken')">+ Kenmerk</button>
@@ -940,10 +940,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <details style="margin-top:8px;font-size:13px;color:var(--muted)">
         <summary style="cursor:pointer;font-weight:600;color:var(--dark)">Wat is het verschil tussen een CV en een Management Profile?</summary>
         <div style="margin-top:6px;line-height:1.5">
-          Upload je <b>CV</b> (een klassiek, chronologisch overzicht van je loopbaan: functies, werkgevers, data, diploma's — antwoordt op "wat heb ik gedaan en wanneer?")
-          en/of je <b>Management Profile</b> (een verhalend portret dat je realisaties, impact en leiderschapsstijl belicht — antwoordt op "wie ben ik als leider en welke waarde lever ik?").
+          Upload je <b>CV</b> (een klassiek, chronologisch overzicht van je loopbaan: functies, werkgevers, data, diploma's, antwoordt op "wat heb ik gedaan en wanneer?")
+          en/of je <b>Management Profile</b> (een verhalend portret dat je realisaties, impact en leiderschapsstijl belicht, antwoordt op "wie ben ik als leider en welke waarde lever ik?").
           Het CV is je feitelijke track record; het Management Profile is je verhaal en positionering.
-          Heb je enkel een CV? Geen probleem — wij helpen je er een Management Profile uit op te maken.
+          Heb je enkel een CV? Geen probleem, wij helpen je er een Management Profile uit op te maken.
           Deze documenten zijn jouw bijlagen; ze komen <b>niet</b> in het TNL Profiel zelf.
         </div>
       </details>
@@ -951,7 +951,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
       <div class="subkop">Positionering</div>
       <label class="off-lbl">Pitch (oneliner)<input id="c-pitch" placeholder='bv. "Ik help KMO-zaakvoerders sturen op feiten – niet op buikgevoel."'></label>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Profieltekst — beschrijvend (komt op het TNL Expert Profiel)</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Profieltekst, beschrijvend (komt op het TNL Expert Profiel)</div>
       <textarea id="c-profieltekst" class="cons-ta" style="min-height:120px" placeholder="Vloeiende, verkopende tekst die de essentie van de consultant beschrijft. Tip: laat desktop-Claude van de opsomming (CV/functies) een mooie tekst maken en plak die hier."></textarea>
       <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 2px 4px">Kerncompetenties</div>
       <div id="c-kerncomp"></div>
@@ -989,7 +989,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="subkop">Metroperrons die ik lever</div>
       <div id="c-nextstones"></div>
 
-      <div class="subkop">Tarief (consultant — voor latere marge)</div>
+      <div class="subkop">Tarief (consultant, voor latere marge)</div>
       <div class="dyn-rij" style="flex-wrap:wrap;gap:16px;align-items:flex-end">
         <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">€ / uur
           <input id="c-tar-uur" type="number" step="1" min="0" style="width:120px"></label>
@@ -1057,7 +1057,7 @@ document.querySelectorAll('nav button').forEach(b => {
 });
 
 // ============================================================
-// INIT — lijnen laden voor naam->code mapping (draait pas NA login)
+// INIT, lijnen laden voor naam->code mapping (draait pas NA login)
 // ============================================================
 let _appGebooot = false;
 async function boot() {
@@ -1082,7 +1082,7 @@ async function boot() {
 }
 
 // ============================================================
-// LOGIN-GATE — app start pas na aanmelden (rol 'authenticated')
+// LOGIN-GATE, app start pas na aanmelden (rol 'authenticated')
 // ============================================================
 async function doeAfmelden() {
   await TNL.signOut();
@@ -1107,7 +1107,7 @@ async function doeAfmelden() {
                        document.getElementById('login-pw').value);
       await start();
     } catch (err) {
-      errEl.textContent = 'Aanmelden mislukt — controleer e-mail/wachtwoord.';
+      errEl.textContent = 'Aanmelden mislukt, controleer e-mail/wachtwoord.';
       console.error(err);
     } finally {
       btn.disabled = false; btn.textContent = 'Aanmelden';
@@ -1196,7 +1196,7 @@ function leesMail() {
   const delen = [];
   if (scoreCount) delen.push(`${scoreCount} scores`);
   if (Object.keys(klant).length) delen.push('klantgegevens');
-  status.innerHTML = `<span style="color:var(--green)">✓ Ingelezen: ${delen.join(' + ')} — ${new Date().toLocaleTimeString('nl-BE')}</span>`;
+  status.innerHTML = `<span style="color:var(--green)">✓ Ingelezen: ${delen.join(' + ')}, ${new Date().toLocaleTimeString('nl-BE')}</span>`;
 }
 
 // Naam-normalisatie + fuzzy contact-match (voor de ontdubbel-suggestie bij inlezen).
@@ -1225,7 +1225,7 @@ function besteContactMatch(contacten, naam, email) {
 async function opslaanGesprek() {
   const status = document.getElementById('mail-status');
   if (!Object.keys(gesprek.scores).length && !Object.keys(gesprek.klant).length) {
-    status.innerHTML = '<span style="color:var(--red)">Niets om op te slaan — lees eerst een mail in.</span>';
+    status.innerHTML = '<span style="color:var(--red)">Niets om op te slaan, lees eerst een mail in.</span>';
     return;
   }
   const btn = document.getElementById('btn-opslaan');
@@ -1293,7 +1293,7 @@ async function opslaanGesprek() {
         (s.invuller || '').toLowerCase().trim() === invuller.toLowerCase().trim() &&
         (s.datum || '') === datumKey);
       if (dup && !confirm('Er bestaat al een quickscan voor "' + invuller + '" bij "' + bedrijfNaam + '" op ' + datumKey + '.\n\nOK = overschrijven met deze inhoud.\nAnnuleren = niets doen.')) {
-        status.innerHTML = '<span style="color:var(--muted)">Opslaan geannuleerd — bestaande scan behouden.</span>';
+        status.innerHTML = '<span style="color:var(--muted)">Opslaan geannuleerd, bestaande scan behouden.</span>';
         btn.disabled = false; btn.textContent = 'Opslaan in dossier';
         return;
       }
@@ -1303,7 +1303,7 @@ async function opslaanGesprek() {
     gesprek.scanId = r && r.quickscan_id;
     const bnaam = esc(bedrijfNaam || '(onbekend)');
     const cnaam = esc(invuller || 'het contact');
-    status.innerHTML = `<span style="color:var(--green)">✓ Opgeslagen. Bedrijf <b>${bnaam}</b> en contact <b>${cnaam}</b> staan nu in de <b>Database</b>-tab — klap het bedrijf open → sectie <b>Quickscans</b> → <b>Bekijk scores</b>.</span>`;
+    status.innerHTML = `<span style="color:var(--green)">✓ Opgeslagen. Bedrijf <b>${bnaam}</b> en contact <b>${cnaam}</b> staan nu in de <b>Database</b>-tab, klap het bedrijf open → sectie <b>Quickscans</b> → <b>Bekijk scores</b>.</span>`;
     if (typeof laadDatabase === 'function') laadDatabase();   // Database-tab alvast verversen
   } catch (e) {
     status.innerHTML = '<span style="color:var(--red)">✗ Opslaan mislukt: ' + (e.message || e) + '</span>';
@@ -1371,7 +1371,7 @@ function wisMail() {
 }
 
 // ============================================================
-// DOSSIER-OVERZICHT (CRM) — alle bedrijven met hun contacten + scans
+// DOSSIER-OVERZICHT (CRM), alle bedrijven met hun contacten + scans
 // Leest de nieuwe unified tabellen bedrijf + contact + quickscan (migratie 0020).
 // ============================================================
 let dossierData = {
@@ -1515,16 +1515,16 @@ function scanRij(s, bedrijfId) {
   const kanAfleiden = !heeftRuw && s.ruwe_mail && s.ruwe_mail.indexOf('BEREKENING PER DOMEIN') >= 0;
   const ruwCel = heeftRuw ? '<span title="ruwe antwoorden aanwezig">✓ ruw</span>'
     : kanAfleiden ? '<span style="color:var(--blue)" title="antwoorden afleidbaar uit de berekening in de mail">≈ afgeleid</span>'
-    : '<span style="color:var(--muted)" title="oude scan zonder losse antwoorden of berekening">—</span>';
+    : '<span style="color:var(--muted)" title="oude scan zonder losse antwoorden of berekening">-</span>';
   const contact = s.contact_id ? dossierData.contactById[s.contact_id] : null;
-  const invNaam = contact ? contactNaam(contact) : (s.invuller || '—');
+  const invNaam = contact ? contactNaam(contact) : (s.invuller || '-');
   const koppel = s.contact_id ? ''
     : `<button class="koppel-btn" onclick="event.stopPropagation();openKoppelContact('${escAttr(s.id)}')">+ contact</button>`;
   return `<tr>
     <td>${esc(invNaam)} ${koppel}</td>
     <td>${esc((contact && contact.functie) || s.invuller_functie || '')}</td>
     <td>${esc(s.datum || '')}</td>
-    <td class="scan-gem" style="color:${z ? z.kleur : 'inherit'}">${gem != null ? Number(gem).toFixed(1) + ' / 4' : '—'}</td>
+    <td class="scan-gem" style="color:${z ? z.kleur : 'inherit'}">${gem != null ? Number(gem).toFixed(1) + ' / 4' : '-'}</td>
     <td>${ruwCel}</td>
     <td style="text-align:right"><button class="scan-bekijk" onclick="toonScanDetail('${escAttr(s.id)}')">Bekijk scores ↑</button></td>
   </tr>`;
@@ -1538,7 +1538,7 @@ function scanTabel(b, scans) {
       <tbody>${scans.map(s => scanRij(s, b.id)).join('')}</tbody></table>`;
 }
 
-// Scans die (nog) aan geen enkel bedrijf hangen — koppelbaar via de contact-picker.
+// Scans die (nog) aan geen enkel bedrijf hangen, koppelbaar via de contact-picker.
 function losseScansKaart() {
   const scans = dossierData.losseScans;
   const open = !!dossierOpen['__los'];
@@ -1567,7 +1567,7 @@ function voorstelDoel(v) {
   if (v.entiteit === 'contact') {
     const c = dossierData.contactById[v.record_id];
     if (!c) return 'Contact (verwijderd?)';
-    return contactNaam(c) + (bedrijfNaamVan(c) ? ' — ' + bedrijfNaamVan(c) : '');
+    return contactNaam(c) + (bedrijfNaamVan(c) ? ', ' + bedrijfNaamVan(c) : '');
   }
   const b = dossierData.bedrijfById[v.record_id];
   return b ? (b.naam || '(naamloos bedrijf)') : 'Bedrijf (verwijderd?)';
@@ -1585,7 +1585,7 @@ function renderVoorstellen() {
     return `<div class="vst-rij">
       <div class="vst-wat">
         <b>${esc(voorstelDoel(v))}</b> · ${esc(veld)}
-        <div class="vst-waarde"><span class="oud">${esc(v.oude_waarde || '—')}</span> → <span class="nieuw">${esc(v.nieuwe_waarde || '—')}</span>${v.bron ? ' <span style="opacity:.6">(' + esc(v.bron) + ')</span>' : ''}</div>
+        <div class="vst-waarde"><span class="oud">${esc(v.oude_waarde || '-')}</span> → <span class="nieuw">${esc(v.nieuwe_waarde || '-')}</span>${v.bron ? ' <span style="opacity:.6">(' + esc(v.bron) + ')</span>' : ''}</div>
       </div>
       <button class="vst-knop vst-ja" onclick="keurVoorstel('${escAttr(v.id)}',true)">✓ Overnemen</button>
       <button class="vst-knop vst-nee" onclick="keurVoorstel('${escAttr(v.id)}',false)">✕ Behouden</button>
@@ -1642,7 +1642,7 @@ function toonScanDetail(scanId) {
   document.getElementById('klant-blok').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Vragenlijst van de quickscan (v2.4, 30 vragen) — index-gelijk met het `antwoorden`-object.
+// Vragenlijst van de quickscan (v2.4, 30 vragen), index-gelijk met het `antwoorden`-object.
 // Alleen bedoeld om de opgeslagen antwoordwaarden leesbaar te labelen (geen DB-opslag per scan).
 // Wijzigen de quickscan-vragen ooit? Werk dan deze lijst bij (of vraag het mij).
 const QUICKSCAN_VRAGEN = [
@@ -1839,7 +1839,7 @@ function renderKoppelLijst() {
   el.innerHTML = lijst.map(c => {
     const bn = bedrijfNaamVan(c);
     const sub = [c.functie, c.email].filter(Boolean).join(' · ');
-    return `<div class="km-item" onclick="kiesKoppelContact('${escAttr(c.id)}')"><strong>${esc(contactNaam(c))}</strong>${bn ? ' — ' + esc(bn) : ''}${sub ? '<small>' + esc(sub) + '</small>' : ''}</div>`;
+    return `<div class="km-item" onclick="kiesKoppelContact('${escAttr(c.id)}')"><strong>${esc(contactNaam(c))}</strong>${bn ? ', ' + esc(bn) : ''}${sub ? '<small>' + esc(sub) + '</small>' : ''}</div>`;
   }).join('');
 }
 async function kiesKoppelContact(contactId) {
@@ -1879,7 +1879,7 @@ async function ontkoppelScan() {
 // dossierData wordt indien nodig gevuld door dbBekijkScores/dbKoppelScan vanuit de Database-tab.
 
 // ============================================================
-// TABBLAD Database — volledig bewerkbaar overzicht bedrijf + contacten
+// TABBLAD Database, volledig bewerkbaar overzicht bedrijf + contacten
 // ============================================================
 const DB_TITELS = ['', 'Dhr.', 'Mevr.'];
 const DB_TALEN = ['NL', 'FR', 'EN'];
@@ -1953,13 +1953,13 @@ function renderDatabase() {
   html += bedrijven.length ? bedrijven.map(dbKaart).join('') : ((losse.length || losseScans.length) ? '' : '<span style="color:var(--muted)">Geen bedrijven gevonden.</span>');
   lijst.innerHTML = html;
 }
-// Goedkeuringsqueue in de Database-tab (zelfstandig — eigen dbData i.p.v. dossierData).
+// Goedkeuringsqueue in de Database-tab (zelfstandig, eigen dbData i.p.v. dossierData).
 function voorstelDoelDb(v) {
   if (v.entiteit === 'contact') {
     const c = (dbData.contactById || {})[v.record_id];
     if (!c) return 'Contact';
     const b = c.bedrijf_id && (dbData.bedrijfById || {})[c.bedrijf_id];
-    return contactNaam(c) + (b && b.naam ? ' — ' + b.naam : '');
+    return contactNaam(c) + (b && b.naam ? ', ' + b.naam : '');
   }
   const b = (dbData.bedrijfById || {})[v.record_id];
   return b ? (b.naam || '(naamloos bedrijf)') : 'Bedrijf';
@@ -1976,7 +1976,7 @@ function renderDbVoorstellen() {
     const veld = VELD_LABEL[v.veld] || v.veld;
     return `<div class="vst-rij">
       <div class="vst-wat"><b>${esc(voorstelDoelDb(v))}</b> · ${esc(veld)}
-        <div class="vst-waarde"><span class="oud">${esc(v.oude_waarde || '—')}</span> → <span class="nieuw">${esc(v.nieuwe_waarde || '—')}</span>${v.bron ? ' <span style="opacity:.6">(' + esc(v.bron) + ')</span>' : ''}</div>
+        <div class="vst-waarde"><span class="oud">${esc(v.oude_waarde || '-')}</span> → <span class="nieuw">${esc(v.nieuwe_waarde || '-')}</span>${v.bron ? ' <span style="opacity:.6">(' + esc(v.bron) + ')</span>' : ''}</div>
       </div>
       <button class="vst-knop vst-ja" onclick="keurDbVoorstel('${escAttr(v.id)}',true)">✓ Overnemen</button>
       <button class="vst-knop vst-nee" onclick="keurDbVoorstel('${escAttr(v.id)}',false)">✕ Behouden</button>
@@ -2012,7 +2012,7 @@ function dbScanTabel(scans, opts) {
     return `<tr>
       <td style="padding:4px 8px;white-space:nowrap">${esc(s.datum || '')}</td>
       <td style="padding:4px 8px;white-space:nowrap">${esc(s.invuller || '')}</td>
-      <td style="padding:4px 8px;color:${dbScanKleur(g)};font-weight:600;white-space:nowrap">${g != null ? g.toFixed(1) + ' / 4' : '—'}</td>
+      <td style="padding:4px 8px;color:${dbScanKleur(g)};font-weight:600;white-space:nowrap">${g != null ? g.toFixed(1) + ' / 4' : '-'}</td>
       <td style="padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap">${ruw}</td>
       <td style="padding:4px 8px;white-space:nowrap"><button class="db-btn" style="padding:3px 8px;white-space:nowrap" onclick="dbBekijkScores('${escAttr(s.id)}')">Bekijk scores</button></td>
       ${acties}
@@ -2234,7 +2234,7 @@ function dbKaart(b) {
       ${dbInput(b, 'btw_nummer', 'BTW', true, '135px')}
       ${dbNotitie(b, 'notities', 'Notitie', true)}
       ${b.id ? `<button class="db-btn del" onclick="verwijderDbBedrijf('${b.__oid}')">Verwijder bedrijf</button>`
-             : '<span class="db-mini">Vul de naam in — automatisch opgeslagen (tab/enter).</span>'}
+             : '<span class="db-mini">Vul de naam in, automatisch opgeslagen (tab/enter).</span>'}
     </div>`;
     const contactenHtml = contacten.map(dbContactBlok).join('');
     const contactSectie = b.id
@@ -2280,7 +2280,7 @@ function dbContactBlok(c) {
   // Echt scan-teken: enkel als er een quickscan-record aan dit contact hangt (klikbaar → scores).
   const cScans = (dbData.scansPerContact && dbData.scansPerContact[c.id]) || [];
   const scanBadge = cScans.length
-    ? `<button class="db-badge" style="background:#e6f2ec;color:#1f7a4d;border:none;cursor:pointer" title="Bekijk scores" onclick="dbBekijkScores('${escAttr(cScans[0].id)}')">📊 ${cScans.length} scan${cScans.length !== 1 ? 's' : ''} — bekijk</button>`
+    ? `<button class="db-badge" style="background:#e6f2ec;color:#1f7a4d;border:none;cursor:pointer" title="Bekijk scores" onclick="dbBekijkScores('${escAttr(cScans[0].id)}')">📊 ${cScans.length} scan${cScans.length !== 1 ? 's' : ''}, bekijk</button>`
     : '';
   const verhuis = (c.id && c.bedrijf_id) ? `<details class="verhuis">
       <summary title="Verhuis naar een ander bedrijf">→</summary>
@@ -2306,7 +2306,7 @@ function dbContactBlok(c) {
         ${scanBadge}
         ${verhuis}
         ${c.id ? `<button class="db-btn del" onclick="verwijderDbContact('${c.__oid}')">Verwijder</button>`
-               : '<span class="db-mini">Vul een naam of e-mail in — automatisch opgeslagen (tab/enter).</span>'}
+               : '<span class="db-mini">Vul een naam of e-mail in, automatisch opgeslagen (tab/enter).</span>'}
       </span>
     </div>
   </div>`;
@@ -2341,7 +2341,7 @@ async function bewaarDbBedrijf(oid) {
       if (match && match.length) {
         const lijst = match.map(m => '  • ' + m.naam + '  (' + Math.round(m.gelijkenis * 100) + '% · ' + m.aantal_contacten + ' contact' + (m.aantal_contacten !== 1 ? 'en' : '') + ')').join('\n');
         if (!confirm('"' + b.naam.trim() + '" lijkt op bestaand(e) bedrijf/bedrijven:\n\n' + lijst + '\n\nToch een NIEUW bedrijf aanmaken?\n(Annuleer om in de plaats het bestaande te gebruiken.)')) {
-          dbStatus('Opslaan geannuleerd — gebruik het bestaande bedrijf uit de lijst.', 'err'); return;
+          dbStatus('Opslaan geannuleerd, gebruik het bestaande bedrijf uit de lijst.', 'err'); return;
         }
       }
     } catch (e) { /* check faalt niet-blokkerend */ }
@@ -2390,7 +2390,7 @@ function nieuwDbBedrijf() {
   const nb = { __oid: 'b_new_' + Math.random().toString(36).slice(2), status: 'prospect', naam: '' };
   dbData.bedrijven.unshift(nb);
   dbOpen[nb.__oid] = true; renderDatabase();
-  dbStatus('Nieuw bedrijf — vul de naam in en bewaar.', 'ok');
+  dbStatus('Nieuw bedrijf, vul de naam in en bewaar.', 'ok');
 }
 // ---- Plak + AI-invuller: bedrijfsgegevens uit geplakte webtekst halen ----
 // Gebruikt de Claude API rechtstreeks vanuit de browser (zoals de Prospectie-app).
@@ -2434,7 +2434,7 @@ async function aiPaste(e, oid) {
         const t = document.getElementById('ai-thumb-' + oid);
         if (t) t.innerHTML = '<img src="data:' + img.media_type + ';base64,' + img.data + '" style="max-height:70px;border-radius:6px;border:1px solid #cdd7e3;vertical-align:middle"> ' +
           '<button class="db-btn" style="padding:3px 8px" onclick="aiClearImg(\'' + oid + '\')">✕ afbeelding</button>';
-        dbStatus('Afbeelding geplakt — klik "Velden invullen".', 'ok');
+        dbStatus('Afbeelding geplakt, klik "Velden invullen".', 'ok');
       } catch (err) { dbStatus('Afbeelding lezen mislukt: ' + (err.message || err), 'err'); }
       return;
     }
@@ -2468,7 +2468,7 @@ async function aiExtractBedrijf(tekst, naam, key, image) {
   if (!resp.ok) {
     const t = await resp.text();
     if (resp.status === 401) localStorage.removeItem('tnl_claude_key');
-    throw new Error('API ' + resp.status + ' — ' + t.slice(0, 160));
+    throw new Error('API ' + resp.status + ', ' + t.slice(0, 160));
   }
   const data = await resp.json();
   const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();
@@ -2495,7 +2495,7 @@ async function aiVulBedrijf(oid) {
     if (n && b.naam && String(b.naam).trim()) await dbSaveField(oid, true);   // AI-invulling meteen opslaan
     renderDatabase();
     dbStatus(n
-      ? '✨ AI vulde ' + n + ' leeg veld' + (n > 1 ? 'en' : '') + ' in — controleer en klik "Bewaar bedrijf".'
+      ? '✨ AI vulde ' + n + ' leeg veld' + (n > 1 ? 'en' : '') + ' in, controleer en klik "Bewaar bedrijf".'
       : 'AI vond geen nieuwe gegevens.', n ? 'ok' : '');
   } catch (e) {
     dbStatus('AI mislukt: ' + (e.message || e), 'err');
@@ -2555,11 +2555,11 @@ document.querySelector('nav button[data-tab="database"]').addEventListener('clic
 
 <script>
 // ============================================================
-// TABBLAD ② — CATALOGUS-BEHEER
+// TABBLAD ②, CATALOGUS-BEHEER
 // ============================================================
 var TARIEVEN = {};         // { rol: { uurprijs, halvedagprijs, heledagprijs } }
 var TARIEF_ROLLEN = [];    // [{ rol, uurprijs, halvedagprijs, heledagprijs }] geordend
-var KM_VERG = {};          // { kost_per_km, snelheid_kmu, uren_factor } — globale km-vergoeding
+var KM_VERG = {};          // { kost_per_km, snelheid_kmu, uren_factor }, globale km-vergoeding
 var catStations = [];
 var catArtikelen = [];
 var catGeladen = false;
@@ -2582,7 +2582,7 @@ function clusterType(d){
   if (d.scopeGroep === 'Optioneel')  return 'optioneel';
   return 'normaal';
 }
-// Sorteren (bij openen): rijen met week eerst (oplopend), dan zonder week — optioneel vóór maatwerk.
+// Sorteren (bij openen): rijen met week eerst (oplopend), dan zonder week, optioneel vóór maatwerk.
 // Week-syntax 1.1 = eerste deliverable in week 1. Regie/maatwerk tellen als 'geen week'.
 function sorteerWbs(wbs){
   const isRegie = d => clusterType(d)==='optioneel' && !(Number(d.aantal)>0);
@@ -2738,7 +2738,7 @@ function renderVolnaam() {
   const s = catStations.find(x => x.id===edit.station_id);
   const l = s ? LIJNEN.find(x => x.code===s.lijn_code) : null;
   const sub = document.getElementById('a-subnaam').value.trim();
-  document.getElementById('a-volnaam').value = [l?.naam, s?.naam, sub].filter(Boolean).join(' — ');
+  document.getElementById('a-volnaam').value = [l?.naam, s?.naam, sub].filter(Boolean).join(', ');
 }
 
 function renderScopeSuggesties() {
@@ -2752,7 +2752,7 @@ function renderScopeSuggesties() {
 const EENHEDEN = [['uur','u'],['halvedag','hd'],['heledag','d']];
 const KLANT_EENHEDEN = [['uur','uur'],['dag','dag']];
 function rolOptiesHtml(sel) {
-  return ['<option value="">— rol —</option>'].concat(
+  return ['<option value="">- rol -</option>'].concat(
     TARIEF_ROLLEN.map(t => `<option value="${escAttr(t.rol)}"${sel===t.rol?' selected':''}>${escAttr(t.afkorting||t.rol)}</option>`)
   ).join('');
 }
@@ -2802,14 +2802,14 @@ function checkProcesstap(i) {
   const ok = !txt || /^\S+\s+.*\bvan\b/i.test(txt);
   if (ta) ta.style.borderColor = ok ? '' : 'var(--red)';
   if (el) el.textContent = ok ? ''
-    : '⚠ Processtap "' + txt + '" — schrijf als "werkwoord + van + zelfstandig naamwoord", bv. "Opmaken van het projectplan".';
+    : '⚠ Processtap "' + txt + '", schrijf als "werkwoord + van + zelfstandig naamwoord", bv. "Opmaken van het projectplan".';
 }
 
 // Deliverables = vrije lijst "wat is af als het af is".
 function renderDeliverables() {
   const lijst = edit.deliverables || (edit.deliverables = []);
   const rijen = lijst.map((d,i) =>
-    `<div class="deliv-rij"><input value="${escAttr(d)}" placeholder="wat is af als het af is — bv. Een gevalideerd projectplan" oninput="edit.deliverables[${i}]=this.value" onkeydown="if(event.key==='Enter'){this.blur();}"><button class="x" title="verwijderen" onclick="edit.deliverables.splice(${i},1);renderDeliverables()">×</button></div>`
+    `<div class="deliv-rij"><input value="${escAttr(d)}" placeholder="wat is af als het af is, bv. Een gevalideerd projectplan" oninput="edit.deliverables[${i}]=this.value" onkeydown="if(event.key==='Enter'){this.blur();}"><button class="x" title="verwijderen" onclick="edit.deliverables.splice(${i},1);renderDeliverables()">×</button></div>`
   ).join('');
   document.getElementById('a-deliverables').innerHTML = lijst.length ? rijen : '<div class="leeg">Nog geen deliverables.</div>';
 }
@@ -2819,7 +2819,7 @@ function delivRij() { (edit.deliverables || (edit.deliverables = [])).push(''); 
 const SPECIALE_CLUSTERS = ['Optioneel','Maatwerk','OutOfScope'];
 function clusterOptiesHtml(sel) {
   const namen = [...new Set((edit.clusters||[]).map(c=>(c.naam||'').trim()).filter(Boolean))];
-  let opts = `<option value=""${!sel?' selected':''}>— cluster —</option>`;
+  let opts = `<option value=""${!sel?' selected':''}>- cluster -</option>`;
   opts += namen.map(n=>`<option value="${escAttr(n)}"${sel===n?' selected':''}>${escAttr(n)}</option>`).join('');
   if (sel && !namen.includes(sel) && !SPECIALE_CLUSTERS.includes(sel))
     opts += `<option value="${escAttr(sel)}" selected>${escAttr(sel)}</option>`;
@@ -2868,14 +2868,14 @@ function renderTotalen() {
        <span>Opties: <b>€${c.opties.toLocaleString('nl-BE')}</b></span>
        <span>Doorlooptijd: <b>${c.doorlooptijd||0} wk</b></span>
      </div>
-     ${rollenLeeg?'<div class="leeg">Nog geen rollen — voeg ze toe in tabblad Tarieven om kosten te berekenen.</div>':''}`;
+     ${rollenLeeg?'<div class="leeg">Nog geen rollen, voeg ze toe in tabblad Tarieven om kosten te berekenen.</div>':''}`;
 }
 
-// ---------- TABBLAD ④ — TARIEVEN ----------
+// ---------- TABBLAD ④, TARIEVEN ----------
 document.querySelector('nav button[data-tab="tarieven"]').addEventListener('click', laadTarieven);
 document.querySelector('nav button[data-tab="offerte"]').addEventListener('click', laadOfferteTab);
 
-// ========== TABBLAD ⑤ — TOOLS ==========
+// ========== TABBLAD ⑤, TOOLS ==========
 let toolsCache = [];
 let toolEdit = null;
 const MODULE_WIE = ['TNL','Klant','Beide'];
@@ -2948,7 +2948,7 @@ function labelRij(veld, cid) { (toolEdit[veld]||(toolEdit[veld]=[])).push({label
 function renderModules() {
   const l = toolEdit.modules || (toolEdit.modules=[]);
   document.getElementById('t-modules').innerHTML = l.length ? l.map((m,i) => {
-    const opts = `<option value=""${!m.wie_beheert?' selected':''}>— wie —</option>` + MODULE_WIE.map(w=>`<option${m.wie_beheert===w?' selected':''}>${w}</option>`).join('');
+    const opts = `<option value=""${!m.wie_beheert?' selected':''}>- wie -</option>` + MODULE_WIE.map(w=>`<option${m.wie_beheert===w?' selected':''}>${w}</option>`).join('');
     return `<div class="proces-rij"><input style="flex:none;width:130px" placeholder="module" value="${escAttr(m.naam||'')}" oninput="toolEdit.modules[${i}].naam=this.value"><input placeholder="omschrijving" value="${escAttr(m.omschrijving||'')}" oninput="toolEdit.modules[${i}].omschrijving=this.value"><select onchange="toolEdit.modules[${i}].wie_beheert=this.value">${opts}</select><button class="x" onclick="toolEdit.modules.splice(${i},1);renderModules()">×</button></div>`;
   }).join('') : '<div class="leeg">Geen modules.</div>';
 }
@@ -2956,7 +2956,7 @@ function moduleRij() { (toolEdit.modules||(toolEdit.modules=[])).push({naam:'',o
 function renderMaatwerk() {
   const l = toolEdit.maatwerk || (toolEdit.maatwerk=[]);
   document.getElementById('t-maatwerk').innerHTML = l.length ? l.map((m,i) => {
-    const opts = `<option value=""${!m.aanpak?' selected':''}>— aanpak —</option>` + MAATWERK_AANPAK.map(a=>`<option${m.aanpak===a?' selected':''}>${a}</option>`).join('');
+    const opts = `<option value=""${!m.aanpak?' selected':''}>- aanpak -</option>` + MAATWERK_AANPAK.map(a=>`<option${m.aanpak===a?' selected':''}>${a}</option>`).join('');
     return `<div class="proces-rij"><input style="flex:none;width:130px" placeholder="item" value="${escAttr(m.item||'')}" oninput="toolEdit.maatwerk[${i}].item=this.value"><input placeholder="omschrijving" value="${escAttr(m.omschrijving||'')}" oninput="toolEdit.maatwerk[${i}].omschrijving=this.value"><select style="width:124px" onchange="toolEdit.maatwerk[${i}].aanpak=this.value">${opts}</select><button class="x" onclick="toolEdit.maatwerk.splice(${i},1);renderMaatwerk()">×</button></div>`;
   }).join('') : '<div class="leeg">Geen maatwerk.</div>';
 }
@@ -3038,7 +3038,7 @@ async function genereerFiche(tool) {
   await TNL.updateTool(tool.id, { pdf_url: url, pdf_naam: naam });
   return { url, naam };
 }
-// Productfiche als vector-PDF (jsPDF, geen screenshot) — betrouwbaar gevuld.
+// Productfiche als vector-PDF (jsPDF, geen screenshot), betrouwbaar gevuld.
 function buildFichePdf(tool) {
   const JS = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
   const doc = new JS({ unit:'mm', format:'a4' });
@@ -3052,9 +3052,9 @@ function buildFichePdf(tool) {
     doc.splitTextToSize(String(t), RIGHT-M).forEach(ln=>{ ensure(5); doc.text(ln,M,y); y+=5; }); };
   const h2=t=>{ ensure(14); y+=3; doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...BLUE); doc.text(t,M,y); y+=1.5;
     doc.setDrawColor(...BLUE); doc.setLineWidth(0.4); doc.line(M,y,RIGHT,y); y+=5; };
-  const bullets=arr=>{ if(!arr||!arr.length){ para('—'); return; } doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...TXT);
+  const bullets=arr=>{ if(!arr||!arr.length){ para('-'); return; } doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...TXT);
     arr.forEach(it=>{ doc.splitTextToSize(String(it), RIGHT-M-4).forEach((ln,i)=>{ ensure(5); doc.text((i===0?'•  ':'   ')+ln, M, y); y+=5; }); }); };
-  const labels=arr=>{ if(!arr||!arr.length){ para('—'); return; } doc.setFontSize(10);
+  const labels=arr=>{ if(!arr||!arr.length){ para('-'); return; } doc.setFontSize(10);
     arr.forEach(o=>{ const txt='•  '+(o.label||'')+(o.omschrijving?(': '+o.omschrijving):'');
       doc.splitTextToSize(txt, RIGHT-M-4).forEach(ln=>{ ensure(5); doc.setFont('helvetica','normal'); doc.setTextColor(...TXT); doc.text(ln,M,y); y+=5; }); }); };
   const table=(headers,rows,widths)=>{
@@ -3079,7 +3079,7 @@ function buildFichePdf(tool) {
 
   h2('1. Identificatie');
   [['Naam',tool.naam],['Type',tool.type],['URL',tool.url],['Toegang',tool.toegang],['Versie',tool.versie]].forEach(([k,v])=>{
-    const lines = doc.splitTextToSize(String(v||'—'), RIGHT-M-30);
+    const lines = doc.splitTextToSize(String(v||'-'), RIGHT-M-30);
     const rh = Math.max(1,lines.length)*5;
     ensure(rh);
     doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...TXT); doc.text(k+':',M,y);
@@ -3099,11 +3099,11 @@ function buildFichePdf(tool) {
 }
 function buildFicheHtml(t) {
   const e = escAttr;
-  const ul = a => (a&&a.length) ? '<ul>'+a.map(x=>`<li>${e(x)}</li>`).join('')+'</ul>' : '<p class="leeg2">—</p>';
+  const ul = a => (a&&a.length) ? '<ul>'+a.map(x=>`<li>${e(x)}</li>`).join('')+'</ul>' : '<p class="leeg2">-</p>';
   const rij = c => '<tr>'+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
-  const modT = (t.modules&&t.modules.length) ? `<table><thead><tr><th>Module</th><th>Omschrijving</th><th>Wie beheert</th></tr></thead><tbody>${t.modules.map(m=>rij([e(m.naam||''),e(m.omschrijving||''),e(m.wie_beheert||'')])).join('')}</tbody></table>` : '<p class="leeg2">—</p>';
-  const lblL = a => (a&&a.length) ? '<ul>'+a.map(o=>`<li><b>${e(o.label||'')}</b>${o.omschrijving?' — '+e(o.omschrijving):''}</li>`).join('')+'</ul>' : '<p class="leeg2">—</p>';
-  const maatT = (t.maatwerk&&t.maatwerk.length) ? `<table><thead><tr><th>Item</th><th>Omschrijving</th><th>Aanpak</th></tr></thead><tbody>${t.maatwerk.map(m=>rij([e(m.item||''),e(m.omschrijving||''),e(m.aanpak||'')])).join('')}</tbody></table>` : '<p class="leeg2">—</p>';
+  const modT = (t.modules&&t.modules.length) ? `<table><thead><tr><th>Module</th><th>Omschrijving</th><th>Wie beheert</th></tr></thead><tbody>${t.modules.map(m=>rij([e(m.naam||''),e(m.omschrijving||''),e(m.wie_beheert||'')])).join('')}</tbody></table>` : '<p class="leeg2">-</p>';
+  const lblL = a => (a&&a.length) ? '<ul>'+a.map(o=>`<li><b>${e(o.label||'')}</b>${o.omschrijving?', '+e(o.omschrijving):''}</li>`).join('')+'</ul>' : '<p class="leeg2">-</p>';
+  const maatT = (t.maatwerk&&t.maatwerk.length) ? `<table><thead><tr><th>Item</th><th>Omschrijving</th><th>Aanpak</th></tr></thead><tbody>${t.maatwerk.map(m=>rij([e(m.item||''),e(m.omschrijving||''),e(m.aanpak||'')])).join('')}</tbody></table>` : '<p class="leeg2">-</p>';
   const heeftRek = t.rekeningstructuur && t.rekeningstructuur.length;
   const rekS = heeftRek ? `<h2>8. Rekeningstructuur</h2><table><thead><tr><th>Rubriek</th><th>Cluster</th><th>Voorbeeldrekeningen</th></tr></thead><tbody>${t.rekeningstructuur.map(x=>rij([e(x.rubriek||''),e(x.cluster||''),e(x.voorbeeldrekeningen||'')])).join('')}</tbody></table>` : '';
   return `<style>
@@ -3292,7 +3292,7 @@ function initOffMeta(){
   if(!offMeta.verplaatsingTekst) offMeta.verplaatsingTekst=buildKmClause();
   set('off-verpl-tekst',offMeta.verplaatsingTekst);
 }
-function offArtikelNaam(a){ const s=a.station,l=s&&s.lijn; return [l&&l.naam, s&&s.naam, a.subnaam].filter(Boolean).join(' — ') || a.subnaam || '(naamloos)'; }
+function offArtikelNaam(a){ const s=a.station,l=s&&s.lijn; return [l&&l.naam, s&&s.naam, a.subnaam].filter(Boolean).join(', ') || a.subnaam || '(naamloos)'; }
 function offLijn(a){
   const sel=offSelectie[a.id]||{include:false,opties:true};
   const calc=TNL.berekenFix({ wbs:a.wbs||[] }, OFF_TARIEVEN);
@@ -3310,7 +3310,7 @@ function renderOffNextstones(){
         <span>${escAttr(offArtikelNaam(a))}</span></label>
       <label style="font-size:12px;color:var(--muted);display:flex;gap:5px;align-items:center${sel.include?'':';opacity:.4'}">
         <input type="checkbox" ${sel.opties!==false?'checked':''} ${sel.include?'':'disabled'} onchange="offToggle('${a.id}','opties',this.checked)"> opties mee</label>
-      <span style="width:120px;text-align:right;font-weight:600">${sel.include?euro(bedrag):'—'}</span>
+      <span style="width:120px;text-align:right;font-weight:600">${sel.include?euro(bedrag):'-'}</span>
     </div>`;
   }).join('');
 }
@@ -3443,9 +3443,9 @@ function toonOfferte(){
     +`<base href="${location.href}"><style>${styles}\nbody{margin:0;background:#fff}\n#offerte-print{display:block !important}</style></head>`
     +`<body><div id="offerte-print">${bodyHtml}</div></body></html>`;
   const w=window.open('','_blank');
-  if(!w){ setOffStatus('Pop-up geblokkeerd — sta pop-ups toe voor deze site.','err'); alert('Pop-up geblokkeerd. Sta pop-ups toe voor deze site en probeer opnieuw.'); return; }
+  if(!w){ setOffStatus('Pop-up geblokkeerd, sta pop-ups toe voor deze site.','err'); alert('Pop-up geblokkeerd. Sta pop-ups toe voor deze site en probeer opnieuw.'); return; }
   w.document.open(); w.document.write(doc); w.document.close();
-  setOffStatus('Offerte geopend in nieuw tabblad — kies daar "Opslaan als PDF".','ok');
+  setOffStatus('Offerte geopend in nieuw tabblad, kies daar "Opslaan als PDF".','ok');
   const start=()=>{
     const imgs=Array.from(w.document.querySelectorAll('img'));
     const klaar=Promise.all(imgs.map(im=> (im.complete && im.naturalWidth) ? null : new Promise(res=>{ im.onload=res; im.onerror=res; })));
@@ -3458,7 +3458,7 @@ function vulBedrijfDropdown(){
   const sel=document.getElementById('off-bedrijf'); if(!sel) return;
   const cur=offBedrijf&&offBedrijf.id;
   const lijst=offBedrijven.slice().sort((a,b)=>(a.naam||'').localeCompare(b.naam||''));
-  sel.innerHTML='<option value="">— kies een bedrijf —</option>'
+  sel.innerHTML='<option value="">- kies een bedrijf -</option>'
     +lijst.map(b=>`<option value="${b.id}" ${cur===b.id?'selected':''}>${escAttr((b.naam||'(naamloos)')+(b.status==='klant'?' · klant':''))}</option>`).join('')
     +'<option value="__nieuw">+ nieuw bedrijf…</option>';
 }
@@ -3469,8 +3469,8 @@ function vulContactDropdown(){
   const cur=offContact&&offContact.id;
   sel.disabled=!offBedrijf;
   sel.innerHTML = !offBedrijf
-    ? '<option value="">— kies eerst een bedrijf —</option>'
-    : '<option value="" '+(!cur?'selected':'')+'>— geen contact —</option>'
+    ? '<option value="">- kies eerst een bedrijf -</option>'
+    : '<option value="" '+(!cur?'selected':'')+'>- geen contact -</option>'
       +cons.map(c=>`<option value="${c.id}" ${cur===c.id?'selected':''}>${escAttr(contactNaam(c)+(c.functie?' · '+c.functie:''))}</option>`).join('')
       +'<option value="__nieuw">+ nieuw contact…</option>';
 }
@@ -3493,16 +3493,16 @@ function kiesBedrijf(bid){
   if(bid==='__nieuw'){
     offBedrijf={ id:null, naam:'', status:'prospect' }; offContact=null;
     bouwOffKlant(); vulContactDropdown(); renderKlantForm();
-    setOffStatus('Nieuw bedrijf — vul de gegevens in en bewaar.','ok'); return;
+    setOffStatus('Nieuw bedrijf, vul de gegevens in en bewaar.','ok'); return;
   }
   offBedrijf=offBedrijven.find(x=>String(x.id)===String(bid))||null;
   const cons=offBedrijf?offContacten.filter(c=>c.bedrijf_id===offBedrijf.id):[];
   offContact=cons[0]||null;   // meteen het eerste contact kiezen (matcht de dropdown; te wijzigen/wissen)
   bouwOffKlant(); vulContactDropdown(); renderKlantForm();
-  setOffStatus('Bedrijf "'+(offBedrijf?offBedrijf.naam:'')+'" geladen — kies een contact, vul aan en bewaar.','ok');
+  setOffStatus('Bedrijf "'+(offBedrijf?offBedrijf.naam:'')+'" geladen, kies een contact, vul aan en bewaar.','ok');
 }
 function kiesContact(cid){
-  if(cid==='__nieuw'){ offContact={ id:null, bedrijf_id:offBedrijf?offBedrijf.id:null }; bouwOffKlant(); renderKlantForm(); setOffStatus('Nieuw contact — vul de naam in en bewaar.','ok'); return; }
+  if(cid==='__nieuw'){ offContact={ id:null, bedrijf_id:offBedrijf?offBedrijf.id:null }; bouwOffKlant(); renderKlantForm(); setOffStatus('Nieuw contact, vul de naam in en bewaar.','ok'); return; }
   offContact=cid?(offContacten.find(x=>String(x.id)===String(cid))||null):null;
   bouwOffKlant(); renderKlantForm();
 }
@@ -3564,7 +3564,7 @@ async function bewaarKlantBC(){
 // ---------- rol-gebruik detecteren ----------
 function artikelNaam(a) {
   const s = a.station, l = s && s.lijn;
-  return [l && l.naam, s && s.naam, a.subnaam].filter(Boolean).join(' — ') || '(naamloos)';
+  return [l && l.naam, s && s.naam, a.subnaam].filter(Boolean).join(', ') || '(naamloos)';
 }
 function artikelenMetRol(rol) {
   return catArtikelen.filter(a => (a.wbs || []).some(w => w.rol === rol));
@@ -3653,7 +3653,7 @@ async function verwijderArtikel() {
 document.getElementById('a-subnaam').addEventListener('input', () => { if (edit) renderVolnaam(); });
 
 // ============================================================
-// CONSULTANTS — profielenbibliotheek
+// CONSULTANTS, profielenbibliotheek
 // ============================================================
 let consCache = [], consEdit = null, consToolsCache = [], consNextstonesCache = [];
 const PROVINCIES = ["Antwerpen","Vlaams-Brabant","Oost-Vlaanderen","West-Vlaanderen","Limburg","Brussel","Waals-Brabant","Henegouwen","Luik","Namen","Luxemburg","Heel België"];
@@ -3695,7 +3695,7 @@ function renderConsLijst() {
   const el = document.getElementById('cons-lijst');
   if (!consCache.length) { el.innerHTML = '<div class="leeg">Nog geen consultants.</div>'; return; }
   el.innerHTML = consCache.map(c => `<div class="artikel-kaart" style="margin-left:0">
-    <span class="anaam">${escAttr(((c.voornaam?c.voornaam+' ':'')+(c.naam||'')).trim())}${c.titel?` <small style="color:var(--muted);font-weight:400">— ${escAttr(c.titel)}</small>`:''}</span>
+    <span class="anaam">${escAttr(((c.voornaam?c.voornaam+' ':'')+(c.naam||'')).trim())}${c.titel?` <small style="color:var(--muted);font-weight:400">· ${escAttr(c.titel)}</small>`:''}</span>
     <span class="aprijs">${escAttr(c.status||'')}</span>
     <button class="btn btn-ghost mini" onclick="bewerkConsultant('${c.id}')">Bewerken</button>
     <button class="btn btn-ghost mini" onclick="regenereerProfiel('${c.id}','kort')">Genereer TNL Profiel</button>
@@ -3937,7 +3937,7 @@ function maakQr(text){
     : null).catch(()=>null);
 }
 
-// 1-pager (TNL Profiel) als vector-PDF (jsPDF) — in de stijl van het template.
+// 1-pager (TNL Profiel) als vector-PDF (jsPDF), in de stijl van het template.
 function buildProfielPdf(c, extras, mode) {
   extras = extras || {};
   mode = (mode === 'detail') ? 'detail' : 'kort';
@@ -3979,7 +3979,7 @@ function buildProfielPdf(c, extras, mode) {
   const sb   = { x:M,     w:SBW,   y:colTop, main:false, page:1 };
   const main = { x:MAINX, w:MAINW, y:colTop, main:true,  page:1 };
   // Pagina-bewuste 2-koloms doorloop: elke kolom houdt zijn eigen geometrie én paginateller.
-  // Zo blijft de zijbalk links (smal, lichte achtergrond) en het verhaal rechts, ook op pagina 2 — geen losse 3e pagina.
+  // Zo blijft de zijbalk links (smal, lichte achtergrond) en het verhaal rechts, ook op pagina 2, geen losse 3e pagina.
   const bgDone = { 1:true };   // pagina 1 heeft al een zijbalk-achtergrond (hierboven getekend)
   const colNewPage = col => {
     col.page = (col.page||1) + 1;
@@ -4027,7 +4027,7 @@ function buildProfielPdf(c, extras, mode) {
       doc.setFont('helvetica','normal'); doc.setTextColor(...TXT);
       doc.splitTextToSize(String(it), col.w-5).forEach(ln=>{ doc.text(ln, col.x+5, col.y); col.y+=3.7; }); col.y+=0.5; }); };
   const bulletsCol = (col, items) => { doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT);
-    (items.length?items:['—']).forEach(it=>{ doc.splitTextToSize('•  '+it, col.w).forEach(ln=>{ if(col.y+4>BOT2) colNewPage(col); doc.text(ln, col.x, col.y); col.y+=4; }); }); };
+    (items.length?items:['-']).forEach(it=>{ doc.splitTextToSize('•  '+it, col.w).forEach(ln=>{ if(col.y+4>BOT2) colNewPage(col); doc.text(ln, col.x, col.y); col.y+=4; }); }); };
 
   // ----- ZIJBALK (feiten) -----
   // Contact: regio krijgt het label "Regio"; de LinkedIn-URL komt niet als losse regel (de QR toont dat).
@@ -4071,7 +4071,7 @@ function buildProfielPdf(c, extras, mode) {
       sb.y+=4.6; }); }
   }
 
-  // ----- HOOFDKOLOM (verhaal) — begint altijd bovenaan pagina 1 (de zijbalk kan de 'huidige pagina' al op 2 hebben gezet) -----
+  // ----- HOOFDKOLOM (verhaal), begint altijd bovenaan pagina 1 (de zijbalk kan de 'huidige pagina' al op 2 hebben gezet) -----
   doc.setPage(1); main.page = 1; main.y = colTop;
   const kpi = (c.kpi||[]).filter(k=>String(k.getal||'').trim()).slice(0,4);
   if (kpi.length) { const n=kpi.length, gap=3, tw=(main.w-gap*(n-1))/n; let x=main.x;
@@ -4085,7 +4085,7 @@ function buildProfielPdf(c, extras, mode) {
   const topErv = (c.ervaring||[]).filter(e=>e.top && ((e.rol||'').trim()||(e.bedrijf||'').trim()));
   const rollen = topErv.length ? topErv : (c.ervaring||[]).filter(e=>(e.rol||'').trim()||(e.bedrijf||'').trim()).slice(0,4);
   if (rollen.length) { H(main,'Realisaties'); main.y += 2;
-    rollen.forEach(e=>{ P(main, [e.periode,e.rol,e.bedrijf].filter(Boolean).join(' — '), {bold:true}); if(e.omschrijving) P(main, e.omschrijving, {size:9, color:GREY}); main.y+=1; }); }
+    rollen.forEach(e=>{ P(main, [e.periode,e.rol,e.bedrijf].filter(Boolean).join(', '), {bold:true}); if(e.omschrijving) P(main, e.omschrijving, {size:9, color:GREY}); main.y+=1; }); }
   const tst=(c.testimonials||[]).filter(t=>(t.quote||'').trim());
   if (tst.length) { H(main,'Wat klanten zeggen'); tst.forEach(t=>{ P(main, '"'+t.quote+'"', {italic:true}); P(main, [t.naam,t.functie].filter(Boolean).join(', '), {size:8.5, color:GREY}); main.y+=1; }); }
   if (c.verwachting) { H(main,'Wat u van mij mag verwachten'); P(main, c.verwachting, {italic:true}); }
@@ -4095,11 +4095,11 @@ function buildProfielPdf(c, extras, mode) {
   if (mode === 'detail') {
     doc.addPage(); const full = { x:M, w:RIGHT-M, y:20, main:true };
     doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...NAVY);
-    doc.text('Detail — loopbaan, opleiding & expertise', full.x, full.y); full.y += 8;
+    doc.text('Detail, loopbaan, opleiding & expertise', full.x, full.y); full.y += 8;
     const erv=(c.ervaring||[]).filter(e=>(e.rol||'').trim()||(e.bedrijf||'').trim());
-    if (erv.length) { H(full,'Professionele successen'); erv.forEach(e=>{ P(full, [e.periode,e.rol,e.bedrijf].filter(Boolean).join(' — '), {bold:true}); if(e.omschrijving) P(full, e.omschrijving, {size:9, color:GREY}); full.y+=1; }); }
+    if (erv.length) { H(full,'Professionele successen'); erv.forEach(e=>{ P(full, [e.periode,e.rol,e.bedrijf].filter(Boolean).join(', '), {bold:true}); if(e.omschrijving) P(full, e.omschrijving, {size:9, color:GREY}); full.y+=1; }); }
     const opl=(c.opleidingen||[]).filter(o=>(o.titel||'').trim());
-    if (opl.length) { H(full,'Opleidingen & certificaten'); opl.forEach(o=>P(full, [o.jaar,o.titel,o.instelling].filter(Boolean).join(' — '))); }
+    if (opl.length) { H(full,'Opleidingen & certificaten'); opl.forEach(o=>P(full, [o.jaar,o.titel,o.instelling].filter(Boolean).join(', '))); }
     const sk=(c.skills||[]).filter(Boolean); if (sk.length) { H(full,'Skills'); P(full, sk.join('   ·   ')); }
   }
 
@@ -4113,7 +4113,7 @@ function buildProfielPdf(c, extras, mode) {
 </script>
 
 <!-- ============================================================
-     PROSPECTEN-TAB (fase 1 app-merge) — native op bedrijf+contact via db.js.
+     PROSPECTEN-TAB (fase 1 app-merge), native op bedrijf+contact via db.js.
      Alles namespaced (pros* / pr-) om botsingen met de rest te vermijden.
      ============================================================ -->
 <script>
@@ -4235,7 +4235,7 @@ function prosRender() {
       <input class="pr-in" style="width:74px;font-weight:600" value="${prAttr(p.voornaam)}" onchange="prosUpdate('${p.id}','voornaam',this.value)" title="Voornaam">
       <input class="pr-in" style="width:94px;font-weight:600" value="${prAttr(p.achternaam)}" onchange="prosUpdate('${p.id}','achternaam',this.value)" title="Achternaam">
     </div></td>
-    <td>${prAttr(p.bedrijf) || '<span style="color:#bbb">—</span>'}</td>
+    <td>${prAttr(p.bedrijf) || '<span style="color:#bbb">-</span>'}</td>
     <td><input class="pr-in" style="width:170px;color:var(--blue,#4A7CB5)" value="${prAttr(p.email)}" onchange="prosUpdate('${p.id}','email',this.value)"></td>
     <td><input class="pr-in" style="width:110px" value="${prAttr(p.gsm)}" onchange="prosUpdate('${p.id}','gsm',this.value)" placeholder="telefoon…"></td>
     <td><select class="pr-in" onchange="prosUpdate('${p.id}','status',this.value)">
@@ -4357,7 +4357,7 @@ function prosOpenOpv(id) {
   document.getElementById('pr-opv-datum').value = p.volgende_stap_datum || '';
   document.getElementById('pr-opv-verloop').value = p.verloop || '';
   document.getElementById('pr-opv-notitie').value = '';
-  document.getElementById('pr-opv-samenvatting').textContent = p.samenvatting || '—';
+  document.getElementById('pr-opv-samenvatting').textContent = p.samenvatting || '-';
   document.getElementById('pr-opv-overlay').style.display = 'flex';
 }
 function prosSluitOpv() { document.getElementById('pr-opv-overlay').style.display = 'none'; prOpvId = null; }
@@ -4392,7 +4392,7 @@ function prosApiModal() {
 function prosApiSluit() { document.getElementById('pr-key-overlay').style.display = 'none'; }
 function prosApiSave() {
   const k = document.getElementById('pr-key-input').value.trim();
-  if (!k.startsWith('sk-ant-')) { document.getElementById('pr-key-err').textContent = 'Ongeldige sleutel — moet met "sk-ant-" beginnen.'; return; }
+  if (!k.startsWith('sk-ant-')) { document.getElementById('pr-key-err').textContent = 'Ongeldige sleutel, moet met "sk-ant-" beginnen.'; return; }
   localStorage.setItem('tnl_api_key', k);
   prosApiSluit();
 }
@@ -4538,7 +4538,7 @@ async function tplOpslaan() {
   } catch (e) { st.textContent = '✗ ' + (e.message || e); }
 }
 
-// ===== Screenshot → AI import (fase 2c-bis) — native op bedrijf+contact =====
+// ===== Screenshot → AI import (fase 2c-bis), native op bedrijf+contact =====
 const PROS_CATMAP = {
   'apptester': 'AppTester', 'app tester': 'AppTester',
   'scanambassador': 'ScanAmbassador', 'scan ambassador': 'ScanAmbassador',

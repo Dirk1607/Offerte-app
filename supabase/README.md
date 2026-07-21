@@ -30,7 +30,8 @@ Prijs per niveau: `jrDagen × tarief(Jr) + srDagen × tarief(Sr)`.
    - `migrations/0001_init.sql` (tabellen + RLS + seed van lijnen & tarieven)
    - `migrations/0002_seed_voorbeeld.sql` (FIN/P&L als voorbeeldartikel)
 3. Kopieer `config.example.js` → `config.js` en vul `url` + `anonKey` in
-   (Dashboard → Settings → API). `config.js` staat in `.gitignore`.
+   (Dashboard → Settings → API). `config.js` zit mee in git — dat kan omdat
+   het een publishable/anon key is (RLS beschermt de data, niet de key).
 
 ## Gebruik in de app
 
@@ -51,5 +52,7 @@ await TNL.saveOfferte(kop, selectie); // selectie = [{ artikel, niveau }]
 
 ## Beveiliging
 
-RLS staat aan: elke **ingelogde** gebruiker mag alles (één organisatie).
-Auth komt later; te verfijnen naar rollen/multi-tenant zonder de structuur te breken.
+RLS staat aan met een login-gate (Supabase Auth, sinds v2.58): enkel
+**ingelogde** gebruikers mogen iets, anoniem is volledig geblokkeerd
+(migraties 0026/0027). Momenteel één organisatie — later eventueel te
+verfijnen naar rollen/multi-tenant zonder de structuur te breken.

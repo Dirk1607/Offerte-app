@@ -221,7 +221,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.92</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.93</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -4587,7 +4587,7 @@ async function prosImportImage(file) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001', max_tokens: 2000,
+        model: 'claude-haiku-4-5-20251001', max_tokens: 8000,
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: file.type || 'image/png', data: base64 } },
           { type: 'text', text: 'Dit is een screenshot van een Excel of tabel met prospectgegevens. Lees alle rijen uit en geef ze terug als JSON array. Elke rij is een object met deze exacte veldnamen: titel, voornaam, naam, email, telefoon, bedrijf, categorie, notities, status. Titel is exact "Dhr." of "Mevr.". Voor categorie gebruik je EXACT één van deze waarden (kies de dichtstbijzijnde match): "KoudContact", "Netwerk", "WarmeLead", "NaEvent", "Opvolging", "ScanAmbassador", "AppTester". Geef ALLEEN de JSON array terug, geen uitleg, geen markdown backticks.' }
@@ -4599,7 +4599,10 @@ async function prosImportImage(file) {
     const text = (data.content || []).map(b => b.text || '').join('');
     let rows;
     try { rows = JSON.parse(text.replace(/```json|```/g, '').trim()); }
-    catch (e) { throw new Error('AI kon de tabel niet uitlezen. Zorg dat de kolomhoofding zichtbaar is.'); }
+    catch (e) {
+      if (data.stop_reason === 'max_tokens') throw new Error('De tabel is te groot voor één keer inlezen. Knip de screenshot in twee kleinere stukken en probeer opnieuw.');
+      throw new Error('AI kon de tabel niet uitlezen. Zorg dat de kolomhoofding zichtbaar is.');
+    }
     if (!Array.isArray(rows) || !rows.length) throw new Error('Geen rijen gevonden in de afbeelding.');
     await prosVerwerkRijen(rows, st);
   } catch (e) {

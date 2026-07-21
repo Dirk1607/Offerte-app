@@ -144,7 +144,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .intro { white-space:pre-wrap; margin:0 0 22px; }
 #offerte-print .ns { margin:0 0 22px; }
 #offerte-print .ns h2 { font-size:15px; margin:0 0 10px; color:#1e2a4a; }
-#offerte-print .ns-blok { margin:0 0 12px; }
+#offerte-print .ns-blok { margin:0 0 12px; white-space:pre-wrap; }
 #offerte-print .ns-blok-t { font-weight:700; margin-bottom:2px; }
 #offerte-print .cl-rij { display:flex; gap:10px; }
 #offerte-print .cl-naam { font-weight:600; white-space:nowrap; flex:0 0 92px; }
@@ -221,7 +221,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.91</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.92</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -787,10 +787,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="kop-grid">
         <label>Metroperron</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
         <label>Metroperron Path</label><input id="a-volnaam" disabled>
-        <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze Metroperron relevant voor de klant?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
-        <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
-        <label>Meetbaar</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant." onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
-        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra het Metroperron geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+        <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze Metroperron relevant voor de klant? (Shift+Enter voor nieuwe paragraaf)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"></textarea>
+        <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom? (Shift+Enter voor nieuwe paragraaf)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"></textarea>
+        <label>Meetbaar</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant. (Shift+Enter voor nieuwe paragraaf)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"></textarea>
+        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra het Metroperron geïnstalleerd is? (Shift+Enter voor nieuwe paragraaf)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"></textarea>
       </div>
 
       <div class="subkop">Clusters</div>

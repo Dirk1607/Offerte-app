@@ -52,6 +52,15 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .legenda span { display:inline-flex; align-items:center; gap:6px; }
 .dot { width:11px; height:11px; border-radius:50%; display:inline-block; }
 
+@media (max-width:900px) {
+  header { flex-wrap:wrap; min-height:auto; padding:10px 16px; row-gap:8px; }
+  header h1 { font-size:18px; }
+  .logo-badge img { height:38px; }
+  nav { order:3; flex-basis:100%; margin-left:0; align-self:auto; gap:16px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
+  nav button { font-size:13px; padding:0 2px 8px; flex-shrink:0; }
+  #logout-btn { margin-left:auto; }
+}
+
 /* Catalogus-boom */
 .lijn-groep { margin-bottom:6px; }
 .lijn-kop { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#fff; border:1px solid var(--border); border-radius:10px; cursor:pointer; }
@@ -178,7 +187,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .deliv-rij input { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
 .cluster-rij { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
 .cluster-rij .c-naam { width:120px; flex:none; }
-.cluster-rij input { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
+.cluster-rij input, .cluster-rij textarea { flex:1; padding:5px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
+.cluster-rij textarea.c-naam { height:24px; min-height:24px; resize:none; overflow:hidden; line-height:1.4; }
+.cluster-rij textarea.c-naam:focus { height:84px; overflow:auto; }
 .proces-rij { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
 .proces-rij .proces-nr { width:20px; flex:none; text-align:center; font-size:11px; font-weight:700; color:var(--muted); }
 .proces-rij select { width:92px; flex:none; padding:5px; font-size:12px; border:1px solid var(--border); border-radius:6px; font-family:inherit; }
@@ -210,7 +221,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.90</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.91</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -779,7 +790,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze Metroperron relevant voor de klant?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
         <label>Meetbaar</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant." onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
-        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra de Metroperron geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
+        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra het Metroperron geïnstalleerd is?" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></textarea>
       </div>
 
       <div class="subkop">Clusters</div>
@@ -801,8 +812,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="subkop">Gebruikte tool(s)</div>
       <div id="a-tools"></div>
 
-      <div class="subkop">Processen (voor de offerte)</div>
-      <div id="a-processen"></div>
+      <div class="subkop">Bijlagen</div>
+      <div id="a-bijlagen"></div>
     </div>
     <div class="modal-voet">
       <button class="btn mini-danger btn-ghost mini-danger" id="a-verwijder" onclick="verwijderArtikel()" style="color:var(--red);border-color:#f3c0bb">Verwijderen</button>
@@ -2583,7 +2594,7 @@ const STANDAARD_DELIVERABLES = ['Een beschreven proces', 'Een gecoördineerd pro
 function eersteRol(){ return (TARIEF_ROLLEN[0] && TARIEF_ROLLEN[0].rol) || 'Sr'; }
 function leegDeliverable(extra){
   return Object.assign({ omschrijving:'', scopeGroep:'', rol:eersteRol(), eenheid:'heledag',
-    aantal:1, gekozen:true, klantInput:'', klantAantal:0, klantEenheid:'dag', week:1, volgorde:1, klant:false, vast:false }, extra||{});
+    aantal:1, gekozen:true, klantInput:'', klantAantal:0, klantEenheid:'dag', week:1, volgorde:99, klant:false, vast:false }, extra||{});
 }
 function clusterType(d){
   if (d.scopeGroep === 'Maatwerk' || d.scopeGroep === 'OutOfScope') return 'maatwerk';
@@ -2703,11 +2714,11 @@ async function verwijderStation(id) {
 // ---------- ARTIKEL EDITOR ----------
 function nieuwArtikel(stationId) {
   edit = { id:null, station_id:stationId,
-    clusters: [{ naam:'Fundament', omschrijving:'' }],
+    clusters: [],
     deliverables: STANDAARD_DELIVERABLES.slice(),
     tool_ids: [],
-    processen: [],
-    wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'Fundament', eenheid:'halvedag', vast:true })) };
+    bijlagen: [],
+    wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'', eenheid:'halvedag', vast:true })) };
   vulArtikelForm({});
   document.getElementById('art-titel').textContent = 'Nieuwe Metroperron';
   document.getElementById('a-verwijder').style.display = 'none';
@@ -2720,7 +2731,7 @@ function bewerkArtikel(id) {
     clusters: (a.clusters || []).map(c => ({ ...c })),
     deliverables: (a.deliverables || []).slice(),
     tool_ids: (a.tool_ids || []).slice(),
-    processen: (a.processen || []).map(p => ({ ...p })),
+    bijlagen: (a.bijlagen || []).map(p => ({ ...p })),
     wbs: sorteerWbs([
       ...(JSON.parse(JSON.stringify(a.wbs||[]))).map(d => leegDeliverable(d)),
       ...(a.out_of_scope||[]).map(o => leegDeliverable({ scopeGroep:'Maatwerk', omschrijving:o.omschrijving }))
@@ -2739,7 +2750,7 @@ function vulArtikelForm(a) {
   f('a-subnaam').value = a.subnaam || '';
   ['waarom','doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
   renderVolnaam(); renderScopeSuggesties(); renderClusters(); renderWbs(); renderDeliverables();
-  renderNextstoneTools(); renderNextstoneProcessen(); renderTotalen();
+  renderNextstoneTools(); renderNextstoneBijlagen(); renderTotalen();
 }
 
 function renderVolnaam() {
@@ -2791,8 +2802,8 @@ function renderWbs() {
     const rol = `<select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>`;
     const aantal = `<input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()" onchange="renderTotalen();renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const eenheid = regie ? leeg : `<select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>`;
-    const vlg = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.volgorde??''}" oninput="edit.wbs[${i}].volgorde=parseFloat(this.value)||0" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
-    const week = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs();renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
+    const vlg = regie ? leeg : `<input type="number" min="0" max="99" placeholder="99" value="${d.volgorde??''}" oninput="edit.wbs[${i}].volgorde=parseFloat(this.value)||0" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
+    const week = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const km = `<div class="wbs-opt"><input type="checkbox" ${d.klant?'checked':''} title="Stap gebeurt bij de klant (verplaatsing meerekenen)" onchange="edit.wbs[${i}].klant=this.checked"></div>`;
     const klu = `<input type="number" step="0.5" min="0" max="999" placeholder="u" value="${d.klantAantal||''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;edit.wbs[${i}].klantEenheid='uur'" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     return `<div class="wbs-blok${t==='optioneel'?' is-optie':''}">${cluster}${deliv}${rol}${aantal}${eenheid}${vlg}${week}${km}${klu}${keuze}${del}</div>`;
@@ -2828,16 +2839,16 @@ const SPECIALE_CLUSTERS = ['Optioneel','Maatwerk','OutOfScope'];
 function clusterOptiesHtml(sel) {
   const namen = [...new Set((edit.clusters||[]).map(c=>(c.naam||'').trim()).filter(Boolean))];
   let opts = `<option value=""${!sel?' selected':''}>- cluster -</option>`;
+  opts += SPECIALE_CLUSTERS.map(s=>`<option value="${s}"${sel===s?' selected':''}>${s}</option>`).join('');
   opts += namen.map(n=>`<option value="${escAttr(n)}"${sel===n?' selected':''}>${escAttr(n)}</option>`).join('');
   if (sel && !namen.includes(sel) && !SPECIALE_CLUSTERS.includes(sel))
     opts += `<option value="${escAttr(sel)}" selected>${escAttr(sel)}</option>`;
-  opts += '<optgroup label="Speciaal">' + SPECIALE_CLUSTERS.map(s=>`<option value="${s}"${sel===s?' selected':''}>${s}</option>`).join('') + '</optgroup>';
   return opts;
 }
 function renderClusters() {
   const lijst = edit.clusters || (edit.clusters = []);
   const rijen = lijst.map((c,i) =>
-    `<div class="cluster-rij"><input class="c-naam" maxlength="10" placeholder="cluster" value="${escAttr(c.naam||'')}" oninput="edit.clusters[${i}].naam=this.value" onchange="renderWbs()"><input placeholder="omschrijving van dit cluster (voor de klant)" value="${escAttr(c.omschrijving||'')}" oninput="edit.clusters[${i}].omschrijving=this.value"><button class="x" title="verwijderen" onclick="edit.clusters.splice(${i},1);renderClusters();renderWbs()">×</button></div>`
+    `<div class="cluster-rij"><textarea class="c-naam" placeholder="cluster" oninput="edit.clusters[${i}].naam=this.value" onchange="renderWbs()">${escAttr(c.naam||'')}</textarea><input placeholder="omschrijving van dit cluster (voor de klant)" value="${escAttr(c.omschrijving||'')}" oninput="edit.clusters[${i}].omschrijving=this.value"><button class="x" title="verwijderen" onclick="edit.clusters.splice(${i},1);renderClusters();renderWbs()">×</button></div>`
   ).join('');
   document.getElementById('a-clusters').innerHTML = lijst.length ? rijen : '<div class="leeg">Nog geen clusters.</div>';
 }
@@ -3175,25 +3186,25 @@ function toggleNextstoneTool(id, on) {
   renderNextstoneTools();
 }
 
-// Processen kiezen uit een map op de pc (voorlopig: enkel de bestandsnaam bewaren).
-function renderNextstoneProcessen() {
-  const cont = document.getElementById('a-processen'); if (!cont) return;
-  const lijst = edit.processen || (edit.processen = []);
+// Bijlagen kiezen: afbeeldingen worden mee getoond, andere bestanden bewaren enkel de naam.
+function renderNextstoneBijlagen() {
+  const cont = document.getElementById('a-bijlagen'); if (!cont) return;
+  const lijst = edit.bijlagen || (edit.bijlagen = []);
   const chips = lijst.length
-    ? lijst.map((p,i) => `<span class="tool-chip">${p.data?`<img src="${p.data}" style="height:22px;border-radius:3px;margin-right:5px;vertical-align:middle">`:''}${escAttr(p.naam||'')}<button class="x" title="verwijderen" onclick="verwijderProces(${i})">×</button></span>`).join('')
-    : '<div class="leeg">Nog geen proces gekoppeld.</div>';
+    ? lijst.map((p,i) => `<span class="tool-chip">${p.data?`<img src="${p.data}" style="height:22px;border-radius:3px;margin-right:5px;vertical-align:middle">`:''}${escAttr(p.naam||'')}<button class="x" title="verwijderen" onclick="verwijderBijlage(${i})">×</button></span>`).join('')
+    : '<div class="leeg">Nog geen bijlage toegevoegd.</div>';
   cont.innerHTML = `<div class="tool-chips">${chips}</div>`
-    + `<label class="tool-add" style="display:inline-block">+ Proces toevoegen…`
-    + `<input type="file" multiple accept=".bpmn,.pdf,.png,.svg,.jpg,.jpeg,.webp" style="display:none" onchange="procesBestandenGekozen(this.files);this.value=''"></label>`
-    + `<div class="hint" style="margin-top:6px">Kies een <b>afbeelding</b> van het proces (PNG/JPG/SVG) om het diagram mee in de offerte te tonen; andere bestanden (.bpmn/.pdf) bewaren enkel de naam.</div>`;
+    + `<label class="tool-add" style="display:inline-block">+ Bijlage toevoegen…`
+    + `<input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.svg,.webp" style="display:none" onchange="bijlageBestandenGekozen(this.files);this.value=''"></label>`
+    + `<div class="hint" style="margin-top:6px">Gelieve hier toe te voegen. Kies een <b>afbeelding</b> (PNG/JPG/SVG) om ze mee in de offerte te tonen; andere bestanden (PDF/Word/Excel) bewaren enkel de naam.</div>`;
 }
-async function procesBestandenGekozen(files) {
-  edit.processen = edit.processen || [];
+async function bijlageBestandenGekozen(files) {
+  edit.bijlagen = edit.bijlagen || [];
   for (const f of Array.from(files || [])) {
-    if (edit.processen.some(p => p.naam === f.name)) continue;
+    if (edit.bijlagen.some(p => p.naam === f.name)) continue;
     let data=''; try { data = await bestandNaarBeeld(f); } catch(_){}
-    edit.processen.push({ naam: f.name, data });
-    renderNextstoneProcessen();
+    edit.bijlagen.push({ naam: f.name, data });
+    renderNextstoneBijlagen();
   }
 }
 // Lees een afbeelding in als (geschaalde) data-URL; niet-afbeeldingen -> ''
@@ -3208,9 +3219,9 @@ function bestandNaarBeeld(file){
     im.src=url;
   });
 }
-function verwijderProces(i) {
-  (edit.processen || []).splice(i, 1);
-  renderNextstoneProcessen();
+function verwijderBijlage(i) {
+  (edit.bijlagen || []).splice(i, 1);
+  renderNextstoneBijlagen();
 }
 
 async function laadTarieven() {
@@ -3388,7 +3399,7 @@ function toonOfferte(){
     const { calc, rows, optie, maatwerk }=offClusterRows(a);
     const stoneTot=calc.basis+(opties?calc.opties:0);
     const del=(a.deliverables||[]).filter(x=>(x||'').trim());
-    const procs=(a.processen||[]).filter(p=>(p.naam||'').trim()||p.data);
+    const procs=(a.bijlagen||[]).filter(p=>(p.naam||'').trim()||p.data);
     const kl=calc.klant||{};
     const klantUren=(kl.uur||0)+(kl.halvedag||0)*4+((kl.dag||0)+(kl.heledag||0))*8;
     const blok=(titel,tekst)=> (tekst&&String(tekst).trim())?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div>${esc(String(tekst).trim())}</div></div>`:'';
@@ -3644,7 +3655,7 @@ async function slaArtikelOp() {
     deliverables: (edit.deliverables || []).map(d => (d||'').trim()).filter(Boolean),
     clusters: (edit.clusters || []).filter(c => (c.naam||'').trim()).map(c => ({ naam:c.naam.trim(), omschrijving:(c.omschrijving||'').trim() })),
     tool_ids: edit.tool_ids || [],
-    processen: edit.processen || []
+    bijlagen: edit.bijlagen || []
   };
   if (edit.id) artikel.id = edit.id;
   try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }

@@ -221,7 +221,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.93</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.94</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -4450,7 +4450,7 @@ async function prosSamenvat() {
 }
 
 // ===== Mails-tab (fase 2c) =====
-const PROS_CATS = ['KoudContact', 'Netwerk', 'WarmeLead', 'NaEvent', 'Opvolging', 'ScanAmbassador', 'AppTester', 'Persoonlijk'];
+const PROS_CATS = ['KoudContact', 'Netwerk', 'WarmeLead', 'NaEvent', 'Opvolging', 'ScanAmbassador', 'AppTester', 'Persoonlijk', 'Collega'];
 let mailLijst = [], mailIdx = 0, TEMPL = {}, templGeladen = false;
 
 async function laadTemplates() {
@@ -4564,7 +4564,7 @@ const PROS_CATMAP = {
   'koud contact': 'KoudContact', 'koudcontact': 'KoudContact', 'netwerk': 'Netwerk',
   'warme lead': 'WarmeLead', 'warmelead': 'WarmeLead',
   'na event / ontmoeting': 'NaEvent', 'na event': 'NaEvent', 'event': 'NaEvent', 'ontmoeting': 'NaEvent',
-  'opvolging': 'Opvolging', 'persoonlijk': 'Persoonlijk'
+  'opvolging': 'Opvolging', 'persoonlijk': 'Persoonlijk', 'collega': 'Collega'
 };
 function prNormCat(c) { const k = String(c || '').toLowerCase().trim().replace(/\s+/g, ' '); return PROS_CATMAP[k] || String(c || '').trim(); }
 function prBlobBase64(file) {

@@ -233,7 +233,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.96</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.97</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -2887,7 +2887,7 @@ function renderWbs() {
     const rol = `<select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>`;
     const aantal = `<input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()" onchange="renderTotalen();renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const eenheid = regie ? leeg : `<select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>`;
-    const vlg = regie ? leeg : `<input type="number" min="0" max="99" placeholder="99" value="${d.volgorde??''}" oninput="edit.wbs[${i}].volgorde=parseFloat(this.value)||0" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
+    const vlg = regie ? leeg : `<input type="number" min="0" max="999" placeholder="99" value="${d.volgorde??''}" oninput="vlgWijzig(${i},this)" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const week = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const km = `<div class="wbs-opt"><input type="checkbox" ${d.klant?'checked':''} title="Stap gebeurt bij de klant (verplaatsing meerekenen)" onchange="edit.wbs[${i}].klant=this.checked"></div>`;
     const klu = `<input type="number" step="0.5" min="0" max="999" placeholder="u" value="${d.klantAantal||''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;edit.wbs[${i}].klantEenheid='uur'" onkeydown="if(event.key==='Enter'){this.blur();}">`;
@@ -2896,6 +2896,14 @@ function renderWbs() {
   document.getElementById('a-wbs').innerHTML = edit.wbs.length ? head + rijen : '<div class="leeg">Nog geen deliverables.</div>';
 }
 function wbsRij() { edit.wbs.push(leegDeliverable()); renderWbs(); renderTotalen(); }
+// Volgorde start standaard op 99 (= "nog niet bepaald"); klik je vanaf daar op het pijltje omhoog,
+// dan springt de teller naar 1 in plaats van te blijven vastzitten op het maximum.
+function vlgWijzig(i, el) {
+  const oud = edit.wbs[i].volgorde;
+  let nieuw = parseFloat(el.value) || 0;
+  if (oud === 99 && nieuw === 100) { nieuw = 1; el.value = '1'; }
+  edit.wbs[i].volgorde = nieuw;
+}
 
 // Syntaxtip voor een processtap: "werkwoord + van + zelfstandig naamwoord".
 function checkProcesstap(i) {

@@ -92,6 +92,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .veld textarea { min-height:64px; resize:vertical; }
 .rij2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .subkop { font-size:13px; font-weight:800; color:var(--navy); margin:20px 0 8px; padding-bottom:5px; border-bottom:2px solid var(--light); }
+.wbs-sectie { position:relative; }
+.wbs-subkop-sticky { position:sticky; top:0; z-index:2; background:#fff; }
 .dyn-rij { display:flex; gap:8px; margin-bottom:7px; align-items:center; }
 .dyn-rij input, .dyn-rij select { padding:6px 8px; font-size:13px; border:1px solid var(--border); border-radius:6px; }
 .dyn-rij .x { background:none; border:none; color:var(--red); cursor:pointer; font-size:16px; }
@@ -233,7 +235,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.97</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.00</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -844,7 +846,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
           </div>
           <div id="a-doel" class="rte" contenteditable="true" data-placeholder="Wat implementeren we, en waarom?" oninput="rteLeegCheck(this)"></div>
         </div>
-        <label>Meetbaar</label>
+        <label>SMART</label>
         <div class="rte-wrap">
           <div class="rte-bar">
             <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-meetbaar_objectief','bold')" title="Vet"><b>B</b></button>
@@ -853,7 +855,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
             <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-meetbaar_objectief','insertUnorderedList')" title="Opsomming">•≡</button>
             <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-meetbaar_objectief','insertOrderedList')" title="Genummerde lijst">1.≡</button>
           </div>
-          <div id="a-meetbaar_objectief" class="rte" contenteditable="true" data-placeholder="Concrete, meetbare uitkomst voor de klant." oninput="rteLeegCheck(this)"></div>
+          <div id="a-meetbaar_objectief" class="rte" contenteditable="true" data-placeholder="Specifiek / Meetbaar / Acceptabel / Realistisch / Tijdsgebonden" oninput="rteLeegCheck(this)"></div>
         </div>
         <label>Belofte</label>
         <div class="rte-wrap">
@@ -872,11 +874,14 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div id="a-clusters"></div>
       <button class="btn btn-ghost mini" onclick="clusterRij()">+ Cluster</button>
 
-      <div class="subkop">WBS, Work Breakdown Structure</div>
-      <div id="a-wbs"></div>
-      <datalist id="scope-suggesties"></datalist>
-      <div id="wbs-syntax" class="wbs-syntax"></div>
-      <button class="btn btn-ghost mini" onclick="wbsRij()">+ Processtap</button>
+      <div class="wbs-sectie">
+        <div class="subkop wbs-subkop-sticky">WBS, Work Breakdown Structure</div>
+        <div id="a-wbs"></div>
+        <datalist id="scope-suggesties"></datalist>
+        <div id="wbs-syntax" class="wbs-syntax"></div>
+        <button class="btn btn-ghost mini" onclick="wbsRij()">+ Processtap</button>
+        <button class="btn btn-ghost mini" onclick="sorteerWbsNu()" title="Rijen herschikken op basis van WK en VLG">↕ Sorteer nu</button>
+      </div>
 
       <div id="a-totalen"></div>
 
@@ -2666,6 +2671,9 @@ function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,
 const VASTE_PROCESSTAPPEN = ['Beschrijven van het proces', 'Coördineren van het project'];
 // Standaard-deliverables ("wat is af als het af is") voor een nieuwe Metroperron.
 const STANDAARD_DELIVERABLES = ['Een beschreven proces', 'Een gecoördineerd project'];
+// Startsjabloon voor het SMART-veld van een nieuwe Metroperron: vijf onderlijnde labels op aparte regels.
+const SMART_DEFAULT = ['Specifiek', 'Meetbaar', 'Acceptabel', 'Realistisch', 'Tijdsgebonden']
+  .map(l => `<div><u>${l}:</u> </div>`).join('');
 function eersteRol(){ return (TARIEF_ROLLEN[0] && TARIEF_ROLLEN[0].rol) || 'Sr'; }
 function leegDeliverable(extra){
   return Object.assign({ omschrijving:'', scopeGroep:'', rol:eersteRol(), eenheid:'heledag',
@@ -2794,7 +2802,7 @@ function nieuwArtikel(stationId) {
     tool_ids: [],
     bijlagen: [],
     wbs: VASTE_PROCESSTAPPEN.map(naam => leegDeliverable({ omschrijving:naam, scopeGroep:'', eenheid:'halvedag', vast:true })) };
-  vulArtikelForm({});
+  vulArtikelForm({ meetbaar_objectief: SMART_DEFAULT });
   document.getElementById('art-titel').textContent = 'Nieuwe Metroperron';
   document.getElementById('a-verwijder').style.display = 'none';
   document.getElementById('art-modal').style.display = 'flex';
@@ -2887,7 +2895,7 @@ function renderWbs() {
     const rol = `<select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>`;
     const aantal = `<input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()" onchange="renderTotalen();renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const eenheid = regie ? leeg : `<select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>`;
-    const vlg = regie ? leeg : `<input type="number" min="0" max="999" placeholder="99" value="${d.volgorde??''}" oninput="vlgWijzig(${i},this)" onchange="edit.wbs=sorteerWbs(edit.wbs);renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
+    const vlg = regie ? leeg : `<input type="number" min="0" max="999" placeholder="99" value="${d.volgorde??''}" oninput="vlgWijzig(${i},this)" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const week = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const km = `<div class="wbs-opt"><input type="checkbox" ${d.klant?'checked':''} title="Stap gebeurt bij de klant (verplaatsing meerekenen)" onchange="edit.wbs[${i}].klant=this.checked"></div>`;
     const klu = `<input type="number" step="0.5" min="0" max="999" placeholder="u" value="${d.klantAantal||''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;edit.wbs[${i}].klantEenheid='uur'" onkeydown="if(event.key==='Enter'){this.blur();}">`;
@@ -2904,6 +2912,8 @@ function vlgWijzig(i, el) {
   if (oud === 99 && nieuw === 100) { nieuw = 1; el.value = '1'; }
   edit.wbs[i].volgorde = nieuw;
 }
+// Sorteert pas wanneer je het zelf vraagt: WK/VLG intypen mag zonder dat rijen tussentijds verspringen.
+function sorteerWbsNu() { edit.wbs = sorteerWbs(edit.wbs); renderWbs(); }
 
 // Syntaxtip voor een processtap: "werkwoord + van + zelfstandig naamwoord".
 function checkProcesstap(i) {
@@ -3497,7 +3507,7 @@ function toonOfferte(){
     const klantUren=(kl.uur||0)+(kl.halvedag||0)*4+((kl.dag||0)+(kl.heledag||0))*8;
     const rteLeeg=h=>!h||!String(h).replace(/<[^>]*>/g,'').trim();
     const blok=(titel,tekst)=> !rteLeeg(tekst)?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div class="ns-blok-tekst">${tekst}</div></div>`:'';
-    const intro=blok('Waarom dit belangrijk is',a.waarom)+blok('Doel',a.doel)+blok('Meetbaar',a.meetbaar_objectief)+blok('Belofte',a.belofte);
+    const intro=blok('Waarom dit belangrijk is',a.waarom)+blok('Doel',a.doel)+blok('SMART',a.meetbaar_objectief)+blok('Belofte',a.belofte);
     let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div>${(r.details&&r.details.length)?`<ul class="cl-det">${r.details.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
     if(opties && optie.length){
       cr+=`<tr class="grp"><td>Opties</td><td></td></tr>`;

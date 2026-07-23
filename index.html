@@ -221,7 +221,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.94</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.95</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -230,6 +230,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <button data-tab="consultants">Consultants</button>
     <button data-tab="prospecten">Prospecten</button>
     <button data-tab="mails">Mails</button>
+    <button data-tab="sjablonen">Sjablonen</button>
     <button data-tab="database">Database</button>
     <button data-tab="gesprek">Weergave Quickscan</button>
   </nav>
@@ -716,8 +717,6 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       #tab-mails .mail-rij{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
       #tab-mails .mail-acties{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
       #tab-mails .mail-hint{font-size:12px;color:#8a6d3b;background:#fcf8e3;border:1px solid #f5e7b2;border-radius:7px;padding:7px 10px;margin-top:10px}
-      #tab-mails .tpl-edit{margin-top:18px;border:1px dashed var(--lijn,#cdd7e3);border-radius:9px;padding:10px 14px;background:#fbfdff}
-      #tab-mails .tpl-edit>summary{cursor:pointer;font-weight:600;color:var(--navy,#1B3A6B);font-size:13px}
     </style>
     <h2>Mails <small style="font-weight:400;color:var(--muted);font-size:14px">· voor de aangevinkte contacten</small></h2>
     <p class="sub">Vink contacten aan in de <em>Prospecten</em>-tab en stel hier per contact een mail op uit een sjabloon. Velden als <code>[VOORNAAM]</code>, <code>[NAAM]</code>, <code>[BEDRIJF]</code>, <code>[TITEL_FORMEEL]</code> worden automatisch ingevuld.</p>
@@ -744,20 +743,44 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
           <button class="db-btn" onclick="mailKopieer()">📋 Kopieer</button>
           <span id="mail-copyok" style="font-size:12px;color:var(--green,#2E7D52);display:none">✓ gekopieerd</span>
         </div>
-        <details class="tpl-edit">
-          <summary>✏️ Sjablonen bewerken</summary>
-          <div style="margin-top:10px">
-            <div class="mail-rij">
-              <div style="flex:1;min-width:200px"><label>Categorie</label><select id="tpl-cat" onchange="tplLaadEditor()"></select></div>
-            </div>
-            <div style="margin-bottom:10px"><label>Onderwerp</label><input type="text" id="tpl-subject"></div>
-            <div><label>Bericht</label><textarea id="tpl-body" style="min-height:200px"></textarea></div>
-            <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
-              <button class="db-btn prim" onclick="tplOpslaan()">Sjabloon opslaan</button>
-              <span id="tpl-status" class="db-mini"></span>
-            </div>
+        <p class="sub" style="margin-top:14px">Sjablonen bewerk je in het tabblad <strong>Sjablonen</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB, Sjablonen (mailsjablonen beheren: zien, bewerken, toevoegen) -->
+  <section class="panel" id="tab-sjablonen">
+    <style>
+      #tab-sjablonen .sjb-ws{display:grid;grid-template-columns:260px 1fr;gap:16px;margin-top:10px}
+      #tab-sjablonen .sjb-lijst{border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff;max-height:70vh;overflow-y:auto}
+      #tab-sjablonen .sjb-item{padding:9px 12px;border-bottom:1px solid #eef2f7;cursor:pointer;font-size:13px;font-weight:600}
+      #tab-sjablonen .sjb-item:hover{background:#f8fafc}
+      #tab-sjablonen .sjb-item.actief{background:#eaf1fb}
+      #tab-sjablonen .sjb-editor{border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff;padding:16px 18px}
+      #tab-sjablonen .sjb-editor label{font-size:12px;color:var(--muted);display:block;margin-bottom:3px}
+      #tab-sjablonen .sjb-editor input[type=text],#tab-sjablonen .sjb-editor textarea{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-family:inherit;font-size:13px}
+      #tab-sjablonen .sjb-editor textarea{min-height:220px;resize:vertical;white-space:pre-wrap}
+      #tab-sjablonen .sjb-rij{margin-bottom:12px}
+      #tab-sjablonen .sjb-acties{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+    </style>
+    <h2>Sjablonen <small style="font-weight:400;color:var(--muted);font-size:14px">· mailsjablonen per categorie</small></h2>
+    <p class="sub">Beheer hier alle mailsjablonen. Velden als <code>[VOORNAAM]</code>, <code>[NAAM]</code>, <code>[BEDRIJF]</code>, <code>[TITEL_FORMEEL]</code>, <code>[QUICKSCAN_URL]</code> worden bij het versturen (tabblad Mails) automatisch ingevuld.</p>
+    <button class="btn btn-ghost mini" onclick="nieuwSjabloon()" style="margin-bottom:12px">+ Nieuw sjabloon</button>
+    <div class="sjb-ws">
+      <div class="sjb-lijst" id="sjb-lijst"></div>
+      <div>
+        <div class="sjb-editor" id="sjb-editor" style="display:none">
+          <div class="sjb-rij"><label>Categorie</label><input type="text" id="sjb-cat" disabled></div>
+          <div class="sjb-rij"><label>Onderwerp</label><input type="text" id="sjb-subject"></div>
+          <div class="sjb-rij"><label>Bericht</label><textarea id="sjb-body"></textarea></div>
+          <div class="sjb-rij"><label>Hint (optioneel, tip die getoond wordt bij het opstellen)</label><input type="text" id="sjb-hints"></div>
+          <div class="sjb-acties">
+            <button class="btn" onclick="sjabOpslaan()">Bewaren</button>
+            <button class="btn btn-ghost mini-danger" style="color:var(--red);border-color:#f3c0bb" onclick="sjabVerwijderen()">Verwijderen</button>
+            <span id="sjb-status" class="db-mini"></span>
           </div>
-        </details>
+        </div>
+        <div class="leeg" id="sjb-leeg">Kies links een categorie, of maak een nieuw sjabloon aan.</div>
       </div>
     </div>
   </section>
@@ -1035,7 +1058,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=27"></script>
+<script src="supabase/db.js?v=28"></script>
 <script>
 // ============================================================
 // STATE
@@ -4466,7 +4489,6 @@ function mailCatOpties() {
   const cats = [...new Set([...PROS_CATS, ...Object.keys(TEMPL)])];
   const html = cats.map(c => `<option value="${prAttr(c)}">${prAttr(c)}</option>`).join('');
   const s1 = document.getElementById('mail-cat'); if (s1) s1.innerHTML = html;
-  const s2 = document.getElementById('tpl-cat'); if (s2) { s2.innerHTML = html; tplLaadEditor(); }
 }
 
 async function loadMails() {
@@ -4539,22 +4561,65 @@ async function mailOutlook() {
   } catch (e) { console.error(e); }
 }
 
-function tplLaadEditor() {
-  const c = document.getElementById('tpl-cat').value;
-  const t = TEMPL[c] || { subject: '', body: '', hints: '' };
-  document.getElementById('tpl-subject').value = t.subject;
-  document.getElementById('tpl-body').value = t.body;
+// ---------- SJABLONEN, mailsjablonen zien/bewerken/toevoegen ----------
+let sjabActief = null;
+document.querySelector('nav button[data-tab="sjablonen"]').addEventListener('click', laadSjablonenTab);
+async function laadSjablonenTab() {
+  await laadTemplates();
+  if (sjabActief && !TEMPL[sjabActief] && !PROS_CATS.includes(sjabActief)) sjabActief = null;
+  renderSjabLijst();
+  if (sjabActief) vulSjabForm(); else sjabToonLeeg();
 }
-async function tplOpslaan() {
-  const c = document.getElementById('tpl-cat').value;
-  const t = { categorie: c, subject: document.getElementById('tpl-subject').value, body: document.getElementById('tpl-body').value, hints: (TEMPL[c] && TEMPL[c].hints) || '' };
-  const st = document.getElementById('tpl-status');
+function renderSjabLijst() {
+  const cats = [...new Set([...PROS_CATS, ...Object.keys(TEMPL)])].sort();
+  document.getElementById('sjb-lijst').innerHTML = cats.map(c =>
+    `<div class="sjb-item${c===sjabActief?' actief':''}" onclick="kiesSjabloon('${escAttr(c)}')">${escAttr(c)}</div>`
+  ).join('') || '<div class="leeg">Nog geen sjablonen.</div>';
+}
+function kiesSjabloon(cat) { sjabActief = cat; renderSjabLijst(); vulSjabForm(); }
+function vulSjabForm() {
+  const t = TEMPL[sjabActief] || { subject: '', body: '', hints: '' };
+  document.getElementById('sjb-cat').value = sjabActief;
+  document.getElementById('sjb-subject').value = t.subject;
+  document.getElementById('sjb-body').value = t.body;
+  document.getElementById('sjb-hints').value = t.hints;
+  document.getElementById('sjb-status').textContent = '';
+  document.getElementById('sjb-editor').style.display = 'block';
+  document.getElementById('sjb-leeg').style.display = 'none';
+}
+function sjabToonLeeg() {
+  document.getElementById('sjb-editor').style.display = 'none';
+  document.getElementById('sjb-leeg').style.display = 'block';
+}
+function nieuwSjabloon() {
+  const naam = prompt('Naam van de nieuwe sjabloon-categorie (bv. Nieuwsbrief):');
+  if (!naam || !naam.trim()) return;
+  const cat = naam.trim();
+  if (TEMPL[cat] || PROS_CATS.includes(cat)) { kiesSjabloon(cat); return; }
+  TEMPL[cat] = { subject: '', body: '', hints: '' };
+  kiesSjabloon(cat);
+}
+async function sjabOpslaan() {
+  if (!sjabActief) return;
+  const st = document.getElementById('sjb-status');
+  const t = { categorie: sjabActief, subject: document.getElementById('sjb-subject').value, body: document.getElementById('sjb-body').value, hints: document.getElementById('sjb-hints').value };
   try {
     await TNL.upsertTemplate(t);
-    TEMPL[c] = { subject: t.subject, body: t.body, hints: t.hints };
-    st.textContent = '✓ sjabloon bewaard'; setTimeout(() => st.textContent = '', 1500);
-    mailHerlaad();
+    TEMPL[sjabActief] = { subject: t.subject, body: t.body, hints: t.hints };
+    st.textContent = '✓ bewaard'; setTimeout(() => st.textContent = '', 1500);
+    renderSjabLijst();
   } catch (e) { st.textContent = '✗ ' + (e.message || e); }
+}
+async function sjabVerwijderen() {
+  if (!sjabActief) return;
+  if (!confirm('Sjabloon "' + sjabActief + '" verwijderen?')) return;
+  try {
+    await TNL.deleteTemplate(sjabActief);
+    delete TEMPL[sjabActief];
+    sjabActief = null;
+    renderSjabLijst();
+    sjabToonLeeg();
+  } catch (e) { alert('Verwijderen mislukt: ' + (e.message || e)); }
 }
 
 // ===== Screenshot → AI import (fase 2c-bis), native op bedrijf+contact =====

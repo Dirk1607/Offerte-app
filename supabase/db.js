@@ -317,6 +317,9 @@ const TNL = (() => {
   async function upsertTemplate(t) {
     return check(await client().from('templates').upsert(t, { onConflict: 'categorie' }).select().single());
   }
+  async function deleteTemplate(categorie) {
+    return check(await client().from('templates').delete().eq('categorie', categorie));
+  }
 
   // ---------- goedkeurings-queue (voorgestelde wijzigingen) ----------
   async function getVoorstellen(status = 'open') {
@@ -517,7 +520,7 @@ const TNL = (() => {
     deleteBedrijf, deleteContact, voegContactenSamen, zetScansBedrijf, updateQuickscan, deleteQuickscan,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,
-    getTemplates, upsertTemplate,
+    getTemplates, upsertTemplate, deleteTemplate,
     getProspects,
     saveOfferte, getOffertes, getOfferte
   };

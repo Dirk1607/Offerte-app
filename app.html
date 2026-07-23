@@ -106,6 +106,16 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .kop-grid textarea.kop-uit { height:64px; min-height:64px; resize:none; line-height:1.4; overflow:hidden; }
 .kop-grid textarea.kop-uit:focus { height:120px; overflow:auto; }
 
+/* Rijke-tekst-velden (Waarom/Doel/Meetbaar/Belofte): mini-werkbalk + contenteditable */
+.rte-wrap { display:flex; flex-direction:column; min-width:0; }
+.rte-bar { display:flex; gap:2px; border:1px solid var(--border); border-bottom:none; border-radius:7px 7px 0 0; background:var(--light); padding:4px 5px; }
+.rte-bar button { width:26px; height:24px; background:#fff; border:1px solid var(--border); border-radius:5px; font-size:12px; line-height:1; color:var(--navy); cursor:pointer; }
+.rte-bar button:hover { background:var(--light); }
+.rte { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:0 0 7px 7px; padding:8px 10px; font-size:13px; font-family:inherit; min-height:64px; max-height:240px; overflow:auto; line-height:1.4; }
+.rte:focus { outline:2px solid var(--blue); outline-offset:-1px; }
+.rte:empty:before { content:attr(data-placeholder); color:var(--muted); }
+.rte ul, .rte ol { margin:4px 0 4px 20px; padding:0; }
+
 /* WBS-deliverables (uitgelijnd raster; vaste kolombreedtes = kop lijnt uit) */
 .wbs-head, .wbs-blok { display:grid; grid-template-columns: 86px minmax(40px,1fr) 54px 46px 42px 40px 40px 34px 52px 32px 16px; gap:4px; align-items:start; }
 .tool-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
@@ -144,8 +154,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .intro { white-space:pre-wrap; margin:0 0 22px; }
 #offerte-print .ns { margin:0 0 22px; }
 #offerte-print .ns h2 { font-size:15px; margin:0 0 10px; color:#1e2a4a; }
-#offerte-print .ns-blok { margin:0 0 12px; white-space:pre-wrap; }
+#offerte-print .ns-blok { margin:0 0 12px; }
 #offerte-print .ns-blok-t { font-weight:700; margin-bottom:2px; }
+#offerte-print .ns-blok-tekst div, #offerte-print .ns-blok-tekst p { margin:0 0 4px; }
+#offerte-print .ns-blok-tekst ul, #offerte-print .ns-blok-tekst ol { margin:2px 0 4px 20px; padding:0; }
 #offerte-print .cl-rij { display:flex; gap:10px; }
 #offerte-print .cl-naam { font-weight:600; white-space:nowrap; flex:0 0 92px; }
 #offerte-print .waarom { color:#374151; margin:0 0 8px; }
@@ -221,7 +233,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v2.95</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v2.96</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -810,10 +822,50 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="kop-grid">
         <label>Metroperron</label><input id="a-subnaam" placeholder="bv. Profit &amp; Loss">
         <label>Metroperron Path</label><input id="a-volnaam" disabled>
-        <label>Waarom dit belangrijk is</label><textarea id="a-waarom" class="kop-uit" placeholder="Educatief: waarom is deze Metroperron relevant voor de klant? (Shift+Enter voor nieuwe paragraaf)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"></textarea>
-        <label>Doel</label><textarea id="a-doel" class="kop-uit" placeholder="Wat implementeren we, en waarom? (Shift+Enter voor nieuwe paragraaf)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"></textarea>
-        <label>Meetbaar</label><textarea id="a-meetbaar_objectief" class="kop-uit" placeholder="Concrete, meetbare uitkomst voor de klant. (Shift+Enter voor nieuwe paragraaf)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"></textarea>
-        <label>Belofte</label><textarea id="a-belofte" class="kop-uit" placeholder="Wat beloven we zodra het Metroperron geïnstalleerd is? (Shift+Enter voor nieuwe paragraaf)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"></textarea>
+        <label>Waarom dit belangrijk is</label>
+        <div class="rte-wrap">
+          <div class="rte-bar">
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-waarom','bold')" title="Vet"><b>B</b></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-waarom','italic')" title="Cursief"><i>I</i></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-waarom','underline')" title="Onderlijnd"><u>U</u></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-waarom','insertUnorderedList')" title="Opsomming">•≡</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-waarom','insertOrderedList')" title="Genummerde lijst">1.≡</button>
+          </div>
+          <div id="a-waarom" class="rte" contenteditable="true" data-placeholder="Educatief: waarom is deze Metroperron relevant voor de klant?" oninput="rteLeegCheck(this)"></div>
+        </div>
+        <label>Doel</label>
+        <div class="rte-wrap">
+          <div class="rte-bar">
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-doel','bold')" title="Vet"><b>B</b></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-doel','italic')" title="Cursief"><i>I</i></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-doel','underline')" title="Onderlijnd"><u>U</u></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-doel','insertUnorderedList')" title="Opsomming">•≡</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-doel','insertOrderedList')" title="Genummerde lijst">1.≡</button>
+          </div>
+          <div id="a-doel" class="rte" contenteditable="true" data-placeholder="Wat implementeren we, en waarom?" oninput="rteLeegCheck(this)"></div>
+        </div>
+        <label>Meetbaar</label>
+        <div class="rte-wrap">
+          <div class="rte-bar">
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-meetbaar_objectief','bold')" title="Vet"><b>B</b></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-meetbaar_objectief','italic')" title="Cursief"><i>I</i></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-meetbaar_objectief','underline')" title="Onderlijnd"><u>U</u></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-meetbaar_objectief','insertUnorderedList')" title="Opsomming">•≡</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-meetbaar_objectief','insertOrderedList')" title="Genummerde lijst">1.≡</button>
+          </div>
+          <div id="a-meetbaar_objectief" class="rte" contenteditable="true" data-placeholder="Concrete, meetbare uitkomst voor de klant." oninput="rteLeegCheck(this)"></div>
+        </div>
+        <label>Belofte</label>
+        <div class="rte-wrap">
+          <div class="rte-bar">
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-belofte','bold')" title="Vet"><b>B</b></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-belofte','italic')" title="Cursief"><i>I</i></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-belofte','underline')" title="Onderlijnd"><u>U</u></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-belofte','insertUnorderedList')" title="Opsomming">•≡</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteCmd('a-belofte','insertOrderedList')" title="Genummerde lijst">1.≡</button>
+          </div>
+          <div id="a-belofte" class="rte" contenteditable="true" data-placeholder="Wat beloven we zodra het Metroperron geïnstalleerd is?" oninput="rteLeegCheck(this)"></div>
+        </div>
       </div>
 
       <div class="subkop">Clusters</div>
@@ -2771,9 +2823,19 @@ function terugNaarLijst() { sluitArtikel(); laadCatalogus(); }   // terug naar d
 function vulArtikelForm(a) {
   const f = id => document.getElementById(id);
   f('a-subnaam').value = a.subnaam || '';
-  ['waarom','doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).value = a[k] || '');
+  ['waarom','doel','meetbaar_objectief','belofte'].forEach(k => f('a-'+k).innerHTML = a[k] || '');
   renderVolnaam(); renderScopeSuggesties(); renderClusters(); renderWbs(); renderDeliverables();
   renderNextstoneTools(); renderNextstoneBijlagen(); renderTotalen();
+}
+
+// Rijke-tekst-velden (Waarom/Doel/Meetbaar/Belofte): mini-werkbalk op basis van execCommand.
+function rteCmd(veldId, cmd) {
+  document.getElementById(veldId).focus();
+  document.execCommand(cmd, false, null);
+}
+// Ruimt een leeg veld op (stray <br>/<div>) zodat de CSS-placeholder (:empty) blijft werken.
+function rteLeegCheck(el) {
+  if (!(el.textContent || '').trim() && !el.querySelector('img')) el.innerHTML = '';
 }
 
 function renderVolnaam() {
@@ -3425,7 +3487,8 @@ function toonOfferte(){
     const procs=(a.bijlagen||[]).filter(p=>(p.naam||'').trim()||p.data);
     const kl=calc.klant||{};
     const klantUren=(kl.uur||0)+(kl.halvedag||0)*4+((kl.dag||0)+(kl.heledag||0))*8;
-    const blok=(titel,tekst)=> (tekst&&String(tekst).trim())?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div>${esc(String(tekst).trim())}</div></div>`:'';
+    const rteLeeg=h=>!h||!String(h).replace(/<[^>]*>/g,'').trim();
+    const blok=(titel,tekst)=> !rteLeeg(tekst)?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div class="ns-blok-tekst">${tekst}</div></div>`:'';
     const intro=blok('Waarom dit belangrijk is',a.waarom)+blok('Doel',a.doel)+blok('Meetbaar',a.meetbaar_objectief)+blok('Belofte',a.belofte);
     let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div>${(r.details&&r.details.length)?`<ul class="cl-det">${r.details.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
     if(opties && optie.length){
@@ -3669,11 +3732,12 @@ async function verwijderTariefUI(rol) {
 
 async function slaArtikelOp() {
   const f = id => document.getElementById(id).value;
+  const rte = id => { const el = document.getElementById(id); return (el.textContent||'').trim() ? el.innerHTML : ''; };
   const artikel = {
     station_id: edit.station_id,
     subnaam: f('a-subnaam').trim() || null,
-    waarom: f('a-waarom'),
-    doel: f('a-doel'), meetbaar_objectief: f('a-meetbaar_objectief'), belofte: f('a-belofte'),
+    waarom: rte('a-waarom'),
+    doel: rte('a-doel'), meetbaar_objectief: rte('a-meetbaar_objectief'), belofte: rte('a-belofte'),
     wbs: edit.wbs, out_of_scope: [],
     deliverables: (edit.deliverables || []).map(d => (d||'').trim()).filter(Boolean),
     clusters: (edit.clusters || []).filter(c => (c.naam||'').trim()).map(c => ({ naam:c.naam.trim(), omschrijving:(c.omschrijving||'').trim() })),

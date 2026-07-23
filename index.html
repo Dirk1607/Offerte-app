@@ -92,7 +92,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .veld textarea { min-height:64px; resize:vertical; }
 .rij2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .subkop { font-size:13px; font-weight:800; color:var(--navy); margin:20px 0 8px; padding-bottom:5px; border-bottom:2px solid var(--light); }
-.wbs-sticky-kop { position:sticky; top:0; z-index:2; background:#fff; }
+.wbs-sticky-kop { position:sticky; top:0; z-index:3; background:#fff; }
 .wbs-sticky-kop .subkop { margin-top:0; }
 .dyn-rij { display:flex; gap:8px; margin-bottom:7px; align-items:center; }
 .dyn-rij input, .dyn-rij select { padding:6px 8px; font-size:13px; border:1px solid var(--border); border-radius:6px; }
@@ -185,7 +185,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .voorw p { margin:0 0 6px; }
 #offerte-print .foot { position:fixed; bottom:0; left:0; right:0; margin:0; background:#fff; border-top:1px solid #e5e7eb; padding:5px 16mm 8mm; font-size:10.5px; color:#6b7686; text-align:center; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 9px 3px; }
-.wbs-blok { border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
+.wbs-blok { position:relative; z-index:1; border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
 .wbs-blok.is-optie { background:#fffaf3; border-color:#f1d3ab; }
 .wbs-blok.is-oos { background:#f6f7fb; }
 .wbs-blok.is-maatwerk { background:#eef6f1; }
@@ -235,7 +235,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.01</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.02</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>

@@ -155,6 +155,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .aan { margin:0 0 20px; color:#374151; }
 #offerte-print .intro { white-space:pre-wrap; margin:0 0 22px; }
 #offerte-print .ns { margin:0 0 22px; }
+#offerte-print .ns:not(:first-of-type) { page-break-before:always; break-before:page; }
 #offerte-print .ns h2 { font-size:15px; margin:0 0 10px; color:#1e2a4a; }
 #offerte-print .ns-blok { margin:0 0 12px; page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .ns-blok:after { content:""; display:block; clear:both; }
@@ -191,7 +192,14 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .planning { margin-top:16px; font-size:12px; color:#374151; page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .planning p { margin:4px 0 0; }
 #offerte-print .sign-page, #offerte-print .av-page { page-break-before:always; break-before:page; }
-#offerte-print .sign-logo { height:44px; display:block; margin-bottom:18px; }
+#offerte-print .sign-brand { display:flex; align-items:center; gap:12px; }
+#offerte-print .sign-logo-tnl, #offerte-print .sign-logo-ariadne { height:40px; display:block; }
+#offerte-print .sign-for { font-size:13px; font-style:italic; color:#6b7686; }
+#offerte-print .sign-brand-sub { font-size:10.5px; color:#6b7686; margin:4px 0 18px; }
+#offerte-print .facturatie { margin-top:18px; font-size:12px; color:#374151; page-break-inside:avoid; break-inside:avoid; }
+#offerte-print .fact-veld { margin:6px 0; }
+#offerte-print .fact-lbl { display:inline-block; width:170px; font-weight:600; }
+#offerte-print .fact-line { display:inline-block; min-width:260px; border-bottom:1px dotted #9aa3b2; padding:0 4px 1px; }
 #offerte-print .handtekening { margin-top:34px; font-size:12px; color:#374151; }
 #offerte-print .handtekening p { margin:0 0 22px; }
 #offerte-print .av-page p { font-size:11.5px; color:#374151; margin:2px 0 0; }
@@ -249,7 +257,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.21</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.24</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -442,12 +450,12 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
     <div class="card" style="margin-top:16px">
       <div class="subkop">Offertegegevens</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px">
-        <label class="off-lbl">Offertenummer<input id="off-nr" oninput="offMeta.nummer=this.value"></label>
-        <label class="off-lbl">Datum<input id="off-datum" type="date" oninput="offMeta.datum=this.value"></label>
-        <label class="off-lbl">Geldig tot<input id="off-geldig" type="date" oninput="offMeta.geldig=this.value"></label>
-        <label class="off-lbl">Opsteller<select id="off-opsteller" onchange="offMeta.opsteller=this.value"><option value="">- kies opsteller -</option></select></label>
-        <label class="off-lbl">Taal van de opdracht<select id="off-taal" onchange="offMeta.taal=this.value">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px">
+        <label class="off-lbl" style="width:130px;flex:none">Offertenummer<input id="off-nr" oninput="offMeta.nummer=this.value"></label>
+        <label class="off-lbl" style="width:135px;flex:none">Datum<input id="off-datum" type="date" oninput="offMeta.datum=this.value"></label>
+        <label class="off-lbl" style="width:135px;flex:none">Geldig tot<input id="off-geldig" type="date" oninput="offMeta.geldig=this.value"></label>
+        <label class="off-lbl" style="flex:1;min-width:160px">Opsteller<select id="off-opsteller" onchange="offMeta.opsteller=this.value"><option value="">- kies opsteller -</option></select></label>
+        <label class="off-lbl" style="flex:1;min-width:150px">Taal van de opdracht<select id="off-taal" onchange="offMeta.taal=this.value">
           <option value="Nederlands">Nederlands</option><option value="Frans">Frans</option><option value="Engels">Engels</option>
         </select></label>
       </div>
@@ -3600,17 +3608,42 @@ function offClusterRows(a){
 }
 // Onderteken- en planningspagina: apart, laatste inhoudelijke blad vóór de algemene voorwaarden.
 // Dit blad wordt (ingescand) getekend teruggestuurd door de klant.
-function buildOndertekenpaginaHtml(m, dt){
+function buildOndertekenpaginaHtml(m, dt, perronNamen, k, kadresLijnen, arNaam, arFunctie){
+  const namen=(perronNamen||[]).filter(Boolean);
+  const trajTekst = namen.length>1
+    ? `Voor akkoord voor de trajecten: ${namen.join(', ')}`
+    : `Voor akkoord voor het traject: ${namen[0]||''}`;
+  const factVeld=(label,waarde)=>`<div class="fact-veld"><span class="fact-lbl">${esc(label)}</span><span class="fact-line">${waarde?esc(waarde):'&nbsp;'}</span></div>`;
   return `<div class="sign-page">
-    <img class="sign-logo" src="${esc(AFZENDER.ariadneLogo)}" alt="Ariadne BV" onerror="this.style.display='none'">
-    <div class="ns-blok-t" style="font-size:15px;margin-bottom:10px">Akkoord</div>
+    <div class="sign-brand">
+      <img class="sign-logo-tnl" src="${esc(AFZENDER.logo)}" alt="${esc(AFZENDER.merk)}">
+      <span class="sign-for">for</span>
+      <img class="sign-logo-ariadne" src="${esc(AFZENDER.ariadneLogo)}" alt="Ariadne BV" onerror="this.style.display='none'">
+    </div>
+    <div class="sign-brand-sub">The Next Level is een handelsnaam van Ariadne BV</div>
+    <div class="ns-blok-t" style="font-size:15px;margin-bottom:10px">${esc(trajTekst)}</div>
     <div class="akkoord"><p>Indien u akkoord gaat met deze offerte, gelieve dit blad getekend en ingevuld aan ons terug te bezorgen aub. Dit mag (ingescand) per mail of per post.</p></div>
     <div class="planning">
       <div class="ns-blok-t">Planning</div>
       ${m.startdatum?`<p><b>Mogelijke startdatum:</b> ${dt(m.startdatum)}</p>`:''}
       <p>Geef hieronder uw voorkeur aan: ____ / ____ / 20___</p>
     </div>
+    <div class="facturatie">
+      <div class="ns-blok-t">Facturatiegegevens</div>
+      ${factVeld('Naam', k&&k.bedrijf)}
+      ${factVeld('T.a.v', k&&k.contactpersoon)}
+      ${factVeld('Adres', kadresLijnen&&kadresLijnen[0])}
+      ${factVeld('Postnummer en gemeente', kadresLijnen&&kadresLijnen[1])}
+      ${factVeld('ON-nummer', k&&k.btw_nummer)}
+    </div>
     <div class="handtekening">
+      <div class="ns-blok-t" style="margin-bottom:6px">Voor Ariadne BV</div>
+      <p>Naam: ${arNaam?esc(arNaam):'____________________________________'}&nbsp;&nbsp;&nbsp;&nbsp;Functie: ${arFunctie?esc(arFunctie):'____________________________________'}</p>
+      <p>Datum: ____________________________________</p>
+      <p>Handtekening:</p>
+    </div>
+    <div class="handtekening">
+      <div class="ns-blok-t" style="margin-bottom:6px">Voor ${k&&k.bedrijf?esc(k.bedrijf):'de klant'}</div>
       <p>Naam: ____________________________________&nbsp;&nbsp;&nbsp;&nbsp;Functie: ____________________________________</p>
       <p>Datum: ____________________________________</p>
       <p>Handtekening:</p>
@@ -3680,8 +3713,11 @@ function offBouwOfferteHtml(){
   const adrLijn2=[k.postcode, k.gemeente].filter(Boolean).join(' ');
   const kadres=[adrLijn1.trim(), adrLijn2.trim(), k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).map(esc).join('<br>');
   const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
+  const opstellerCons=consCache.find(c=>((c.voornaam||'')+' '+(c.naam||'')).trim()===m.opsteller);
+  const arNaam=m.opsteller||AFZENDER.persoon;
+  const arFunctie=opstellerCons&&opstellerCons.functie||'';
   const bodyHtml=`
-    <div class="foot">The Next Level is een handelsnaam van Ariadne BV &ndash; BE 0502 581 150 · ${esc(A.persoon)} · ${esc(A.adres)} · ${esc(A.tel)}</div>
+    <div class="foot">The Next Level is een handelsnaam van Ariadne BV &ndash; BE 0502 581 150 · ${esc(A.adres)} · ${esc(A.tel)}</div>
     <table class="psheet">
     <thead><tr><td><div class="ptop"></div></td></tr></thead>
     <tfoot><tr><td><div class="fspace"></div></td></tr></tfoot>
@@ -3699,7 +3735,7 @@ function offBouwOfferteHtml(){
         ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
         <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
       </div>
-      ${buildOndertekenpaginaHtml(m, dt)}
+      ${buildOndertekenpaginaHtml(m, dt, t.lijnen.map(({a})=>offArtikelNaam(a)), k, [adrLijn1.trim(), adrLijn2.trim()], arNaam, arFunctie)}
       ${buildAlgemeneVoorwaardenHtml()}
     </td></tr></tbody>
     </table>`;

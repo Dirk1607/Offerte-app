@@ -157,9 +157,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .ns { margin:0 0 22px; }
 #offerte-print .ns h2 { font-size:15px; margin:0 0 10px; color:#1e2a4a; }
 #offerte-print .ns-blok { margin:0 0 12px; }
+#offerte-print .ns-blok:after { content:""; display:block; clear:both; }
 #offerte-print .ns-blok-t { font-weight:700; margin-bottom:2px; }
 #offerte-print .ns-blok-tekst div, #offerte-print .ns-blok-tekst p { margin:0 0 4px; }
 #offerte-print .ns-blok-tekst ul, #offerte-print .ns-blok-tekst ol { margin:2px 0 4px 20px; padding:0; }
+#offerte-print .ns-illu { float:right; max-width:45%; max-height:70mm; margin:0 0 8px 14px; border:1px solid #e5e7eb; border-radius:4px; page-break-inside:avoid; }
 #offerte-print .cl-rij { display:flex; gap:10px; }
 #offerte-print .cl-naam { font-weight:600; white-space:nowrap; flex:0 0 92px; }
 #offerte-print .waarom { color:#374151; margin:0 0 8px; }
@@ -236,7 +238,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.10</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.11</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -3351,7 +3353,7 @@ function renderIllustratie() {
     : '<div class="leeg">Nog geen illustratie gekozen.</div>';
   cont.innerHTML = `<div class="tool-chips">${chip}</div>`
     + ((i && i.data) ? '' : `<label class="tool-add" style="display:inline-block">+ Illustratie kiezen…<input type="file" accept="image/*" style="display:none" onchange="illustratieGekozen(this.files);this.value=''"></label>`)
-    + `<div class="hint" style="margin-top:6px">Verschijnt in de offerte tussen de tekst (Waarom/Doel/SMART/Belofte) en de kostentabel.</div>`;
+    + `<div class="hint" style="margin-top:6px">Verschijnt in de offerte rechts naast "Waarom dit belangrijk is"; is de tekst langer, dan loopt ze onder de afbeelding door verder.</div>`;
 }
 async function illustratieGekozen(files) {
   const f = (files || [])[0]; if (!f) return;
@@ -3578,9 +3580,9 @@ function toonOfferte(){
     const kl=calc.klant||{};
     const klantUren=(kl.uur||0)+(kl.halvedag||0)*4+((kl.dag||0)+(kl.heledag||0))*8;
     const rteLeeg=h=>!h||!String(h).replace(/<[^>]*>/g,'').trim();
-    const blok=(titel,tekst)=> !rteLeeg(tekst)?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div class="ns-blok-tekst">${tekst}</div></div>`:'';
-    const intro=blok('Waarom dit belangrijk is',a.waarom)+blok('Doel',a.doel)+blok('SMART',a.meetbaar_objectief)+blok('Belofte',a.belofte);
-    const illu=(a.illustratie&&a.illustratie.data)?`<div class="proc-img"><img src="${esc(a.illustratie.data)}" alt=""></div>`:'';
+    const illuImg=(a.illustratie&&a.illustratie.data)?`<img class="ns-illu" src="${esc(a.illustratie.data)}" alt="">`:'';
+    const blok=(titel,tekst,extra)=> !rteLeeg(tekst)?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div class="ns-blok-tekst">${extra||''}${tekst}</div></div>`:'';
+    const intro=blok('Waarom dit belangrijk is',a.waarom,illuImg)+blok('Doel',a.doel)+blok('SMART',a.meetbaar_objectief)+blok('Belofte',a.belofte);
     let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div>${(r.details&&r.details.length)?`<ul class="cl-det">${r.details.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
     if(opties && optie.length){
       cr+=`<tr class="grp"><td>Opties</td><td></td></tr>`;
@@ -3593,7 +3595,6 @@ function toonOfferte(){
     return `<section class="ns">
       <h2>${esc(offArtikelNaam(a))}</h2>
       ${intro}
-      ${illu}
       <table class="clusters">${cr}</table>
       ${del.length?`<div class="krijgt"><b>Wat u ontvangt:</b><ul>${del.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
       ${klantUren>0?`<div class="krijgt"><b>Uw investering in tijd:</b> ${klantUren.toLocaleString('nl-BE')} uur</div>`:''}

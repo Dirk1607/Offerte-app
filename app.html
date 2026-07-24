@@ -190,6 +190,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .akkoord p { margin:0; font-weight:600; }
 #offerte-print .planning { margin-top:16px; font-size:12px; color:#374151; page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .planning p { margin:4px 0 0; }
+#offerte-print .sign-page, #offerte-print .av-page { page-break-before:always; break-before:page; }
+#offerte-print .sign-logo { height:44px; display:block; margin-bottom:18px; }
+#offerte-print .handtekening { margin-top:34px; font-size:12px; color:#374151; }
+#offerte-print .handtekening p { margin:0 0 22px; }
+#offerte-print .av-page p { font-size:11.5px; color:#374151; margin:2px 0 0; }
 #offerte-print .totalen tr { page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .foot { position:fixed; bottom:0; left:0; right:0; margin:0; background:#fff; border-top:1px solid #e5e7eb; padding:5px 16mm 8mm; font-size:10.5px; color:#6b7686; text-align:center; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 9px 3px; }
@@ -244,7 +249,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.20</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.21</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -486,10 +491,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <div class="card" style="margin-top:16px">
       <div class="subkop">Offerte genereren</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn primary" onclick="offerteAlsWordDownloaden()">📝 Openen als Word-document</button>
-        <button class="btn btn-ghost" onclick="offertePdfEnMail()">📄✉ PDF + mail naar klant</button>
+        <button class="btn primary" onclick="offertePdfEnMail()">📄✉ PDF + mail naar klant</button>
       </div>
-      <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Word: voor manuele aanpassingen — pas aan en bewaar zelf. PDF + mail: opent de offerte in een nieuw tabblad (kies daar "Opslaan als PDF") en opent meteen een mail naar de klant.</div>
+      <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Opent de offerte in een nieuw tabblad (kies daar "Opslaan als PDF") en opent meteen een mail naar de klant.</div>
     </div>
   </section>
 
@@ -3446,7 +3450,7 @@ var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', taal:'Nederlands',
   startdatum:'', mailOnderwerp:'Offerte [OFFERTENUMMER] - The Next Level',
   mailBody:'Beste [CONTACT],\n\nIn bijlage vindt u onze offerte [OFFERTENUMMER].\n\nMet vriendelijke groeten,' };
 var AFZENDER = {
-  logo:'LogoNextLevel_FINAAL.jpg', merk:'The Next Level', tagline:'Your steps to The Next Level',
+  logo:'LogoNextLevel_FINAAL.jpg', ariadneLogo:'LogoAriadne.jpg', merk:'The Next Level', tagline:'Your steps to The Next Level',
   bedrijf:'Ariadne BV', persoon:'Dirk Vander Eyken',
   adres:'Melkweg 8, 2980 Halle-Zoersel', btw:'BE 0502.581.150', tel:'+32 468 13 79 78'
 };
@@ -3470,6 +3474,7 @@ function initOffMeta(){
   const today=new Date(), iso=d=>d.toISOString().slice(0,10);
   if(!offMeta.datum) offMeta.datum=iso(today);
   if(!offMeta.geldig){ const g=new Date(today); g.setDate(g.getDate()+30); offMeta.geldig=iso(g); }
+  if(!offMeta.startdatum){ const s=new Date(today); s.setDate(s.getDate()+14); offMeta.startdatum=iso(s); }
   if(!offMeta.nummer) offMeta.nummer='OFF-'+today.getFullYear()+'-'+String(Math.floor(Math.random()*900)+100);
   const set=(id,v)=>{ const e=document.getElementById(id); if(e&&!e.value) e.value=v; };
   set('off-nr',offMeta.nummer); set('off-datum',offMeta.datum); set('off-geldig',offMeta.geldig);
@@ -3484,7 +3489,7 @@ function initOffMeta(){
   const taalSel=document.getElementById('off-taal');
   if(taalSel) taalSel.value=offMeta.taal||'Nederlands';
 }
-function offArtikelNaam(a){ const s=a.station,l=s&&s.lijn; return [l&&l.naam, s&&s.naam, a.subnaam].filter(Boolean).join(', ') || a.subnaam || '(naamloos)'; }
+function offArtikelNaam(a){ return a.subnaam || '(naamloos)'; }
 function offLijn(a,opties){
   const calc=TNL.berekenFix({ wbs:a.wbs||[] }, OFF_TARIEVEN);
   const bedrag=calc.basis + (opties!==false ? calc.opties : 0);
@@ -3593,12 +3598,44 @@ function offClusterRows(a){
   });
   return { calc, rows, optie, maatwerk };
 }
-// Bouwt de volledige offerte-HTML op (gedeeld door de PDF-preview en de Word-download).
+// Onderteken- en planningspagina: apart, laatste inhoudelijke blad vóór de algemene voorwaarden.
+// Dit blad wordt (ingescand) getekend teruggestuurd door de klant.
+function buildOndertekenpaginaHtml(m, dt){
+  return `<div class="sign-page">
+    <img class="sign-logo" src="${esc(AFZENDER.ariadneLogo)}" alt="Ariadne BV" onerror="this.style.display='none'">
+    <div class="ns-blok-t" style="font-size:15px;margin-bottom:10px">Akkoord</div>
+    <div class="akkoord"><p>Indien u akkoord gaat met deze offerte, gelieve dit blad getekend en ingevuld aan ons terug te bezorgen aub. Dit mag (ingescand) per mail of per post.</p></div>
+    <div class="planning">
+      <div class="ns-blok-t">Planning</div>
+      ${m.startdatum?`<p><b>Mogelijke startdatum:</b> ${dt(m.startdatum)}</p>`:''}
+      <p>Geef hieronder uw voorkeur aan: ____ / ____ / 20___</p>
+    </div>
+    <div class="handtekening">
+      <p>Naam: ____________________________________&nbsp;&nbsp;&nbsp;&nbsp;Functie: ____________________________________</p>
+      <p>Datum: ____________________________________</p>
+      <p>Handtekening:</p>
+    </div>
+  </div>`;
+}
+// Algemene voorwaarden: worden altijd als allerlaatste blad toegevoegd (zie bijlage "Algemene Voorwaarden Ariadne Consultancy TNL.pdf").
+function buildAlgemeneVoorwaardenHtml(){
+  const par=(kop,tekst)=>`<div class="ns-blok-t" style="margin-top:14px">${esc(kop)}</div><p>${esc(tekst)}</p>`;
+  return `<div class="av-page">
+    <div class="ns-blok-t" style="font-size:15px;margin-bottom:10px">Algemene voorwaarden voor een Ariadne-consultancy · The Next Level</div>
+    ${par('Intakegesprek','Voorafgaand aan elke consulting opdracht wordt gepeild naar de behoeften van onze klant. Afhankelijk van de wensen van de klant, kan dit gebeuren d.m.v. onze quickscan ©, maar altijd in onderling overleg. Op basis van gemeenschappelijke bevindingen wordt dan een plan-van-aanpak opgemaakt en in offerte gegoten.')}
+    ${par('Contract','Een aanvaarde offerte (via mail of online) geldt als contract. Dat betekent ook de aanvaarding van onze Algemene Voorwaarden door de klant.')}
+    ${par('Annulering','Annulering van een geplande consultingsessie door de klant, gebeurt schriftelijk (of per mail) of telefonisch. Indien dit op de dag van de geplande consulting zelf gebeurt, wordt één dagdeel consulting aangerekend voor het vrijhouden van de agenda en de eventueel gemaakte verplaatsing.')}
+    ${par('Facturatie','Facturen worden per maand verstuurd. Zij dienen betaald te zijn vóór de 15de van de daaropvolgende maand. Betalingen na deze termijn brengen van rechtswege en zonder ingebrekestelling interesten op gelijk aan 10%, alsmede (evenzeer van rechtswege en zonder ingebrekestelling) een forfaitaire vergoeding van 10% op het factuurbedrag (met een minimum van € 150) als schadebeding.')}
+    ${par('Betwisting','Elk geschil dat zich zou kunnen voordoen aangaande de geldigheid, de toepassing, de uitvoering of de interpretatie van deze Overeenkomst behoort uitsluitend tot de bevoegdheid van de rechtbanken van Turnhout.')}
+  </div>`;
+}
+// Bouwt de volledige offerte-HTML op (gedeeld door de PDF-preview en de "PDF + mail"-knop).
 // Geeft null terug (met statusmelding) als er nog geen klant/Metroperron gekozen is.
 function offBouwOfferteHtml(){
   if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); alert('Kies en bewaar eerst een klant (bovenaan het tabblad Offerte).'); return null; }
   const t=offBerekenTotaal();
   if(!t.lijnen.length){ setOffStatus('Selecteer minstens één Metroperron.','err'); alert('Vink minstens één Metroperron aan in de lijst.'); return null; }
+  if(!(offMeta.startdatum||'').trim()){ setOffStatus('Vul de mogelijke startdatum in.','err'); alert('Vul een mogelijke startdatum in (tabblad Offerte, onder Planning).'); return null; }
   const k=offKlant, m=offMeta, A=AFZENDER;
   const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
   const secties=t.lijnen.map(({a,opties})=>{
@@ -3644,14 +3681,14 @@ function offBouwOfferteHtml(){
   const kadres=[adrLijn1.trim(), adrLijn2.trim(), k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).map(esc).join('<br>');
   const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
   const bodyHtml=`
-    <div class="foot">${esc(A.bedrijf)} · ${esc(A.persoon)} · ${esc(A.adres)} · BTW ${esc(A.btw)} · ${esc(A.tel)}</div>
+    <div class="foot">The Next Level is een handelsnaam van Ariadne BV &ndash; BE 0502 581 150 · ${esc(A.persoon)} · ${esc(A.adres)} · ${esc(A.tel)}</div>
     <table class="psheet">
     <thead><tr><td><div class="ptop"></div></td></tr></thead>
     <tfoot><tr><td><div class="fspace"></div></td></tr></tfoot>
     <tbody><tr><td>
       <div class="kop">
         <div class="merk"><img class="merk-logo" src="${esc(A.logo)}" alt="${esc(A.merk)}"><small>${esc(A.tagline)}</small></div>
-        <div class="meta"><b>Offerte ${esc(m.nummer)}</b><br>Datum: ${dt(m.datum)}<br>Geldig tot: ${dt(m.geldig)}${m.opsteller?'<br>Opsteller: '+esc(m.opsteller):''}${m.taal?'<br>Taal: '+esc(m.taal):''}</div>
+        <div class="meta"><b>Offerte ${esc(m.nummer)}</b><br>Datum: ${dt(m.datum)}<br>Geldig tot: ${dt(m.geldig)}${m.opsteller?'<br>Opsteller: '+esc(m.opsteller):''}</div>
       </div>
       <h1>Offerte voor ${esc(k.bedrijf||'')}</h1>
       <p class="aan">${esc(k.contactpersoon||'')}${k.functie?', '+esc(k.functie):''}${kadres?'<br>'+kadres:''}${k.email?'<br>'+esc(k.email):''}${k.telefoon?' · '+esc(k.telefoon):''}</p>
@@ -3662,12 +3699,8 @@ function offBouwOfferteHtml(){
         ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
         <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
       </div>
-      <div class="akkoord"><p>Indien u akkoord gaat met deze offerte, gelieve onderstaand document getekend en ingevuld aan ons terug te bezorgen aub. Dit mag (ingescand) per mail of per post.</p></div>
-      <div class="planning">
-        <div class="ns-blok-t">Planning</div>
-        ${m.startdatum?`<p><b>Mogelijke startdatum:</b> ${dt(m.startdatum)}</p>`:''}
-        <p>Geef hieronder uw voorkeur aan: ____ / ____ / 20___</p>
-      </div>
+      ${buildOndertekenpaginaHtml(m, dt)}
+      ${buildAlgemeneVoorwaardenHtml()}
     </td></tr></tbody>
     </table>`;
   const styles=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
@@ -3700,22 +3733,6 @@ function toonOfferte(){
   if(w.document.readyState==='complete') start(); else w.onload=start;
   return true;
  } catch(e){ console.error('toonOfferte fout:', e); setOffStatus('Fout bij PDF maken: '+(e.message||e),'err'); alert('Fout bij PDF maken: '+(e.message||e)); return false; }
-}
-
-// Downloadt de offerte als .doc-bestand (opent in Word) voor manuele aanpassingen; wordt zelf in Word bewaard.
-function offerteAlsWordDownloaden(){
- try {
-  const r=offBouwOfferteHtml(); if(!r) return;
-  const { doc, m, k }=r;
-  const blob=new Blob(['﻿', doc], { type:'application/msword' });
-  const url=URL.createObjectURL(blob);
-  const naam=('Offerte '+(m.nummer||'')+' - '+(k.bedrijf||'')).replace(/[\\/:*?"<>|]/g,'').trim()+'.doc';
-  const a=document.createElement('a');
-  a.href=url; a.download=naam;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url), 2000);
-  setOffStatus('Word-document gedownload. Pas aan en bewaar in Word; gebruik daarna "PDF + mail" om te versturen.','ok');
- } catch(e){ console.error('offerteAlsWordDownloaden fout:', e); setOffStatus('Fout bij Word-document maken: '+(e.message||e),'err'); alert('Fout bij Word-document maken: '+(e.message||e)); }
 }
 
 // Opent de PDF-preview (zoals toonOfferte) en meteen een mail naar de klant met het sjabloon uit offMeta.

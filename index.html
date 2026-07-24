@@ -144,8 +144,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .fspace { height:18mm; }
 #offerte-print .kop { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #1e2a4a; padding-bottom:14px; margin-bottom:22px; }
 #offerte-print .merk { font-size:22px; font-weight:800; }
-#offerte-print .merk-logo { height:48px; display:block; margin-bottom:4px; }
-#offerte-print .merk small { display:block; font-size:11px; font-weight:600; color:#6b7686; letter-spacing:.3px; }
+#offerte-print .merk-logo { height:48px; display:block; }
+#offerte-print .merk small { display:block; font-size:11px; font-weight:600; color:#6b7686; letter-spacing:.3px; margin-bottom:4px; }
 #offerte-print .proc-img { margin:8px 0 0; page-break-inside:avoid; }
 #offerte-print .proc-img img { max-width:100%; max-height:120mm; border:1px solid #e5e7eb; border-radius:4px; }
 #offerte-print .merk .afz { display:block; font-size:10.5px; font-weight:400; color:#6b7686; margin-top:6px; line-height:1.4; }
@@ -202,6 +202,8 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .fact-line { display:inline-block; min-width:260px; border-bottom:1px dotted #9aa3b2; padding:0 4px 1px; }
 #offerte-print .handtekening { margin-top:34px; font-size:12px; color:#374151; }
 #offerte-print .handtekening p { margin:0 0 22px; }
+#offerte-print .handtekening p:last-child { margin-bottom:48px; }
+#offerte-print .handtekening + .handtekening { margin-top:50px; }
 #offerte-print .av-page p { font-size:11.5px; color:#374151; margin:2px 0 0; }
 #offerte-print .totalen tr { page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .foot { position:fixed; bottom:0; left:0; right:0; margin:0; background:#fff; border-top:1px solid #e5e7eb; padding:5px 16mm 8mm; font-size:10.5px; color:#6b7686; text-align:center; }
@@ -257,7 +259,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.24</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.30</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -491,8 +493,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 
     <div class="card" style="margin-top:16px">
       <div class="subkop">Mail naar klant (bij "PDF + mail")</div>
-      <label class="off-lbl">Onderwerp<input id="off-mail-onderwerp" oninput="offMeta.mailOnderwerp=this.value"></label>
-      <label class="off-lbl" style="margin-top:12px">Bericht<textarea id="off-mail-body" class="off-ta" rows="4" oninput="offMeta.mailBody=this.value"></textarea></label>
+      <label class="off-lbl">Onderwerp<input id="off-mail-onderwerp" oninput="offMeta.mailOnderwerp=this.value;localStorage.setItem('offMailOnderwerp',this.value)"></label>
+      <label class="off-lbl" style="margin-top:12px">Bericht<textarea id="off-mail-body" class="off-ta" rows="4" oninput="offMeta.mailBody=this.value;localStorage.setItem('offMailBody',this.value)"></textarea></label>
+      <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Wat je hier typt wordt automatisch bewaard als jouw standaard-mailtekst voor volgende offertes.</div>
       <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Gebruik <code>[BEDRIJF]</code>, <code>[CONTACT]</code>, <code>[OFFERTENUMMER]</code> — die worden automatisch ingevuld.</div>
     </div>
 
@@ -3455,10 +3458,11 @@ async function bewaarKm() {
 var offBedrijven = [], offContacten = [], offBedrijf = null, offContact = null, offKlant = null, offGeladen = false;
 var offCatalogus = [], OFF_TARIEVEN = {}, offGekozen = [], offConsultanten = [];
 var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', taal:'Nederlands', betaling:'Betaling binnen 14 dagen na factuurdatum.', verplaatsingTekst:'', korting:0, btw:21,
-  startdatum:'', mailOnderwerp:'Offerte [OFFERTENUMMER] - The Next Level',
-  mailBody:'Beste [CONTACT],\n\nIn bijlage vindt u onze offerte [OFFERTENUMMER].\n\nMet vriendelijke groeten,' };
+  startdatum:'',
+  mailOnderwerp: localStorage.getItem('offMailOnderwerp') || 'Offerte [OFFERTENUMMER] - The Next Level',
+  mailBody: localStorage.getItem('offMailBody') || 'Beste [CONTACT],\n\nIn bijlage vindt u onze offerte [OFFERTENUMMER].\n\nMet vriendelijke groeten,' };
 var AFZENDER = {
-  logo:'LogoNextLevel_FINAAL.jpg', ariadneLogo:'LogoAriadne.jpg', merk:'The Next Level', tagline:'Your steps to The Next Level',
+  logo:'LogoNextLevel_FINAAL.jpg', ariadneLogo:'LogoAriadne.jpg', merk:'The Next Level', tagline:'Your steps to',
   bedrijf:'Ariadne BV', persoon:'Dirk Vander Eyken',
   adres:'Melkweg 8, 2980 Halle-Zoersel', btw:'BE 0502.581.150', tel:'+32 468 13 79 78'
 };
@@ -3608,12 +3612,12 @@ function offClusterRows(a){
 }
 // Onderteken- en planningspagina: apart, laatste inhoudelijke blad vóór de algemene voorwaarden.
 // Dit blad wordt (ingescand) getekend teruggestuurd door de klant.
-function buildOndertekenpaginaHtml(m, dt, perronNamen, k, kadresLijnen, arNaam, arFunctie){
+function buildOndertekenpaginaHtml(m, dt, perronNamen, k, arNaam){
   const namen=(perronNamen||[]).filter(Boolean);
   const trajTekst = namen.length>1
     ? `Voor akkoord voor de trajecten: ${namen.join(', ')}`
     : `Voor akkoord voor het traject: ${namen[0]||''}`;
-  const factVeld=(label,waarde)=>`<div class="fact-veld"><span class="fact-lbl">${esc(label)}</span><span class="fact-line">${waarde?esc(waarde):'&nbsp;'}</span></div>`;
+  const factVeld=(label)=>`<div class="fact-veld"><span class="fact-lbl">${esc(label)}</span><span class="fact-line">&nbsp;</span></div>`;
   return `<div class="sign-page">
     <div class="sign-brand">
       <img class="sign-logo-tnl" src="${esc(AFZENDER.logo)}" alt="${esc(AFZENDER.merk)}">
@@ -3621,30 +3625,33 @@ function buildOndertekenpaginaHtml(m, dt, perronNamen, k, kadresLijnen, arNaam, 
       <img class="sign-logo-ariadne" src="${esc(AFZENDER.ariadneLogo)}" alt="Ariadne BV" onerror="this.style.display='none'">
     </div>
     <div class="sign-brand-sub">The Next Level is een handelsnaam van Ariadne BV</div>
-    <div class="ns-blok-t" style="font-size:15px;margin-bottom:10px">${esc(trajTekst)}</div>
-    <div class="akkoord"><p>Indien u akkoord gaat met deze offerte, gelieve dit blad getekend en ingevuld aan ons terug te bezorgen aub. Dit mag (ingescand) per mail of per post.</p></div>
+    <div class="ns-blok-t" style="font-size:15px;margin-bottom:2px">${esc(trajTekst)}</div>
+    <p style="margin:0 0 10px;font-size:12px;color:#374151">Volgens offerte ${esc(m.nummer)} van ${dt(m.datum)}</p>
     <div class="planning">
       <div class="ns-blok-t">Planning</div>
+      <p>Volgens offerte ${esc(m.nummer)} van ${dt(m.datum)}</p>
       ${m.startdatum?`<p><b>Mogelijke startdatum:</b> ${dt(m.startdatum)}</p>`:''}
       <p>Geef hieronder uw voorkeur aan: ____ / ____ / 20___</p>
     </div>
     <div class="facturatie">
       <div class="ns-blok-t">Facturatiegegevens</div>
-      ${factVeld('Naam', k&&k.bedrijf)}
-      ${factVeld('T.a.v', k&&k.contactpersoon)}
-      ${factVeld('Adres', kadresLijnen&&kadresLijnen[0])}
-      ${factVeld('Postnummer en gemeente', kadresLijnen&&kadresLijnen[1])}
-      ${factVeld('ON-nummer', k&&k.btw_nummer)}
+      ${factVeld('Naam')}
+      ${factVeld('T.a.v')}
+      ${factVeld('Adres')}
+      ${factVeld('Postnummer en gemeente')}
+      ${factVeld('ON-nummer')}
     </div>
     <div class="handtekening">
       <div class="ns-blok-t" style="margin-bottom:6px">Voor Ariadne BV</div>
-      <p>Naam: ${arNaam?esc(arNaam):'____________________________________'}&nbsp;&nbsp;&nbsp;&nbsp;Functie: ${arFunctie?esc(arFunctie):'____________________________________'}</p>
-      <p>Datum: ____________________________________</p>
+      <p>Naam: ${arNaam?esc(arNaam):'____________________________________'}</p>
+      <p>Functie: Bestuurder</p>
+      <p>Datum: ${dt(new Date().toISOString().slice(0,10))}</p>
       <p>Handtekening:</p>
     </div>
     <div class="handtekening">
       <div class="ns-blok-t" style="margin-bottom:6px">Voor ${k&&k.bedrijf?esc(k.bedrijf):'de klant'}</div>
-      <p>Naam: ____________________________________&nbsp;&nbsp;&nbsp;&nbsp;Functie: ____________________________________</p>
+      <p>Naam: ____________________________________</p>
+      <p>Functie: ____________________________________</p>
       <p>Datum: ____________________________________</p>
       <p>Handtekening:</p>
     </div>
@@ -3691,6 +3698,9 @@ function offBouwOfferteHtml(){
       cr+=`<tr class="grp"><td>Maatwerk (op aanvraag)</td><td></td></tr>`;
       cr+=maatwerk.map(mw=>`<tr><td>${esc(mw.oms||'Maatwerk')}</td><td class="bedrag">in overleg</td></tr>`).join('');
     }
+    if(t.lijnen.length>1){
+      cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(stoneTot)}</td></tr>`;
+    }
     return `<section class="ns">
       <h2>${esc(offArtikelNaam(a))}</h2>
       ${intro}
@@ -3713,9 +3723,7 @@ function offBouwOfferteHtml(){
   const adrLijn2=[k.postcode, k.gemeente].filter(Boolean).join(' ');
   const kadres=[adrLijn1.trim(), adrLijn2.trim(), k.btw_nummer?('BTW '+k.btw_nummer):''].filter(Boolean).map(esc).join('<br>');
   const kmTekst=(m.verplaatsingTekst||'').trim() || buildKmClause();
-  const opstellerCons=consCache.find(c=>((c.voornaam||'')+' '+(c.naam||'')).trim()===m.opsteller);
   const arNaam=m.opsteller||AFZENDER.persoon;
-  const arFunctie=opstellerCons&&opstellerCons.functie||'';
   const bodyHtml=`
     <div class="foot">The Next Level is een handelsnaam van Ariadne BV &ndash; BE 0502 581 150 · ${esc(A.adres)} · ${esc(A.tel)}</div>
     <table class="psheet">
@@ -3723,7 +3731,7 @@ function offBouwOfferteHtml(){
     <tfoot><tr><td><div class="fspace"></div></td></tr></tfoot>
     <tbody><tr><td>
       <div class="kop">
-        <div class="merk"><img class="merk-logo" src="${esc(A.logo)}" alt="${esc(A.merk)}"><small>${esc(A.tagline)}</small></div>
+        <div class="merk"><small>${esc(A.tagline)}</small><img class="merk-logo" src="${esc(A.logo)}" alt="${esc(A.merk)}"></div>
         <div class="meta"><b>Offerte ${esc(m.nummer)}</b><br>Datum: ${dt(m.datum)}<br>Geldig tot: ${dt(m.geldig)}${m.opsteller?'<br>Opsteller: '+esc(m.opsteller):''}</div>
       </div>
       <h1>Offerte voor ${esc(k.bedrijf||'')}</h1>
@@ -3733,9 +3741,9 @@ function offBouwOfferteHtml(){
       <div class="voorw">
         ${kmTekst?`<p><b>Verplaatsing:</b> ${esc(kmTekst)}</p>`:''}
         ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
-        <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
       </div>
-      ${buildOndertekenpaginaHtml(m, dt, t.lijnen.map(({a})=>offArtikelNaam(a)), k, [adrLijn1.trim(), adrLijn2.trim()], arNaam, arFunctie)}
+      <div class="akkoord"><p>Indien u akkoord gaat met deze offerte, gelieve volgend blad getekend en ingevuld aan ons terug te bezorgen aub. Dit mag (ingescand) per mail of per post.</p></div>
+      ${buildOndertekenpaginaHtml(m, dt, t.lijnen.map(({a})=>offArtikelNaam(a)), k, arNaam)}
       ${buildAlgemeneVoorwaardenHtml()}
     </td></tr></tbody>
     </table>`;
@@ -3782,7 +3790,9 @@ function offertePdfEnMail(){
   const onderwerp=encodeURIComponent(subst(m.mailOnderwerp||''));
   const bericht=encodeURIComponent(subst(m.mailBody||''));
   const naar=encodeURIComponent(k.email||'');
-  window.open(`mailto:${naar}?subject=${onderwerp}&body=${bericht}`, '_blank');
+  const a=document.createElement('a');
+  a.href=`mailto:${naar}?subject=${onderwerp}&body=${bericht}`;
+  document.body.appendChild(a); a.click(); a.remove();
 }
 function vulBedrijfDropdown(){
   const sel=document.getElementById('off-bedrijf'); if(!sel) return;

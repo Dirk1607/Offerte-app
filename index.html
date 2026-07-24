@@ -156,7 +156,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .intro { white-space:pre-wrap; margin:0 0 22px; }
 #offerte-print .ns { margin:0 0 22px; }
 #offerte-print .ns h2 { font-size:15px; margin:0 0 10px; color:#1e2a4a; }
-#offerte-print .ns-blok { margin:0 0 12px; }
+#offerte-print .ns-blok { margin:0 0 12px; page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .ns-blok:after { content:""; display:block; clear:both; }
 #offerte-print .ns-blok-t { font-weight:700; margin-bottom:2px; }
 #offerte-print .ns-blok-tekst div, #offerte-print .ns-blok-tekst p { margin:0 0 4px; }
@@ -168,6 +168,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .belofte { margin:8px 0 12px; color:#4b5563; }
 #offerte-print table.clusters tr.grp td { font-weight:700; color:#1e2a4a; padding-top:9px; }
 #offerte-print table.clusters { width:100%; border-collapse:collapse; margin:6px 0; }
+#offerte-print table.clusters tr { page-break-inside:avoid; break-inside:avoid; }
 #offerte-print table.clusters td { padding:6px 6px; border-bottom:1px solid #eef1f5; vertical-align:top; }
 #offerte-print .bedrag { text-align:right; white-space:nowrap; width:130px; font-variant-numeric:tabular-nums; }
 #offerte-print .cl-oms { color:#6b7686; font-size:12px; }
@@ -185,6 +186,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 #offerte-print .voorw { margin-top:26px; font-size:12px; color:#374151; }
 #offerte-print .voorw b { color:#1e2a4a; }
 #offerte-print .voorw p { margin:0 0 6px; }
+#offerte-print .akkoord { margin-top:18px; font-size:12px; color:#374151; page-break-inside:avoid; break-inside:avoid; }
+#offerte-print .akkoord p { margin:0; font-weight:600; }
+#offerte-print .planning { margin-top:16px; font-size:12px; color:#374151; page-break-inside:avoid; break-inside:avoid; }
+#offerte-print .planning p { margin:4px 0 0; }
+#offerte-print .totalen tr { page-break-inside:avoid; break-inside:avoid; }
 #offerte-print .foot { position:fixed; bottom:0; left:0; right:0; margin:0; background:#fff; border-top:1px solid #e5e7eb; padding:5px 16mm 8mm; font-size:10.5px; color:#6b7686; text-align:center; }
 .wbs-head { font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; padding:0 9px 3px; }
 .wbs-blok { position:relative; z-index:1; border:1px solid var(--border); border-radius:6px; padding:5px 8px; margin-bottom:4px; background:#fff; }
@@ -238,7 +244,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.11</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.20</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -462,10 +468,28 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <label class="off-lbl" style="margin-top:12px">Verplaatsing (algemene omschrijving)<textarea id="off-verpl-tekst" class="off-ta" rows="1" oninput="offMeta.verplaatsingTekst=this.value"></textarea></label>
       <label class="off-lbl" style="margin-top:12px">Betalingsvoorwaarden<textarea id="off-betaling" class="off-ta" rows="1" oninput="offMeta.betaling=this.value"></textarea></label>
       <div id="off-totalen" style="margin-top:14px"></div>
-      <div style="margin-top:14px;display:flex;gap:10px">
-        <button class="btn primary" onclick="toonOfferte()">📄 Offerte in PDF aanmaken</button>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="subkop">Planning</div>
+      <label class="off-lbl">Mogelijke startdatum<input id="off-startdatum" type="date" oninput="offMeta.startdatum=this.value"></label>
+      <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Komt na de prijzen in de offerte, samen met een invulregel voor de klant om zijn voorkeur op te geven.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="subkop">Mail naar klant (bij "PDF + mail")</div>
+      <label class="off-lbl">Onderwerp<input id="off-mail-onderwerp" oninput="offMeta.mailOnderwerp=this.value"></label>
+      <label class="off-lbl" style="margin-top:12px">Bericht<textarea id="off-mail-body" class="off-ta" rows="4" oninput="offMeta.mailBody=this.value"></textarea></label>
+      <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Gebruik <code>[BEDRIJF]</code>, <code>[CONTACT]</code>, <code>[OFFERTENUMMER]</code> — die worden automatisch ingevuld.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="subkop">Offerte genereren</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" onclick="offerteAlsWordDownloaden()">📝 Openen als Word-document</button>
+        <button class="btn btn-ghost" onclick="offertePdfEnMail()">📄✉ PDF + mail naar klant</button>
       </div>
-      <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Opent een nette offerte in een nieuw tabblad; kies daar "Opslaan als PDF" om ze te versturen.</div>
+      <div class="hint" style="margin-top:6px;color:#9aa4b2;font-size:12px">Word: voor manuele aanpassingen — pas aan en bewaar zelf. PDF + mail: opent de offerte in een nieuw tabblad (kies daar "Opslaan als PDF") en opent meteen een mail naar de klant.</div>
     </div>
   </section>
 
@@ -3418,7 +3442,9 @@ async function bewaarKm() {
 // ---------- OFFERTE-TAB: klant kiezen (bedrijf + contact uit het unified model) ----------
 var offBedrijven = [], offContacten = [], offBedrijf = null, offContact = null, offKlant = null, offGeladen = false;
 var offCatalogus = [], OFF_TARIEVEN = {}, offGekozen = [], offConsultanten = [];
-var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', taal:'Nederlands', betaling:'Betaling binnen 14 dagen na factuurdatum.', verplaatsingTekst:'', korting:0, btw:21 };
+var offMeta = { nummer:'', datum:'', geldig:'', opsteller:'', taal:'Nederlands', betaling:'Betaling binnen 14 dagen na factuurdatum.', verplaatsingTekst:'', korting:0, btw:21,
+  startdatum:'', mailOnderwerp:'Offerte [OFFERTENUMMER] - The Next Level',
+  mailBody:'Beste [CONTACT],\n\nIn bijlage vindt u onze offerte [OFFERTENUMMER].\n\nMet vriendelijke groeten,' };
 var AFZENDER = {
   logo:'LogoNextLevel_FINAAL.jpg', merk:'The Next Level', tagline:'Your steps to The Next Level',
   bedrijf:'Ariadne BV', persoon:'Dirk Vander Eyken',
@@ -3450,6 +3476,8 @@ function initOffMeta(){
   set('off-btw',String(offMeta.btw)); set('off-betaling',offMeta.betaling);
   if(!offMeta.verplaatsingTekst) offMeta.verplaatsingTekst=buildKmClause();
   set('off-verpl-tekst',offMeta.verplaatsingTekst);
+  set('off-startdatum',offMeta.startdatum);
+  set('off-mail-onderwerp',offMeta.mailOnderwerp); set('off-mail-body',offMeta.mailBody);
   const opsSel=document.getElementById('off-opsteller');
   if(opsSel) opsSel.innerHTML='<option value="">- kies opsteller -</option>'
     + consCache.map(c=>{ const naam=((c.voornaam||'')+' '+(c.naam||'')).trim(); return `<option value="${escAttr(naam)}"${offMeta.opsteller===naam?' selected':''}>${escAttr(naam)}</option>`; }).join('');
@@ -3565,11 +3593,12 @@ function offClusterRows(a){
   });
   return { calc, rows, optie, maatwerk };
 }
-function toonOfferte(){
- try {
-  if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); alert('Kies en bewaar eerst een klant (bovenaan het tabblad Offerte).'); return; }
+// Bouwt de volledige offerte-HTML op (gedeeld door de PDF-preview en de Word-download).
+// Geeft null terug (met statusmelding) als er nog geen klant/Metroperron gekozen is.
+function offBouwOfferteHtml(){
+  if(!offKlant||!(offKlant.bedrijf||'').trim()){ setOffStatus('Kies en bewaar eerst een klant.','err'); alert('Kies en bewaar eerst een klant (bovenaan het tabblad Offerte).'); return null; }
   const t=offBerekenTotaal();
-  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één Metroperron.','err'); alert('Vink minstens één Metroperron aan in de lijst.'); return; }
+  if(!t.lijnen.length){ setOffStatus('Selecteer minstens één Metroperron.','err'); alert('Vink minstens één Metroperron aan in de lijst.'); return null; }
   const k=offKlant, m=offMeta, A=AFZENDER;
   const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
   const secties=t.lijnen.map(({a,opties})=>{
@@ -3633,14 +3662,29 @@ function toonOfferte(){
         ${m.betaling?`<p><b>Betalingsvoorwaarden:</b> ${esc(m.betaling)}</p>`:''}
         <p><b>Geldigheid:</b> deze offerte is geldig tot ${dt(m.geldig)}.</p>
       </div>
+      <div class="akkoord"><p>Indien u akkoord gaat met deze offerte, gelieve onderstaand document getekend en ingevuld aan ons terug te bezorgen aub. Dit mag (ingescand) per mail of per post.</p></div>
+      <div class="planning">
+        <div class="ns-blok-t">Planning</div>
+        ${m.startdatum?`<p><b>Mogelijke startdatum:</b> ${dt(m.startdatum)}</p>`:''}
+        <p>Geef hieronder uw voorkeur aan: ____ / ____ / 20___</p>
+      </div>
     </td></tr></tbody>
     </table>`;
   const styles=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
   const doc=`<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>Offerte ${esc(m.nummer||'')} ${esc(k.bedrijf||'')}</title>`
     +`<base href="${location.href}"><style>${styles}\nbody{margin:0;background:#fff}\n#offerte-print{display:block !important}</style></head>`
     +`<body><div id="offerte-print">${bodyHtml}</div></body></html>`;
+  return { doc, m, k };
+}
+
+// Opent de offerte in een nieuw tabblad en start het browser-printdialoogvenster ("Opslaan als PDF").
+// Geeft true terug bij succes, false als er nog geen klant/Metroperron gekozen was.
+function toonOfferte(){
+ try {
+  const r=offBouwOfferteHtml(); if(!r) return false;
+  const { doc }=r;
   const w=window.open('','_blank');
-  if(!w){ setOffStatus('Pop-up geblokkeerd, sta pop-ups toe voor deze site.','err'); alert('Pop-up geblokkeerd. Sta pop-ups toe voor deze site en probeer opnieuw.'); return; }
+  if(!w){ setOffStatus('Pop-up geblokkeerd, sta pop-ups toe voor deze site.','err'); alert('Pop-up geblokkeerd. Sta pop-ups toe voor deze site en probeer opnieuw.'); return false; }
   w.document.open(); w.document.write(doc); w.document.close();
   const gekozenCons=(offConsultanten||[]).map(id=>consCache.find(x=>x.id===id)).filter(Boolean);
   const zonderProfiel=gekozenCons.filter(c=>!c.pdf_url);
@@ -3654,7 +3698,38 @@ function toonOfferte(){
     Promise.race([klaar,new Promise(res=>setTimeout(res,2500))]).then(()=>setTimeout(()=>{ w.focus(); w.print(); },80));
   };
   if(w.document.readyState==='complete') start(); else w.onload=start;
- } catch(e){ console.error('toonOfferte fout:', e); setOffStatus('Fout bij PDF maken: '+(e.message||e),'err'); alert('Fout bij PDF maken: '+(e.message||e)); }
+  return true;
+ } catch(e){ console.error('toonOfferte fout:', e); setOffStatus('Fout bij PDF maken: '+(e.message||e),'err'); alert('Fout bij PDF maken: '+(e.message||e)); return false; }
+}
+
+// Downloadt de offerte als .doc-bestand (opent in Word) voor manuele aanpassingen; wordt zelf in Word bewaard.
+function offerteAlsWordDownloaden(){
+ try {
+  const r=offBouwOfferteHtml(); if(!r) return;
+  const { doc, m, k }=r;
+  const blob=new Blob(['﻿', doc], { type:'application/msword' });
+  const url=URL.createObjectURL(blob);
+  const naam=('Offerte '+(m.nummer||'')+' - '+(k.bedrijf||'')).replace(/[\\/:*?"<>|]/g,'').trim()+'.doc';
+  const a=document.createElement('a');
+  a.href=url; a.download=naam;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  setOffStatus('Word-document gedownload. Pas aan en bewaar in Word; gebruik daarna "PDF + mail" om te versturen.','ok');
+ } catch(e){ console.error('offerteAlsWordDownloaden fout:', e); setOffStatus('Fout bij Word-document maken: '+(e.message||e),'err'); alert('Fout bij Word-document maken: '+(e.message||e)); }
+}
+
+// Opent de PDF-preview (zoals toonOfferte) en meteen een mail naar de klant met het sjabloon uit offMeta.
+function offertePdfEnMail(){
+  if(!toonOfferte()) return;
+  const k=offKlant, m=offMeta;
+  const subst=s=>String(s||'')
+    .split('[BEDRIJF]').join(k.bedrijf||'')
+    .split('[CONTACT]').join(k.contactpersoon||'')
+    .split('[OFFERTENUMMER]').join(m.nummer||'');
+  const onderwerp=encodeURIComponent(subst(m.mailOnderwerp||''));
+  const bericht=encodeURIComponent(subst(m.mailBody||''));
+  const naar=encodeURIComponent(k.email||'');
+  window.open(`mailto:${naar}?subject=${onderwerp}&body=${bericht}`, '_blank');
 }
 function vulBedrijfDropdown(){
   const sel=document.getElementById('off-bedrijf'); if(!sel) return;

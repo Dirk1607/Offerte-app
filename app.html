@@ -259,7 +259,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.31</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.32</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -2734,10 +2734,18 @@ function clusterType(d){
   if (d.scopeGroep === 'Optioneel')  return 'optioneel';
   return 'normaal';
 }
-// Sorteren (bij openen): puur op VLG (volgorde), oplopend. Rijen zonder volgorde (0) blijven achteraan.
+// Sorteren (bij openen): op VLG (volgorde), oplopend. Rijen zonder volgorde (0) komen achteraan,
+// en binnen die groep eerst optioneel, dan maatwerk, dan normaal.
 function sorteerWbs(wbs){
   const vlg = d => Number(d.volgorde)||0;
-  return wbs.slice().sort((a,b) => vlg(a) - vlg(b));
+  const groep = d => { const t = clusterType(d); return t==='optioneel'?0 : t==='maatwerk'?1 : 2; };
+  return wbs.slice().sort((a,b) => {
+    const va = vlg(a), vb = vlg(b);
+    if (va>0 && vb>0) return va - vb;
+    if (va>0) return -1;
+    if (vb>0) return 1;
+    return groep(a) - groep(b);
+  });
 }
 
 // Laad catalogus bij eerste bezoek aan het tabblad

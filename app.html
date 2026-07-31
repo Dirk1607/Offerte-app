@@ -119,7 +119,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .rte ul, .rte ol { margin:4px 0 4px 20px; padding:0; }
 
 /* WBS-deliverables (uitgelijnd raster; vaste kolombreedtes = kop lijnt uit) */
-.wbs-head, .wbs-blok { display:grid; grid-template-columns: 86px minmax(40px,1fr) 54px 46px 42px 40px 40px 34px 52px 32px 16px; gap:4px; align-items:start; }
+.wbs-head, .wbs-blok { display:grid; grid-template-columns: 86px minmax(40px,1fr) 54px 46px 74px 40px 40px 34px 52px 16px; gap:4px; align-items:start; }
 .tool-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
 .tool-chip { display:inline-flex; align-items:center; gap:6px; background:var(--light,#f5f7fa); border:1px solid var(--border,#dfe3ea); border-radius:14px; padding:3px 6px 3px 10px; font-size:12px; }
 .tool-chip .x { border:none; background:none; cursor:pointer; font-size:14px; line-height:1; color:var(--muted,#6b7686); padding:0 2px; }
@@ -259,7 +259,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.33</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.34</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -1165,7 +1165,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=28"></script>
+<script src="supabase/db.js?v=29"></script>
 <script>
 // ============================================================
 // STATE
@@ -2934,27 +2934,25 @@ function renderWbs() {
   const head = `<div class="wbs-sticky-kop">
     <div class="subkop">WBS, Work Breakdown Structure</div>
     <div class="wbs-head">
-      <span>Cluster</span><span>Processtap</span><span>Rol</span><span>Aantal</span><span>EH</span><span>VLG</span><span>WK</span><span>KM</span><span>Klant</span><span>Keuze</span><span></span>
+      <span>Cluster</span><span>Processtap</span><span>Rol</span><span>Aantal</span><span>EH</span><span>VLG</span><span>WK</span><span>KM</span><span>Klant</span><span></span>
     </div>
   </div>`;
   const leeg = '<span></span>';
   const rijen = edit.wbs.map((d,i) => {
     const t = clusterType(d);
     const regie = t==='optioneel' && !(Number(d.aantal) > 0);
-    const kDis = t==='normaal' ? ' disabled' : '';   // standaard deliverables: vinkje vergrendeld
     const cluster = `<select onchange="setCluster(${i},this.value)" title="${escAttr(d.scopeGroep||'')}">${clusterOptiesHtml(d.scopeGroep)}</select>`;
     const deliv = `<textarea id="pt-${i}" placeholder="werkwoord + van + … (bv. Opmaken van het projectplan)" oninput="edit.wbs[${i}].omschrijving=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();checkProcesstap(${i});this.blur();}" onblur="checkProcesstap(${i})">${escAttr(d.omschrijving)}</textarea>`;
-    const keuze = `<div class="wbs-opt"><input type="checkbox" ${(t==='normaal'||d.gekozen!==false)?'checked':''}${kDis} onchange="edit.wbs[${i}].gekozen=this.checked;renderTotalen()">${regie?'<span class="wbs-regie">regie</span>':''}</div>`;
     const del = `<button class="x" title="verwijderen" onclick="edit.wbs.splice(${i},1);renderWbs();renderTotalen();renderScopeSuggesties()">×</button>`;
-    if (t==='maatwerk') return `<div class="wbs-blok is-maatwerk">${cluster}${deliv}${leeg}${leeg}${leeg}${leeg}${leeg}${leeg}${leeg}${keuze}${del}</div>`;
+    if (t==='maatwerk') return `<div class="wbs-blok is-maatwerk">${cluster}${deliv}${leeg}${leeg}${leeg}${leeg}${leeg}${leeg}${leeg}${del}</div>`;
     const rol = `<select onchange="edit.wbs[${i}].rol=this.value;renderTotalen()">${rolOptiesHtml(d.rol)}</select>`;
     const aantal = `<input type="number" step="0.5" min="0" max="999" value="${d.aantal??''}" oninput="edit.wbs[${i}].aantal=parseFloat(this.value)||0;renderTotalen()" onchange="renderTotalen();renderWbs()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
-    const eenheid = regie ? leeg : `<select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>`;
+    const eenheid = regie ? '<span class="wbs-regie" style="align-self:center;justify-self:center">regie</span>' : `<select onchange="edit.wbs[${i}].eenheid=this.value;renderTotalen()">${eenheidOptiesHtml(EENHEDEN, d.eenheid)}</select>`;
     const vlg = regie ? leeg : `<input type="number" min="0" max="999" placeholder="99" value="${d.volgorde??''}" oninput="vlgWijzig(${i},this)" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const week = regie ? leeg : `<input type="number" min="0" max="99" placeholder="1" value="${d.week??''}" oninput="edit.wbs[${i}].week=parseFloat(this.value)||0;renderTotalen()" onkeydown="if(event.key==='Enter'){this.blur();}">`;
     const km = `<div class="wbs-opt"><input type="checkbox" ${d.klant?'checked':''} title="Stap gebeurt bij de klant (verplaatsing meerekenen)" onchange="edit.wbs[${i}].klant=this.checked"></div>`;
     const klu = `<input type="number" step="0.5" min="0" max="999" placeholder="u" value="${d.klantAantal||''}" oninput="edit.wbs[${i}].klantAantal=parseFloat(this.value)||0;edit.wbs[${i}].klantEenheid='uur'" onkeydown="if(event.key==='Enter'){this.blur();}">`;
-    return `<div class="wbs-blok${t==='optioneel'?' is-optie':''}">${cluster}${deliv}${rol}${aantal}${eenheid}${vlg}${week}${km}${klu}${keuze}${del}</div>`;
+    return `<div class="wbs-blok${t==='optioneel'?' is-optie':''}">${cluster}${deliv}${rol}${aantal}${eenheid}${vlg}${week}${km}${klu}${del}</div>`;
   }).join('');
   document.getElementById('a-wbs').innerHTML = head + (edit.wbs.length ? rijen : '<div class="leeg">Nog geen deliverables.</div>');
 }
@@ -2986,7 +2984,7 @@ function checkProcesstap(i) {
 function renderDeliverables() {
   const lijst = edit.deliverables || (edit.deliverables = []);
   const rijen = lijst.map((d,i) =>
-    `<div class="deliv-rij"><input value="${escAttr(d)}" placeholder="wat is af als het af is, bv. Een gevalideerd projectplan" oninput="edit.deliverables[${i}]=this.value" onkeydown="if(event.key==='Enter'){this.blur();}"><button class="x" title="verwijderen" onclick="edit.deliverables.splice(${i},1);renderDeliverables()">×</button></div>`
+    `<div class="deliv-rij"><textarea class="grow-ta flex" placeholder="wat is af als het af is, bv. Een gevalideerd projectplan" oninput="edit.deliverables[${i}]=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escAttr(d)}</textarea><button class="x" title="verwijderen" onclick="edit.deliverables.splice(${i},1);renderDeliverables()">×</button></div>`
   ).join('');
   document.getElementById('a-deliverables').innerHTML = lijst.length ? rijen : '<div class="leeg">Nog geen deliverables.</div>';
 }
@@ -3006,7 +3004,7 @@ function clusterOptiesHtml(sel) {
 function renderClusters() {
   const lijst = edit.clusters || (edit.clusters = []);
   const rijen = lijst.map((c,i) =>
-    `<div class="cluster-rij"><textarea class="c-naam" placeholder="cluster" oninput="edit.clusters[${i}].naam=this.value" onchange="renderWbs()">${escAttr(c.naam||'')}</textarea><input placeholder="omschrijving van dit cluster (voor de klant)" value="${escAttr(c.omschrijving||'')}" oninput="edit.clusters[${i}].omschrijving=this.value"><button class="x" title="verwijderen" onclick="edit.clusters.splice(${i},1);renderClusters();renderWbs()">×</button></div>`
+    `<div class="cluster-rij"><textarea class="c-naam" placeholder="cluster" oninput="edit.clusters[${i}].naam=this.value" onchange="renderWbs()">${escAttr(c.naam||'')}</textarea><textarea class="grow-ta flex" placeholder="omschrijving van dit cluster (voor de klant)" oninput="edit.clusters[${i}].omschrijving=this.value">${escAttr(c.omschrijving||'')}</textarea><button class="x" title="verwijderen" onclick="edit.clusters.splice(${i},1);renderClusters();renderWbs()">×</button></div>`
   ).join('');
   document.getElementById('a-clusters').innerHTML = lijst.length ? rijen : '<div class="leeg">Nog geen clusters.</div>';
 }
@@ -3501,10 +3499,10 @@ function initOffMeta(){
   if(taalSel) taalSel.value=offMeta.taal||'Nederlands';
 }
 function offArtikelNaam(a){ return a.subnaam || '(naamloos)'; }
+// Bedrag = alleen de standaard clusters (niet optioneel, niet maatwerk) — die tellen nooit mee in de totaalprijs.
 function offLijn(a,opties){
   const calc=TNL.berekenFix({ wbs:a.wbs||[] }, OFF_TARIEVEN);
-  const bedrag=calc.basis + (opties!==false ? calc.opties : 0);
-  return { calc, bedrag };
+  return { calc, bedrag: calc.basis };
 }
 function offArtikelById(id){ return offCatalogus.find(a=>a.id===id); }
 // offGekozen: geordende lijst [{id, opties}] — de volgorde van toevoegen is de volgorde in de offerte.
@@ -3520,8 +3518,8 @@ function renderOffNextstones(){
     return `<div class="dyn-rij" style="align-items:center;gap:10px;border-bottom:1px solid var(--border,#e5e7eb);padding:7px 0">
       <span style="flex:none;width:18px;color:var(--muted);font-size:12px">${i+1}.</span>
       <span style="flex:1">${escAttr(offArtikelNaam(a))}</span>
-      <label style="font-size:12px;color:var(--muted);display:flex;gap:5px;align-items:center">
-        <input type="checkbox" ${g.opties!==false?'checked':''} onchange="offOptieToggle('${g.id}',this.checked)"> opties mee</label>
+      <label style="font-size:12px;color:var(--muted);display:flex;gap:5px;align-items:center" title="Toont de 'Opties'-sectie in de PDF voor dit Metroperron (telt nooit mee in de totaalprijs)">
+        <input type="checkbox" ${g.opties!==false?'checked':''} onchange="offOptieToggle('${g.id}',this.checked)"> opties tonen</label>
       <span style="width:120px;text-align:right;font-weight:600">${euro(bedrag)}</span>
       <button class="x" title="verwijderen" onclick="offVerwijder('${g.id}')">×</button>
     </div>`;
@@ -3598,16 +3596,18 @@ function buildKmClause(){
 function offClusterRows(a){
   const calc=TNL.berekenFix({ wbs:a.wbs||[] }, OFF_TARIEVEN);
   const perGroep=calc.perGroep||{}; const rows=[]; const gezien=new Set();
-  const detailsVan=naam=>(a.wbs||[]).filter(d=>(d.scopeGroep||'').trim()===naam && d.gekozen!==false).map(d=>(d.omschrijving||'').trim()).filter(Boolean);
-  (a.clusters||[]).forEach(c=>{ const naam=(c.naam||'').trim(); if(!naam||gezien.has(naam)) return; gezien.add(naam); rows.push({ naam, oms:(c.omschrijving||'').trim(), kost:perGroep[naam]||0, details:detailsVan(naam) }); });
+  const detailsVan=naam=>(a.wbs||[]).filter(d=>(d.scopeGroep||'').trim()===naam).map(d=>(d.omschrijving||'').trim()).filter(Boolean);
+  const omsVan=naam=>{ const c=(a.clusters||[]).find(c=>(c.naam||'').trim()===naam); return c?(c.omschrijving||'').trim():''; };
+  const speciaal=['Optioneel','Maatwerk','OutOfScope'];
+  (a.clusters||[]).forEach(c=>{ const naam=(c.naam||'').trim(); if(!naam||gezien.has(naam)||speciaal.includes(naam)) return; gezien.add(naam); rows.push({ naam, oms:(c.omschrijving||'').trim(), kost:perGroep[naam]||0, details:detailsVan(naam) }); });
   Object.keys(perGroep).forEach(naam=>{ if(!gezien.has(naam)){ gezien.add(naam); rows.push({ naam, oms:'', kost:perGroep[naam], details:detailsVan(naam) }); } });
   const optie=[], maatwerk=[];
   (a.wbs||[]).forEach(d=>{
     const g=(d.scopeGroep||'').trim();
-    if(g==='Optioneel'){ if(d.gekozen===false) return; const regie=!(Number(d.aantal)>0); const uur=(OFF_TARIEVEN[d.rol]&&OFF_TARIEVEN[d.rol].uurprijs)||0; optie.push({ oms:(d.omschrijving||'').trim(), kost:TNL.prijsVanEenheid(d.rol,d.eenheid,d.aantal,OFF_TARIEVEN), regie, uur }); }
+    if(g==='Optioneel'){ const regie=!(Number(d.aantal)>0); const uur=(OFF_TARIEVEN[d.rol]&&OFF_TARIEVEN[d.rol].uurprijs)||0; optie.push({ oms:(d.omschrijving||'').trim(), kost:TNL.prijsVanEenheid(d.rol,d.eenheid,d.aantal,OFF_TARIEVEN), regie, uur }); }
     else if(g==='Maatwerk'||g==='OutOfScope'){ if((d.omschrijving||'').trim()) maatwerk.push({ oms:(d.omschrijving||'').trim() }); }
   });
-  return { calc, rows, optie, maatwerk };
+  return { calc, rows, optie, maatwerk, omsOptioneel:omsVan('Optioneel'), omsMaatwerk:omsVan('Maatwerk') };
 }
 // Onderteken- en planningspagina: apart, laatste inhoudelijke blad vóór de algemene voorwaarden.
 // Dit blad wordt (ingescand) getekend teruggestuurd door de klant.
@@ -3678,8 +3678,7 @@ function offBouwOfferteHtml(){
   const k=offKlant, m=offMeta, A=AFZENDER;
   const dt=s=>{ if(!s) return ''; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('nl-BE'); };
   const secties=t.lijnen.map(({a,opties})=>{
-    const { calc, rows, optie, maatwerk }=offClusterRows(a);
-    const stoneTot=calc.basis+(opties?calc.opties:0);
+    const { calc, rows, optie, maatwerk, omsOptioneel, omsMaatwerk }=offClusterRows(a);
     const del=(a.deliverables||[]).filter(x=>(x||'').trim());
     const procs=(a.bijlagen||[]).filter(p=>(p.naam||'').trim()||p.data);
     const kl=calc.klant||{};
@@ -3689,16 +3688,17 @@ function offBouwOfferteHtml(){
     const blok=(titel,tekst,extra)=> !rteLeeg(tekst)?`<div class="ns-blok"><div class="ns-blok-t">${esc(titel)}</div><div class="ns-blok-tekst">${extra||''}${tekst}</div></div>`:'';
     const intro=blok('Waarom dit belangrijk is',a.waarom,illuImg)+blok('Doel',a.doel)+blok('SMART',a.meetbaar_objectief)+blok('Belofte',a.belofte);
     let cr=rows.map(r=>`<tr><td><div class="cl-rij"><span class="cl-naam">${esc(r.naam)}</span>${r.oms?`<span class="cl-oms">${esc(r.oms)}</span>`:''}</div>${(r.details&&r.details.length)?`<ul class="cl-det">${r.details.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</td><td class="bedrag">${euro(r.kost)}</td></tr>`).join('');
+    // Totaal van de standaard clusters staat altijd vóór Opties/Maatwerk: die twee tellen nooit mee in de prijs.
+    if(t.lijnen.length>1 || optie.length || maatwerk.length){
+      cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(calc.basis)}</td></tr>`;
+    }
     if(opties && optie.length){
-      cr+=`<tr class="grp"><td>Opties</td><td></td></tr>`;
+      cr+=`<tr class="grp"><td>Opties${omsOptioneel?`<div class="cl-oms" style="font-weight:400;margin-top:3px">${esc(omsOptioneel)}</div>`:''}</td><td></td></tr>`;
       cr+=optie.map(o=>`<tr><td>${esc(o.oms||'Optie')}</td><td class="bedrag">${o.regie?'in regie':euro(o.kost)}</td></tr>`).join('');
     }
     if(maatwerk.length){
-      cr+=`<tr class="grp"><td>Maatwerk (op aanvraag)</td><td></td></tr>`;
+      cr+=`<tr class="grp"><td>Maatwerk (op aanvraag)${omsMaatwerk?`<div class="cl-oms" style="font-weight:400;margin-top:3px">${esc(omsMaatwerk)}</div>`:''}</td><td></td></tr>`;
       cr+=maatwerk.map(mw=>`<tr><td>${esc(mw.oms||'Maatwerk')}</td><td class="bedrag">in overleg</td></tr>`).join('');
-    }
-    if(t.lijnen.length>1){
-      cr+=`<tr class="subtot"><td>Subtotaal ${esc(offArtikelNaam(a))}</td><td class="bedrag">${euro(stoneTot)}</td></tr>`;
     }
     return `<section class="ns">
       <h2>${esc(offArtikelNaam(a))}</h2>

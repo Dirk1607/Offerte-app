@@ -111,7 +111,6 @@ const TNL = (() => {
     wbs.forEach(d => {
       const g = (d.scopeGroep || '').trim();
       if (g === 'OutOfScope' || g === 'Maatwerk') return;        // geen auto-kost
-      if (g === 'Optioneel' && d.gekozen === false) return;      // niet-gekozen optie telt niet
       const kost = prijsVanEenheid(d.rol, d.eenheid, d.aantal, tarieven);
       if (g === 'Optioneel') { opties += kost; }
       else {                                                     // standaard: telt altijd mee

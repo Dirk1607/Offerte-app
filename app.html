@@ -74,7 +74,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 .artikel-kaart { display:flex; align-items:center; gap:10px; background:var(--light); border:1px solid var(--border); border-radius:8px; padding:9px 12px; margin:8px 0 0 18px; }
 .artikel-kaart .anaam { flex:1; font-weight:600; color:var(--navy); }
 .artikel-kaart .aprijs { font-size:12px; color:var(--muted); white-space:nowrap; }
-.artikel-kaart .volgorde-input { width:44px; text-align:center; }
+.artikel-kaart .volgorde-input { width:40px; text-align:center; background:#fff; color:var(--navy); border:1.5px solid var(--border); border-radius:7px; padding:5px 4px; font-size:12px; font-weight:700; }
 .mini { padding:5px 11px; font-size:12px; border-radius:7px; }
 .mini-danger { color:var(--red); border-color:#f3c0bb; }
 .leeg { color:var(--muted); font-style:italic; font-size:13px; padding:6px 0 4px 4px; }
@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.36</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.39</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -407,6 +407,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <h2>TNL Metroperrons <small style="font-weight:400;color:var(--muted);font-size:14px">· Your steps to The Next Level</small></h2>
     <p class="sub">Je verbeterprojecten: lijn → station → <b>Metroperron</b>. Elke Metroperron zet (een deel van) een metrostation in orde. Voeg stations toe onder een lijn, en Metroperrons onder een station.</p>
     <div class="status" id="cat-status">Laden…</div>
+    <button class="btn btn-ghost mini" onclick="sorteerArtikelenNu()" title="Metroperrons herschikken op basis van de ingevulde volgnummers">↕ Sorteer nu</button>
     <div id="cat-tree"></div>
   </section>
 
@@ -2731,8 +2732,10 @@ const VASTE_PROCESSTAPPEN = ['Beschrijven van het proces', 'Coördineren van het
 // Standaard-deliverables ("wat is af als het af is") voor een nieuwe Metroperron.
 const STANDAARD_DELIVERABLES = ['Een beschreven proces', 'Een gecoördineerd project'];
 // Startsjabloon voor het SMART-veld van een nieuwe Metroperron: vijf onderlijnde labels op aparte regels.
+// De lege <span style="text-decoration:none"> na het label is nodig omdat contenteditable
+// anders de onderlijning "meesleept" naar tekst die je er meteen na begint te typen.
 const SMART_DEFAULT = ['Specifiek', 'Meetbaar', 'Acceptabel', 'Realistisch', 'Tijdsgebonden']
-  .map(l => `<div><u>${l}:</u> </div>`).join('');
+  .map(l => `<div><u>${l}:</u><span style="text-decoration:none"> </span></div>`).join('');
 function eersteRol(){ return (TARIEF_ROLLEN[0] && TARIEF_ROLLEN[0].rol) || 'Sr'; }
 function leegDeliverable(extra){
   return Object.assign({ omschrijving:'', scopeGroep:'', rol:eersteRol(), eenheid:'heledag',
@@ -2818,7 +2821,7 @@ function renderCatBeheer() {
           html += `<div class="artikel-kaart">
             <span class="anaam">${a.subnaam||'(naamloos)'}${a.actief===false?' <small style="color:var(--red)">· inactief</small>':''}${onb.length?` <small style="color:var(--red)">⚠ onbekende rol: ${onb.map(escAttr).join(', ')}</small>`:''}</span>
             <span class="aprijs">€${c.basis.toLocaleString('nl-BE')}${c.opties?` <small>+ €${c.opties.toLocaleString('nl-BE')} opt.</small>`:''} · ${c.doorlooptijd||0} wk</span>
-            <input type="number" class="volgorde-input" value="${a.sort??0}" title="Volgorde van dit Metroperron binnen het station (laagste eerst)" onchange="wijzigArtikelSort('${a.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}">
+            <input type="number" class="volgorde-input" min="0" max="9" value="${a.sort??0}" title="Volgorde van dit Metroperron binnen het station (0-9, laagste eerst)" onchange="wijzigArtikelSort('${a.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}">
             <button class="btn btn-ghost mini" onclick="bewerkArtikel('${a.id}')">Bewerk</button>
           </div>`;
         });
@@ -2882,7 +2885,7 @@ function bewerkArtikel(id) {
     ])
   };
   vulArtikelForm(a);
-  document.getElementById('art-titel').textContent = 'Metroperron bewerken';
+  document.getElementById('art-titel').textContent = 'Metroperron bewerken: ' + (a.subnaam || '(naamloos)');
   document.getElementById('a-verwijder').style.display = 'inline-block';
   document.getElementById('art-modal').style.display = 'flex';
 }
@@ -2911,6 +2914,7 @@ function renderVolnaam() {
   const s = catStations.find(x => x.id===edit.station_id);
   const l = s ? LIJNEN.find(x => x.code===s.lijn_code) : null;
   const sub = document.getElementById('a-subnaam').value.trim();
+  if (edit.id) document.getElementById('art-titel').textContent = 'Metroperron bewerken: ' + (sub || '(naamloos)');
   document.getElementById('a-volnaam').value = [l?.naam, s?.naam, sub].filter(Boolean).join(', ');
 }
 
@@ -4004,10 +4008,18 @@ async function slaArtikelOp() {
   try { await TNL.upsertArtikel(artikel); sluitArtikel(); await laadCatalogus(); }
   catch(e){ alert('Opslaan mislukt: '+(e.message||e)); }
 }
+// Slaat het volgnummer op zonder de lijst meteen te herschikken (dat gebeurt pas via "Sorteer nu"),
+// zodat rijen niet onder de muis wegspringen terwijl je meerdere nummers na elkaar intikt.
 async function wijzigArtikelSort(id, val) {
-  const sort = parseInt(val, 10) || 0;
-  try { await TNL.updateArtikel(id, { sort }); await laadCatalogus(); }
+  const sort = Math.min(9, Math.max(0, parseInt(val, 10) || 0));
+  const a = catArtikelen.find(x => x.id === id);
+  if (a) a.sort = sort;
+  try { await TNL.updateArtikel(id, { sort }); }
   catch(e){ alert('Mislukt: '+(e.message||e)); }
+}
+function sorteerArtikelenNu() {
+  catArtikelen = catArtikelen.slice().sort((a,b) => (Number(a.sort)||0) - (Number(b.sort)||0));
+  renderCatBeheer();
 }
 async function verwijderArtikel() {
   if (!edit.id) return;

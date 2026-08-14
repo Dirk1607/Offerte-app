@@ -298,6 +298,21 @@ const TNL = (() => {
     return check(await client().from('quickscan').update(patch).eq('id', id).select().single());
   }
 
+  // ---------- notitielog per contact (migratie 0033, per-auteur opvolging) ----------
+  async function getContactNotities(contactId) {
+    return check(await client().from('contact_notitie')
+      .select('*').eq('contact_id', contactId).order('created_at', { ascending: false }));
+  }
+  // Alle notities in één keer (voor het "heeft opvolging"-icoon in het prospecten-overzicht).
+  async function getAlleContactNotities() {
+    return check(await client().from('contact_notitie')
+      .select('id, contact_id, created_at').order('created_at', { ascending: false }));
+  }
+  async function insertContactNotitie({ contact_id, auteur, tekst }) {
+    return check(await client().from('contact_notitie')
+      .insert({ contact_id, auteur, tekst }).select().single());
+  }
+
   // ---------- fuzzy bedrijf-match (migratie 0025) ----------
   async function zoekGelijkaardigeBedrijven(naam, drempel = 0.4) {
     return check(await client().rpc('zoek_gelijkaardige_bedrijven', { p_naam: naam, p_drempel: drempel }));
@@ -517,6 +532,7 @@ const TNL = (() => {
     getKlanten, vindKlantOpBedrijf, upsertKlant, updateKlant, saveGesprek, registreerQuickscan, getScansVanKlant, getAlleScans,
     getBedrijven, getContacten, updateBedrijf, updateContact, insertBedrijf, insertContact,
     deleteBedrijf, deleteContact, voegContactenSamen, zetScansBedrijf, updateQuickscan, deleteQuickscan,
+    getContactNotities, getAlleContactNotities, insertContactNotitie,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,
     getTemplates, upsertTemplate, deleteTemplate,

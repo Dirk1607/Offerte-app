@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.39</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.40</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -635,15 +635,16 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       table.pr-tabel{border-collapse:collapse;width:100%;font-size:12px;table-layout:fixed}
       /* Kolombreedtes (%), samen 100%. Kolom 1 = selectievakje. */
       table.pr-tabel th:nth-child(1),table.pr-tabel td:nth-child(1){width:3%;text-align:center}
-      table.pr-tabel th:nth-child(2),table.pr-tabel td:nth-child(2){width:20%}
-      table.pr-tabel th:nth-child(3),table.pr-tabel td:nth-child(3){width:13%}
-      table.pr-tabel th:nth-child(4),table.pr-tabel td:nth-child(4){width:15%}
-      table.pr-tabel th:nth-child(5),table.pr-tabel td:nth-child(5){width:10%}
-      table.pr-tabel th:nth-child(6),table.pr-tabel td:nth-child(6){width:11%}
-      table.pr-tabel th:nth-child(7),table.pr-tabel td:nth-child(7){width:10%}
-      table.pr-tabel th:nth-child(8),table.pr-tabel td:nth-child(8){width:10%}
-      table.pr-tabel th:nth-child(9),table.pr-tabel td:nth-child(9){width:4%;text-align:center}
+      table.pr-tabel th:nth-child(2),table.pr-tabel td:nth-child(2){width:18%}
+      table.pr-tabel th:nth-child(3),table.pr-tabel td:nth-child(3){width:12%}
+      table.pr-tabel th:nth-child(4),table.pr-tabel td:nth-child(4){width:14%}
+      table.pr-tabel th:nth-child(5),table.pr-tabel td:nth-child(5){width:9%}
+      table.pr-tabel th:nth-child(6),table.pr-tabel td:nth-child(6){width:10%}
+      table.pr-tabel th:nth-child(7),table.pr-tabel td:nth-child(7){width:9%}
+      table.pr-tabel th:nth-child(8),table.pr-tabel td:nth-child(8){width:9%}
+      table.pr-tabel th:nth-child(9),table.pr-tabel td:nth-child(9){width:8%}
       table.pr-tabel th:nth-child(10),table.pr-tabel td:nth-child(10){width:4%;text-align:center}
+      table.pr-tabel th:nth-child(11),table.pr-tabel td:nth-child(11){width:4%;text-align:center}
       /* Velden in de TABEL vullen hun kolom (overschrijft de inline pixel-breedtes). */
       #tab-prospecten table.pr-tabel .pr-in{width:100%!important;box-sizing:border-box}
       #tab-prospecten td:nth-child(2) input.pr-in{flex:1 1 0;min-width:0;width:auto!important}
@@ -705,6 +706,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
             <th class="sort-h" data-sf="status" onclick="prosSort('status')">Status <span class="arr">↕</span></th>
             <th class="sort-h" data-sf="cat1" onclick="prosSort('cat1')">CAT 1 <span class="arr">↕</span></th>
             <th class="sort-h" data-sf="cat2" onclick="prosSort('cat2')">CAT 2 <span class="arr">↕</span></th>
+            <th class="sort-h" data-sf="eigenaar" onclick="prosSort('eigenaar')">Eigenaar <span class="arr">↕</span></th>
             <th>Opv.</th>
             <th></th>
           </tr>
@@ -717,10 +719,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
             <th><select id="prf-status" onchange="prosRender()"><option value="">alle</option><option>Nog te contacteren</option><option>Quickscan verstuurd</option><option>Quickscan ingevuld</option></select></th>
             <th><input id="prf-cat1" oninput="prosRender()" placeholder="filter…"></th>
             <th><input id="prf-cat2" oninput="prosRender()" placeholder="filter…"></th>
+            <th><select id="prf-eigenaar" onchange="prosRender()"><option value="">alle</option><option>Dirk</option><option>Ilse</option></select></th>
             <th></th><th></th>
           </tr>
         </thead>
-        <tbody id="pr-body"><tr><td colspan="10" style="padding:16px;color:var(--muted)">Nog niet geladen, open dit tabblad of klik ↻ Vernieuwen.</td></tr></tbody>
+        <tbody id="pr-body"><tr><td colspan="11" style="padding:16px;color:var(--muted)">Nog niet geladen, open dit tabblad of klik ↻ Vernieuwen.</td></tr></tbody>
       </table>
     </div>
     <datalist id="prc1-list"></datalist>
@@ -742,11 +745,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
               <input id="pr-opv-datum" type="date" class="pr-in" style="width:100%;box-sizing:border-box;margin-top:3px;padding:7px 9px" onchange="prosOpvSave('volgende_stap_datum',this.value)">
             </label>
           </div>
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:6px 0 4px">Nieuwe notitie</div>
-          <textarea id="pr-opv-notitie" style="width:100%;box-sizing:border-box;min-height:56px;padding:8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-family:inherit;font-size:13px;resize:vertical" placeholder="Wat is er besproken/gebeurd? (wordt met datum bovenaan het verloop gezet)"></textarea>
-          <div style="margin:6px 0 14px"><button class="db-btn" onclick="prosOpvAddNotitie()">➕ Toevoegen aan verloop</button></div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:6px 0 4px">Nieuwe notitie <span id="pr-opv-auteur" style="text-transform:none;font-weight:400;color:#aab"></span></div>
+          <textarea id="pr-opv-notitie" style="width:100%;box-sizing:border-box;min-height:56px;padding:8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-family:inherit;font-size:13px;resize:vertical" placeholder="Wat is er besproken/gebeurd?"></textarea>
+          <div style="margin:6px 0 14px"><button class="db-btn" id="pr-opv-notitie-btn" onclick="prosOpvAddNotitie()">➕ Toevoegen</button></div>
           <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:6px 0 4px">Verloop (chronologisch, nieuwste bovenaan)</div>
-          <textarea id="pr-opv-verloop" style="width:100%;box-sizing:border-box;min-height:120px;padding:8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-family:inherit;font-size:13px;resize:vertical" onchange="prosOpvSave('verloop',this.value)"></textarea>
+          <div id="pr-opv-log" style="max-height:260px;overflow-y:auto;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;padding:4px 8px;background:#fbfcfe">-</div>
           <div style="display:flex;align-items:center;gap:10px;margin:14px 0 4px">
             <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Samenvatting</span>
             <button id="pr-opv-ai" class="db-btn" onclick="prosSamenvat()" style="font-weight:600">🤖 Samenvatten</button>
@@ -1243,6 +1246,15 @@ async function boot() {
 // ============================================================
 // LOGIN-GATE, app start pas na aanmelden (rol 'authenticated')
 // ============================================================
+// Naam van de ingelogde gebruiker (uit z'n Supabase-login-e-mail), gebruikt als
+// auteur bij prospect-notities en als default-eigenaar bij nieuwe prospects.
+// 'dirk@ariadnebvba.be' -> 'Dirk'. Werkt automatisch voor elk nieuw account
+// zolang het e-mailadres met de voornaam begint.
+let HUIDIGE_GEBRUIKER = 'Dirk';
+function naamUitEmail(email) {
+  const lokaal = String(email || '').split('@')[0];
+  return lokaal ? lokaal.charAt(0).toUpperCase() + lokaal.slice(1).toLowerCase() : 'Dirk';
+}
 async function doeAfmelden() {
   await TNL.signOut();
   location.reload();
@@ -1254,7 +1266,7 @@ async function doeAfmelden() {
   const logoutBt = document.getElementById('logout-btn');
   const toon    = () => { overlay.style.display = 'flex'; logoutBt.style.display = 'none'; };
   const verberg = () => { overlay.style.display = 'none'; logoutBt.style.display = 'inline-block'; };
-  async function start() { verberg(); await boot(); }
+  async function start(sessie) { HUIDIGE_GEBRUIKER = naamUitEmail(sessie && sessie.user && sessie.user.email); verberg(); await boot(); }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1262,9 +1274,9 @@ async function doeAfmelden() {
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true; btn.textContent = 'Bezig…';
     try {
-      await TNL.signIn(document.getElementById('login-email').value.trim(),
+      const sessie = await TNL.signIn(document.getElementById('login-email').value.trim(),
                        document.getElementById('login-pw').value);
-      await start();
+      await start(sessie);
     } catch (err) {
       errEl.textContent = 'Aanmelden mislukt, controleer e-mail/wachtwoord.';
       console.error(err);
@@ -1278,7 +1290,7 @@ async function doeAfmelden() {
 
   try {
     const sessie = await TNL.getSession();
-    if (sessie) await start(); else toon();
+    if (sessie) await start(sessie); else toon();
   } catch (e) { toon(); console.error(e); }
 })();
 
@@ -4518,7 +4530,8 @@ const PROS_SORT = {
   email:   p => p.email || '',
   status:  p => p.status || '',
   cat1:    p => p.cat1 || '',
-  cat2:    p => p.cat2 || ''
+  cat2:    p => p.cat2 || '',
+  eigenaar: p => p.eigenaar || ''
 };
 const PROS_CAT1_SEED = ['Kennissen', 'Klant', 'Netwerk', 'Vrienden'];
 const prAttr = s => String(s == null ? '' : s)
@@ -4528,23 +4541,24 @@ async function laadProspecten() {
   const st = document.getElementById('pr-status');
   st.textContent = 'Laden…';
   try {
-    const [contacten, bedrijven, scans] = await Promise.all([TNL.getContacten(), TNL.getBedrijven(), TNL.getAlleScans().catch(() => [])]);
+    const [contacten, bedrijven, scans, notities] = await Promise.all([TNL.getContacten(), TNL.getBedrijven(), TNL.getAlleScans().catch(() => []), TNL.getAlleContactNotities().catch(() => [])]);
     const bMap = Object.fromEntries(bedrijven.map(b => [b.id, b.naam]));
     prosBedrijfByNaam = {};
     bedrijven.forEach(b => { if (b.naam) prosBedrijfByNaam[b.naam.trim().toLowerCase()] = b.id; });
     // Scans per contact + maps voor de scores-weergave (hergebruikt de Gespreksvoorbereiding-view).
     prosScanById = {}; prosBedrijfById = {}; prosContactById = {};
-    const scanPerContact = {};
+    const scanPerContact = {}, notitieAantalPerContact = {};
     bedrijven.forEach(b => { prosBedrijfById[b.id] = b; });
     contacten.forEach(c => { prosContactById[c.id] = c; });
     (scans || []).forEach(s => { prosScanById[s.id] = s; if (s.contact_id) (scanPerContact[s.contact_id] = scanPerContact[s.contact_id] || []).push(s); });
+    (notities || []).forEach(n => { notitieAantalPerContact[n.contact_id] = (notitieAantalPerContact[n.contact_id] || 0) + 1; });
     prosData = contacten.map(c => ({
       id: c.id,
       aanspreektitel: c.aanspreektitel || '', voornaam: c.voornaam || '', achternaam: c.achternaam || '',
       email: c.email || '', gsm: c.gsm || '',
       bedrijf_id: c.bedrijf_id, bedrijf: bMap[c.bedrijf_id] || '',
-      cat1: c.cat1 || '', cat2: c.cat2 || '', status: c.status || '',
-      verloop: c.verloop || '', samenvatting: c.samenvatting || '',
+      cat1: c.cat1 || '', cat2: c.cat2 || '', status: c.status || '', eigenaar: c.eigenaar || 'Dirk',
+      samenvatting: c.samenvatting || '', heeftNotities: !!notitieAantalPerContact[c.id],
       volgende_stap: c.volgende_stap || '', volgende_stap_datum: c.volgende_stap_datum || '',
       scans: (scanPerContact[c.id] || []).map(s => s.id)
     }));
@@ -4578,6 +4592,7 @@ function prosRender() {
   const f = id => (document.getElementById(id).value || '').toLowerCase();
   const fN = f('prf-naam'), fB = f('prf-bedrijf'), fE = f('prf-email'), fC1 = f('prf-cat1'), fC2 = f('prf-cat2');
   const fS = document.getElementById('prf-status').value;
+  const fEig = document.getElementById('prf-eigenaar').value;
   let rows = prosData.filter(p => {
     const naam = ((p.voornaam || '') + ' ' + (p.achternaam || '')).toLowerCase();
     if (fN && !naam.includes(fN)) return false;
@@ -4586,6 +4601,7 @@ function prosRender() {
     if (fC1 && !(p.cat1 || '').toLowerCase().includes(fC1)) return false;
     if (fC2 && !(p.cat2 || '').toLowerCase().includes(fC2)) return false;
     if (fS && p.status !== fS) return false;
+    if (fEig && p.eigenaar !== fEig) return false;
     return true;
   });
   if (prosSortField) {
@@ -4601,8 +4617,8 @@ function prosRender() {
   document.getElementById('pr-telling').textContent = rows.length + ' van ' + prosData.length + ' contacten';
   const tb = document.getElementById('pr-body');
   prosUpdMailBtn();
-  if (!rows.length) { tb.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--muted)">Geen contacten gevonden.</td></tr>'; return; }
-  const opv = p => (p.verloop || p.volgende_stap || p.samenvatting);
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--muted)">Geen contacten gevonden.</td></tr>'; return; }
+  const opv = p => (p.heeftNotities || p.volgende_stap || p.samenvatting);
   tb.innerHTML = rows.map(p => `<tr>
     <td><input type="checkbox" ${prosSel.has(p.id) ? 'checked' : ''} onclick="prosToggleSel('${p.id}',this.checked)"></td>
     <td><div style="display:flex;gap:4px;align-items:center">
@@ -4623,6 +4639,9 @@ function prosRender() {
     </select></td>
     <td><input class="pr-in" list="prc1-list" style="width:110px" value="${prAttr(p.cat1)}" onchange="prosUpdate('${p.id}','cat1',this.value)" placeholder="cat 1…"></td>
     <td><input class="pr-in" list="prc2-list" style="width:120px;color:var(--muted)" value="${prAttr(p.cat2)}" onchange="prosUpdate('${p.id}','cat2',this.value)" placeholder="cat 2…"></td>
+    <td><select class="pr-in" style="width:70px" onchange="prosUpdate('${p.id}','eigenaar',this.value)" title="Eigenaar van deze prospect">
+      ${['Dirk', 'Ilse'].map(n => `<option ${p.eigenaar === n ? 'selected' : ''}>${n}</option>`).join('')}
+    </select></td>
     <td style="text-align:center;white-space:nowrap">
       ${(p.scans && p.scans.length) ? `<button onclick="prosBekijkScores('${p.scans[0]}')" title="Bekijk quickscan-resultaten" style="background:none;border:none;cursor:pointer;font-size:15px">📊</button>` : ''}
       <button onclick="prosOpenOpv('${p.id}')" title="${opv(p) ? 'Heeft opvolging' : 'Opvolging toevoegen'}" style="background:none;border:none;cursor:pointer;font-size:15px;color:${opv(p) ? 'var(--orange,#E8812A)' : '#bbb'}">📝</button>
@@ -4640,7 +4659,7 @@ async function prosUpdate(id, field, value) {
     await TNL.updateContact(id, { [field]: v || null });
     st.textContent = '✓ bewaard';
     setTimeout(() => { if (st.textContent === '✓ bewaard') st.textContent = ''; }, 1400);
-    if (field === 'cat1' || field === 'status') prosStats();
+    if (field === 'cat1' || field === 'status' || field === 'eigenaar') prosStats();
   } catch (e) {
     st.textContent = '✗ opslaan mislukt: ' + (e.message || e); console.error(e);
   }
@@ -4661,11 +4680,16 @@ async function prosDelete(id) {
 
 function prosStats() {
   const bar = document.getElementById('pr-stats'); if (!bar) return;
-  const cats = {};
-  prosData.forEach(p => { if (p.cat1) cats[p.cat1] = (cats[p.cat1] || 0) + 1; });
+  const cats = {}, eigenaars = {};
+  prosData.forEach(p => {
+    if (p.cat1) cats[p.cat1] = (cats[p.cat1] || 0) + 1;
+    const e = p.eigenaar || 'Dirk'; eigenaars[e] = (eigenaars[e] || 0) + 1;
+  });
   let html = `<div class="pr-chip"><span class="dot" style="background:var(--navy,#1B3A6B)"></span>${prosData.length} contacten</div>`;
   const nogTe = prosData.filter(p => p.status === 'Nog te contacteren').length;
   if (nogTe) html += `<div class="pr-chip"><span class="dot" style="background:var(--orange,#E8812A)"></span>${nogTe} nog te contacteren</div>`;
+  Object.entries(eigenaars).sort((a, b) => b[1] - a[1])
+    .forEach(([k, v]) => html += `<div class="pr-chip"><span class="dot" style="background:var(--blue,#4A7CB5)"></span>${prAttr(k)}: ${v}</div>`);
   Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 8)
     .forEach(([k, v]) => html += `<div class="pr-chip"><span class="dot" style="background:#8aa0bd"></span>${prAttr(k)}: ${v}</div>`);
   bar.innerHTML = html;
@@ -4676,7 +4700,7 @@ async function prosVoegToe() {
   const c = {
     aanspreektitel: v('pra-titel'), voornaam: v('pra-voornaam'), achternaam: v('pra-naam'),
     email: v('pra-email'), gsm: v('pra-tel'), cat1: v('pra-cat1'), cat2: v('pra-cat2'),
-    status: v('pra-status') || 'Nog te contacteren'
+    status: v('pra-status') || 'Nog te contacteren', eigenaar: HUIDIGE_GEBRUIKER
   };
   let bedrijfNaam = v('pra-bedrijf');
   const st = document.getElementById('pr-add-status');
@@ -4708,13 +4732,14 @@ async function prosVoegToe() {
       bedrijf_id: bedrijfId,
       aanspreektitel: c.aanspreektitel || null, voornaam: c.voornaam || null, achternaam: c.achternaam || null,
       email: c.email || null, gsm: c.gsm || null, cat1: c.cat1 || null, cat2: c.cat2 || null,
-      status: c.status || null, nog_te_contacteren: c.status === 'Nog te contacteren', bron: 'manueel'
+      status: c.status || null, nog_te_contacteren: c.status === 'Nog te contacteren', bron: 'manueel',
+      eigenaar: c.eigenaar
     });
     prosData.unshift({
       id: nc.id, aanspreektitel: c.aanspreektitel, voornaam: c.voornaam, achternaam: c.achternaam,
       email: c.email, gsm: c.gsm, bedrijf_id: bedrijfId, bedrijf: bedrijfDef,
-      cat1: c.cat1, cat2: c.cat2, status: c.status,
-      verloop: '', samenvatting: '', volgende_stap: '', volgende_stap_datum: ''
+      cat1: c.cat1, cat2: c.cat2, status: c.status, eigenaar: c.eigenaar,
+      samenvatting: '', heeftNotities: false, volgende_stap: '', volgende_stap_datum: ''
     });
     prosRender(); prosStats();
     st.textContent = '✓ ' + (((c.voornaam + ' ' + c.achternaam).trim()) || c.email) + (bedrijfDef ? ' toegevoegd bij ' + bedrijfDef : ' toegevoegd (zonder bedrijf)');
@@ -4725,21 +4750,34 @@ async function prosVoegToe() {
   }
 }
 
-// ===== Opvolging-modal (fase 2a) =====
+// ===== Opvolging-modal: per-auteur notitielog (migratie 0033) =====
 let prOpvId = null;
-function prosOpenOpv(id) {
+let prOpvLog = [];
+async function prosOpenOpv(id) {
   const p = prosData.find(x => x.id === id); if (!p) return;
   prOpvId = id;
   const naam = ((p.voornaam || '') + ' ' + (p.achternaam || '')).trim() || '(naamloos)';
   document.getElementById('pr-opv-titel').textContent = 'Opvolging: ' + naam + (p.bedrijf ? ' (' + p.bedrijf + ')' : '');
   document.getElementById('pr-opv-stap').value = p.volgende_stap || '';
   document.getElementById('pr-opv-datum').value = p.volgende_stap_datum || '';
-  document.getElementById('pr-opv-verloop').value = p.verloop || '';
   document.getElementById('pr-opv-notitie').value = '';
+  document.getElementById('pr-opv-auteur').textContent = '(als ' + HUIDIGE_GEBRUIKER + ')';
   document.getElementById('pr-opv-samenvatting').textContent = p.samenvatting || '-';
+  document.getElementById('pr-opv-log').innerHTML = 'Laden…';
   document.getElementById('pr-opv-overlay').style.display = 'flex';
+  try { prOpvLog = await TNL.getContactNotities(id); } catch (e) { prOpvLog = []; console.error(e); }
+  if (prOpvId === id) prosRenderLog();
 }
-function prosSluitOpv() { document.getElementById('pr-opv-overlay').style.display = 'none'; prOpvId = null; }
+function prosSluitOpv() { document.getElementById('pr-opv-overlay').style.display = 'none'; prOpvId = null; prOpvLog = []; }
+
+function prosRenderLog() {
+  const box = document.getElementById('pr-opv-log'); if (!box) return;
+  if (!prOpvLog.length) { box.innerHTML = '<p class="db-mini" style="margin:6px 0">Nog geen notities.</p>'; return; }
+  box.innerHTML = prOpvLog.map(n => `<div style="padding:8px 0;border-bottom:1px solid #eef2f7">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:2px"><strong style="color:var(--navy,#1B3A6B)">${prAttr(n.auteur)}</strong> · ${new Date(n.created_at).toLocaleString('nl-BE', { dateStyle: 'medium', timeStyle: 'short' })}</div>
+    <div style="font-size:13px;white-space:pre-wrap">${prAttr(n.tekst)}</div>
+  </div>`).join('');
+}
 
 async function prosOpvSave(field, value) {
   if (!prOpvId) return;
@@ -4752,13 +4790,20 @@ async function prosOpvSave(field, value) {
 }
 
 async function prosOpvAddNotitie() {
-  const t = document.getElementById('pr-opv-notitie').value.trim(); if (!t) return;
-  const datum = new Date().toLocaleDateString('nl-BE');
-  const ta = document.getElementById('pr-opv-verloop');
-  const entry = '=== ' + datum + ' ===\n' + t;
-  ta.value = ta.value.trim() ? entry + '\n\n' + ta.value : entry;
-  document.getElementById('pr-opv-notitie').value = '';
-  await prosOpvSave('verloop', ta.value);
+  if (!prOpvId) return;
+  const ta = document.getElementById('pr-opv-notitie');
+  const t = ta.value.trim(); if (!t) return;
+  const btn = document.getElementById('pr-opv-notitie-btn');
+  btn.disabled = true;
+  try {
+    const n = await TNL.insertContactNotitie({ contact_id: prOpvId, auteur: HUIDIGE_GEBRUIKER, tekst: t });
+    prOpvLog.unshift(n);
+    prosRenderLog();
+    ta.value = '';
+    const p = prosData.find(x => x.id === prOpvId); if (p) p.heeftNotities = true;
+    prosRender();
+  } catch (e) { alert('Notitie opslaan mislukt: ' + (e.message || e)); console.error(e); }
+  finally { btn.disabled = false; }
 }
 
 // ===== AI-samenvatting + API-sleutel (fase 2b) =====
@@ -4778,8 +4823,8 @@ function prosApiSave() {
 
 async function prosSamenvat() {
   if (!prOpvId) return;
-  const verloop = document.getElementById('pr-opv-verloop').value.trim();
-  if (!verloop) { alert('Er is nog geen verloop om samen te vatten.'); return; }
+  const verloop = prOpvLog.map(n => '=== ' + n.auteur + ', ' + new Date(n.created_at).toLocaleDateString('nl-BE') + ' ===\n' + n.tekst).join('\n\n');
+  if (!verloop.trim()) { alert('Er zijn nog geen notities om samen te vatten.'); return; }
   const key = localStorage.getItem('tnl_api_key');
   if (!key) { prosApiModal(); return; }
   const btn = document.getElementById('pr-opv-ai'), box = document.getElementById('pr-opv-samenvatting');

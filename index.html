@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.40</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.41</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -295,10 +295,21 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="btn-row">
         <button class="btn" onclick="leesMail()">Inlezen</button>
         <button class="btn" id="btn-opslaan" onclick="opslaanGesprek()" style="display:none;background:var(--green)">Opslaan in dossier</button>
+        <button class="btn btn-ghost" onclick="printQuickscanRapport()">Afdrukken</button>
         <button class="btn btn-ghost" onclick="wisMail()">Wissen</button>
       </div>
       <div class="status" id="mail-status"></div>
     </div>
+    <script>
+    function printQuickscanRapport(){
+      const blokken = ['klant-blok','scores-blok','antwoorden-blok']
+        .map(id => document.getElementById(id))
+        .filter(el => el && el.style.display !== 'none');
+      if (!blokken.length) { alert('Lees eerst een quickscan-mail in voor je het rapport afdrukt.'); return; }
+      document.getElementById('offerte-print').innerHTML = '<div class="qs-print-doc">' + blokken.map(el => el.innerHTML).join('') + '</div>';
+      setTimeout(() => window.print(), 80);
+    }
+    </script>
 
     <div id="klant-blok" style="display:none">
       <div class="card">

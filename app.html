@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.67</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.68</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -4724,7 +4724,16 @@ function formatTel(raw) {
     cc = '32';
     national = digits.slice(1);
   } else {
-    national = digits;
+    const ccGuess = Object.entries(TEL_CC_LEN)
+      .filter(([, len]) => len >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .find(([c, len]) => digits.startsWith(c) && digits.length - len >= 7 && digits.length - len <= 10);
+    if (ccGuess) {
+      cc = ccGuess[0];
+      national = digits.slice(ccGuess[0].length);
+    } else {
+      national = digits;
+    }
   }
   if (!national) return raw;
   const groups = [];

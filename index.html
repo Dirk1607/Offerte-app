@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.50</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.51</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -679,10 +679,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       .pr-filter th{padding-top:4px;padding-bottom:6px}
       .pr-filter input,.pr-filter select{width:100%;box-sizing:border-box;border:1px solid var(--lijn,#dbe3ec);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit}
       #combo-menu{position:fixed;z-index:200;background:#fff;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:220px;overflow-y:auto;display:none}
-      #combo-menu div{padding:6px 10px;font-size:13px;cursor:pointer;white-space:nowrap;color:#111}
+      #combo-menu div{padding:6px 6px 6px 10px;font-size:13px;cursor:pointer;white-space:nowrap;color:#111;display:flex;align-items:center;justify-content:space-between;gap:10px}
       #combo-menu div:hover{background:var(--light,#F4F7FB)}
       #combo-menu div.leeg{color:var(--muted);font-style:italic;cursor:default}
       #combo-menu div.leeg:hover{background:none}
+      #combo-menu .combo-lbl{overflow:hidden;text-overflow:ellipsis}
+      #combo-menu .combo-del{flex:0 0 auto;border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;line-height:1;padding:3px 5px;border-radius:4px}
+      #combo-menu .combo-del:hover{background:var(--red,#c0392b);color:#fff}
     </style>
     <h2>Prospecten <small style="font-weight:400;color:var(--muted);font-size:14px">· contacten uit het gedeelde adresboek</small></h2>
     <p class="sub">Overzicht van alle contactpersonen (bedrijf + contact). Je kunt hier rechtstreeks corrigeren of een contact toevoegen; elke wijziging wordt meteen bewaard. <em>Opvolging en mails volgen in de volgende fase.</em></p>
@@ -4731,13 +4734,24 @@ async function laadProspecten() {
 
 const PROS_STATUS_SEED = ['Nog te contacteren', 'Quickscan verstuurd', 'Quickscan ingevuld'];
 const PROS_COMBO_OPTIONS = { status: [], cat1: [], cat2: [] };
+// Suggesties die je zelf uit de dropdown hebt verwijderd (blijft bewaard in deze browser).
+function prosVerborgenSuggesties() {
+  try { return JSON.parse(localStorage.getItem('tnl_pros_verborgen_suggesties') || '{}'); } catch (e) { return {}; }
+}
+function prosVerbergSuggestie(kind, value) {
+  const v = prosVerborgenSuggesties();
+  v[kind] = v[kind] || [];
+  if (!v[kind].includes(value)) v[kind].push(value);
+  localStorage.setItem('tnl_pros_verborgen_suggesties', JSON.stringify(v));
+}
 function buildProsCatLists() {
   const s1 = new Set(PROS_CAT1_SEED), s2 = new Set(), sSt = new Set(PROS_STATUS_SEED);
   prosData.forEach(p => { if (p.cat1) s1.add(p.cat1); if (p.cat2) s2.add(p.cat2); if (p.status) sSt.add(p.status); });
-  const sortNl = s => [...s].sort((a, b) => a.localeCompare(b, 'nl'));
-  PROS_COMBO_OPTIONS.status = sortNl(sSt);
-  PROS_COMBO_OPTIONS.cat1 = sortNl(s1);
-  PROS_COMBO_OPTIONS.cat2 = sortNl(s2);
+  const verborgen = prosVerborgenSuggesties();
+  const sortNl = (s, kind) => [...s].filter(v => !(verborgen[kind] || []).includes(v)).sort((a, b) => a.localeCompare(b, 'nl'));
+  PROS_COMBO_OPTIONS.status = sortNl(sSt, 'status');
+  PROS_COMBO_OPTIONS.cat1 = sortNl(s1, 'cat1');
+  PROS_COMBO_OPTIONS.cat2 = sortNl(s2, 'cat2');
 }
 
 // ---- Eigen dropdown voor Status/CAT 1/CAT 2: toont bij focus ALTIJD de volledige lijst
@@ -4749,8 +4763,11 @@ function comboMenuEl() {
   if (!m) {
     m = document.createElement('div'); m.id = 'combo-menu'; m.className = 'combo-menu';
     m.addEventListener('mousedown', (e) => {
+      e.preventDefault();   // voorkomt dat het invoerveld de focus/blur al verliest vóór onze click-afhandeling
+      const delBtn = e.target.closest('.combo-del');
+      if (delBtn) { comboVerwijderSuggestie(delBtn.dataset.del); return; }
       const rij = e.target.closest('div[data-v]');
-      if (rij) { e.preventDefault(); comboPick(rij.dataset.v); }
+      if (rij) comboPick(rij.dataset.v);
     });
     document.body.appendChild(m);
   }
@@ -4760,7 +4777,7 @@ function comboRenderMenu(matches) {
   if (!comboEl) return;
   const menu = comboMenuEl();
   menu.innerHTML = matches.length
-    ? matches.map(v => `<div data-v="${escAttr(v)}">${esc(v)}</div>`).join('')
+    ? matches.map(v => `<div data-v="${escAttr(v)}"><span class="combo-lbl">${esc(v)}</span><button type="button" class="combo-del" data-del="${escAttr(v)}" title="Verwijder deze suggestie uit de lijst">✕</button></div>`).join('')
     : '<div class="leeg">Geen suggesties — typ een nieuwe waarde</div>';
   const r = comboEl.getBoundingClientRect();
   menu.style.left = Math.round(r.left) + 'px';
@@ -4791,6 +4808,26 @@ function comboPick(value) {
   el.dispatchEvent(new Event('input', { bubbles: true }));
   el.dispatchEvent(new Event('change', { bubbles: true }));
   el.focus();
+}
+async function comboVerwijderSuggestie(value) {
+  const kind = comboKind; if (!kind) return;
+  const labels = { status: 'Status', cat1: 'CAT 1', cat2: 'CAT 2' };
+  const gebruikers = prosData.filter(p => (p[kind] || '') === value);
+  const ga = gebruikers.length
+    ? confirm('"' + value + '" wordt nog gebruikt bij ' + gebruikers.length + ' contact' + (gebruikers.length !== 1 ? 'en' : '') + '.\n\n' +
+        'Verwijderen uit de lijst wist deze waarde ook bij ' + (gebruikers.length !== 1 ? 'die contacten' : 'dat contact') + '. Doorgaan?')
+    : confirm('"' + value + '" uit de ' + (labels[kind] || kind) + '-suggesties verwijderen?');
+  if (!ga) return;
+  prosVerbergSuggestie(kind, value);
+  comboClose();
+  if (gebruikers.length) {
+    const st = document.getElementById('pr-status');
+    st.textContent = 'Bezig…';
+    for (const p of gebruikers) {
+      try { await TNL.updateContact(p.id, { [kind]: null }); } catch (e) { console.error(e); }
+    }
+  }
+  await laadProspecten();
 }
 document.addEventListener('click', (e) => {
   if (comboEl && e.target !== comboEl && !e.target.closest('#combo-menu')) comboClose();

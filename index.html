@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.60</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.61</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -5217,7 +5217,10 @@ async function mailOutlook() {
   const to = encodeURIComponent(p.email || '');
   const subj = encodeURIComponent(document.getElementById('mail-subject').value);
   const body = encodeURIComponent(document.getElementById('mail-body').value);
-  window.open('https://outlook.office.com/mail/deeplink/compose?to=' + to + '&subject=' + subj + '&body=' + body, '_blank');
+  // mailto: opent het lokale standaard-mailprogramma (meestal de al-lopende Outlook-desktopapp)
+  // rechtstreeks met een nieuw bericht — geen aparte browser-login zoals de vroegere
+  // outlook.office.com-weblink dat wel vereiste.
+  window.location.href = 'mailto:' + to + '?subject=' + subj + '&body=' + body;
   try {
     await TNL.updateContact(p.id, { status: 'Quickscan verstuurd' });
     p.status = 'Quickscan verstuurd';

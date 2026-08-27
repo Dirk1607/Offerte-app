@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.57</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.58</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -5126,7 +5126,6 @@ async function prosSamenvat() {
 }
 
 // ===== Mails-tab (fase 2c) =====
-const PROS_CATS = ['KoudContact', 'Netwerk', 'WarmeLead', 'NaEvent', 'Opvolging', 'ScanAmbassador', 'AppTester', 'Persoonlijk', 'Collega'];
 let mailLijst = [], mailIdx = 0, TEMPL = {};
 
 async function laadTemplates() {
@@ -5137,9 +5136,7 @@ async function laadTemplates() {
   } catch (e) { console.error(e); TEMPL = {}; }
 }
 
-// Toont enkel ECHT bestaande sjablonen (niet de lege PROS_CATS-namen die alleen als
-// startpunt dienen in de Sjablonen-tab) — een categorie zonder inhoud kiezen levert hier
-// niets op. Begint altijd leeg: je moet expliciet een sjabloon kiezen vóór er iets ingevuld wordt.
+// Begint altijd leeg: je moet expliciet een sjabloon kiezen vóór er iets ingevuld wordt.
 function mailCatOpties() {
   const cats = Object.keys(TEMPL).sort((a, b) => a.localeCompare(b, 'nl'));
   const html = '<option value="">— kies een sjabloon —</option>' + cats.map(c => `<option value="${prAttr(c)}">${prAttr(c)}</option>`).join('');
@@ -5234,12 +5231,12 @@ let sjabActief = null;
 document.querySelector('nav button[data-tab="sjablonen"]').addEventListener('click', laadSjablonenTab);
 async function laadSjablonenTab() {
   await laadTemplates();
-  if (sjabActief && !TEMPL[sjabActief] && !PROS_CATS.includes(sjabActief)) sjabActief = null;
+  if (sjabActief && !TEMPL[sjabActief]) sjabActief = null;
   renderSjabLijst();
   if (sjabActief) vulSjabForm(); else sjabToonLeeg();
 }
 function renderSjabLijst() {
-  const cats = [...new Set([...PROS_CATS, ...Object.keys(TEMPL)])].sort();
+  const cats = Object.keys(TEMPL).sort((a, b) => a.localeCompare(b, 'nl'));
   document.getElementById('sjb-lijst').innerHTML = cats.map(c =>
     `<div class="sjb-item${c===sjabActief?' actief':''}" onclick="kiesSjabloon('${escAttr(c)}')">${escAttr(c)}</div>`
   ).join('') || '<div class="leeg">Nog geen sjablonen.</div>';
@@ -5263,7 +5260,7 @@ function nieuwSjabloon() {
   const naam = prompt('Naam van de nieuwe sjabloon-categorie (bv. Nieuwsbrief):');
   if (!naam || !naam.trim()) return;
   const cat = naam.trim();
-  if (TEMPL[cat] || PROS_CATS.includes(cat)) { kiesSjabloon(cat); return; }
+  if (TEMPL[cat]) { kiesSjabloon(cat); return; }
   TEMPL[cat] = { subject: '', body: '', hints: '' };
   kiesSjabloon(cat);
 }

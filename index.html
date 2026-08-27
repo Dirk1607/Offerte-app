@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.44</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.45</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -5196,11 +5196,14 @@ async function prosImportImage(file) {
           { type: 'image', source: { type: 'base64', media_type: file.type || 'image/png', data: base64 } },
           { type: 'text', text: 'Dit is een screenshot van een Excel of tabel met prospectgegevens. Lees alle rijen uit en geef ze terug als JSON array. Elke rij is een object met deze exacte veldnamen: titel, voornaam, naam, email, telefoon, bedrijf, functie, cat1, cat2, status, eigenaar, website. ' +
             'Titel is exact "Dhr." of "Mevr.". ' +
+            'BELANGRIJKE REGEL: de tabel heeft één kolom per veld. Elke waarde hoort bij PRECIES ÉÉN kolom en dus PRECIES ÉÉN veld — kopieer nooit tekst uit de ene kolom mee in een ander veld, en plak nooit de inhoud van twee naast elkaar staande kolommen samen in één veld. ' +
+            'Voorbeeld van een FOUT die je moet vermijden: als de kolom "CAT 2" de tekst "Prospect" bevat en de ernaast staande kolom "Eigenaar" de tekst "Dirk", dan is cat2 = "Prospect" en eigenaar = "Dirk" — NOOIT cat2 = "Prospect Dirk". ' +
             'cat1 en cat2 komen LETTERLIJK uit de kolommen die in de tabel zelf "CAT 1"/"Categorie" en "CAT 2" heten — neem de tekst exact over zoals ze er staat, verzin niets en verwissel de twee kolommen niet. ' +
             'functie is de rol van de persoon in het bedrijf als die apart vermeld staat (bv. "Eigenaar", "Bestuurder", "Zaakvoerder", "Zoon eigenaar") — gebruik dit veld, NIET "status", wanneer een kolom een functietitel bevat in plaats van een echte opvolgstatus. ' +
             'status vul je ENKEL in wanneer een kolom een echte opvolgstatus bevat, en dan EXACT één van: "Nog te contacteren", "Quickscan verstuurd", "Quickscan ingevuld"; is er geen zo\'n kolom, laat status leeg. ' +
-            'eigenaar is wie deze prospect bij ons intern opvolgt (bv. "Dirk" of "Ilse"), enkel invullen als dat letterlijk in een kolom staat. ' +
+            'eigenaar is wie deze prospect bij ons intern opvolgt (bv. "Dirk" of "Ilse"), enkel invullen als dat letterlijk in een eigen kolom staat — kopieer die naam NERGENS anders naartoe. ' +
             'website is de bedrijfswebsite-URL als die in de tabel staat. ' +
+            'Controleer voor je antwoordt: telt elk veld van elke rij evenveel woorden/tekens als wat er in de bijbehorende kolom-cel staat, niet meer? Zo niet, corrigeer het. ' +
             'Geef ALLEEN de JSON array terug, geen uitleg, geen markdown backticks.' }
         ]}]
       })
@@ -5235,6 +5238,11 @@ async function prosVerwerkRijen(rows, st) {
       functie: String(r.functie || '').trim(), cat1: prNormCat(r.cat1), cat2: String(r.cat2 || '').trim(),
       status: String(r.status || 'Nog te contacteren').trim(), eigenaar: String(r.eigenaar || '').trim(), website: String(r.website || '').trim()
     };
+    // Vangnet: AI plakt soms per ongeluk de naastliggende Eigenaar-kolom achteraan cat2 (bv. "Prospect Dirk") — die knippen we er terug af.
+    if (p.eigenaar && p.cat2 && p.cat2.toLowerCase() !== p.eigenaar.toLowerCase()) {
+      const eigenaarSuffix = new RegExp('\\s+' + p.eigenaar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+      p.cat2 = p.cat2.replace(eigenaarSuffix, '').trim();
+    }
     if (!p.voornaam && !p.naam && !p.email) { leeg++; continue; }
     if (p.email && bestaand.has(p.email.toLowerCase())) { dubbel++; continue; }
     try {

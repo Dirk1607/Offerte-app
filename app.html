@@ -579,6 +579,14 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       .db-note-btn{cursor:pointer;border:1px solid var(--lijn,#cdd7e3);background:#fff;border-radius:7px;padding:4px 9px;font-size:14px;line-height:1}
       .db-note-btn.vol{background:#fff7e0;border-color:#e8c97a}
       .db-note-ta{position:absolute;top:100%;left:0;margin-top:4px;width:340px;max-width:72vw;min-height:96px;padding:8px;border:1px solid var(--lijn,#cdd7e3);border-radius:8px;font-family:inherit;font-size:13px;color:#111;background:#fff;box-shadow:0 6px 22px rgba(0,0,0,.16);z-index:6;resize:vertical}
+      /* Website = veld + knopje dat de site in een nieuw tabblad opent */
+      .db-weblink{display:inline-flex;flex-direction:row;align-items:center;gap:6px}
+      /* Interacties-tijdlijn (mail/call/meeting-log) */
+      .db-ia-rij{border-top:1px solid #eef2f9;padding:7px 0}
+      .db-ia-rij:first-of-type{border-top:none}
+      .db-ia-kop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+      .db-ia-ruw{white-space:pre-wrap;font-family:inherit;font-size:12px;color:#333;background:var(--light,#F4F7FB);border:1px solid var(--lijn,#cdd7e3);border-radius:7px;padding:8px 10px;margin-top:6px}
+      .db-briefing{white-space:pre-line;font-size:13px;line-height:1.6;background:#fbfdff;border:1px solid var(--lijn,#cdd7e3);border-left:3px solid var(--navy,#1B3A6B);border-radius:0 8px 8px 0;padding:10px 14px;margin-top:8px}
       /* Compacte rij: velden op één lijn, kop = placeholder in het veld zelf */
       .db-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:2px}
       .db-rij-rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -2077,12 +2085,13 @@ async function laadDatabase() {
   const lijst = document.getElementById('db-lijst'); if (!lijst) return;
   lijst.innerHTML = '<span style="color:var(--muted)">Laden…</span>';
   try {
-    const [bedrijven, contacten, c1, c2, voorstellen, scans] = await Promise.all([
+    const [bedrijven, contacten, c1, c2, voorstellen, scans, interacties] = await Promise.all([
       TNL.getBedrijven(), TNL.getContacten(),
       TNL.getInstelling('contact_cat1_opties').catch(() => null),
       TNL.getInstelling('contact_cat2_opties').catch(() => null),
       TNL.getVoorstellen('open').catch(() => []),
-      TNL.getAlleScans().catch(() => [])
+      TNL.getAlleScans().catch(() => []),
+      TNL.getAlleInteracties().catch(() => [])
     ]);
     dbCat1 = Array.isArray(c1) ? c1 : [];
     dbCat2 = Array.isArray(c2) ? c2 : [];
@@ -2100,7 +2109,9 @@ async function laadDatabase() {
       if (s.bedrijf_id) (scansPer[s.bedrijf_id] = scansPer[s.bedrijf_id] || []).push(s); else losseScans.push(s);
       if (s.contact_id) (scansPerContact[s.contact_id] = scansPerContact[s.contact_id] || []).push(s);
     });
-    dbData = { bedrijven, contactenPer: per, losseContacten: losse, voorstellen, bedrijfById, contactById, scansPer, scansPerContact, losseScans, scanById };
+    const interactiesPer = {};
+    interacties.forEach(i => { if (i.bedrijf_id) (interactiesPer[i.bedrijf_id] = interactiesPer[i.bedrijf_id] || []).push(i); });
+    dbData = { bedrijven, contactenPer: per, losseContacten: losse, voorstellen, bedrijfById, contactById, scansPer, scansPerContact, losseScans, scanById, interactiesPer };
     renderDatabase();
     renderDbVoorstellen();
     zoekDubbels(true);   // proactief: toon mogelijke dubbele bedrijven meteen (stil bij geen)
@@ -2202,6 +2213,147 @@ function dbScanTabel(scans, opts) {
   }).join('');
   return `<table style="border-collapse:collapse;width:100%;font-size:12px;margin-top:4px"><tbody>${rijen}</tbody></table>`;
 }
+
+// ---- Interacties-tijdlijn per bedrijf (mail/call/meeting-log + AI-samenvatting) ----
+const INTERACTIE_TYPES = ['mail', 'call', 'meeting', 'anders'];
+const INTERACTIE_TYPE_LABEL = { mail: '✉️ Mail', call: '📞 Call', meeting: '🤝 Meeting', anders: '📝 Andere' };
+const dbBriefing = {};   // bedrijf_id -> laatst gegenereerde briefingtekst (niet bewaard in de db, opnieuw te maken)
+
+function dbInteractieRij(i, oid) {
+  const rijId = 'ia-ruw-' + i.id;
+  const label = INTERACTIE_TYPE_LABEL[i.type] || i.type || 'anders';
+  const heeftRuw = String(i.ruwe_tekst || '').trim();
+  return `<div class="db-ia-rij">
+    <div class="db-ia-kop">
+      <span class="db-mini" style="white-space:nowrap">${esc(i.datum || '')}</span>
+      <span class="db-badge" style="background:#eef2fb;color:#2a4f8a">${esc(label)}</span>
+      <span style="flex:1 1 auto">${esc(i.samenvatting || '(geen samenvatting)')}</span>
+      ${heeftRuw ? `<button type="button" class="db-btn" style="padding:3px 8px" onclick="dbToggleRuw('${rijId}')">Ruwe tekst</button>` : ''}
+      <button type="button" class="db-btn del" style="padding:3px 8px" onclick="dbVerwijderInteractie('${escAttr(i.id)}','${oid}')">Verwijder</button>
+    </div>
+    ${heeftRuw ? `<pre id="${rijId}" class="db-ia-ruw" style="display:none">${esc(i.ruwe_tekst)}</pre>` : ''}
+  </div>`;
+}
+function dbInteractieSectie(b) {
+  const oid = b.__oid;
+  const interacties = (dbData.interactiesPer && dbData.interactiesPer[b.id]) || [];
+  const rijen = interacties.length ? interacties.map(i => dbInteractieRij(i, oid)).join('') : '<p class="db-mini">Nog geen interacties geregistreerd.</p>';
+  const briefing = dbBriefing[b.id];
+  const briefingHtml = briefing ? `<div class="db-briefing">${esc(briefing)}</div>` : '';
+  return `<div class="db-sectie">Interacties (${interacties.length})</div>
+    ${rijen}
+    <details class="ai-vul" style="margin-top:10px">
+      <summary>+ Interactie toevoegen (mail/call/meeting plakken, AI vat samen)</summary>
+      <div class="rij2" style="margin-top:8px">
+        <select id="ia-type-${oid}" class="db-f">
+          ${INTERACTIE_TYPES.map(t => `<option value="${t}">${esc(INTERACTIE_TYPE_LABEL[t])}</option>`).join('')}
+        </select>
+        <input id="ia-datum-${oid}" class="db-f" type="date" value="${new Date().toISOString().slice(0, 10)}">
+      </div>
+      <textarea id="ia-tekst-${oid}" class="ai-paste" placeholder="Plak hier de mail, gespreksnotitie of samenvatting van het contactmoment…"></textarea>
+      <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="db-btn prim" onclick="dbBewaarInteractie('${oid}')">✨ Samenvatten en bewaren</button>
+        <span class="db-mini">De ruwe tekst blijft bewaard; de samenvatting is voor snel overzicht.</span>
+      </div>
+    </details>
+    <div class="db-acties">
+      <button type="button" class="db-btn" onclick="dbMaakBriefing('${oid}')">📋 Briefing vóór volgend contact</button>
+    </div>
+    ${briefingHtml}`;
+}
+function dbToggleRuw(id) {
+  const el = document.getElementById(id); if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+async function dbVerwijderInteractie(id, oid) {
+  if (!confirm('Deze interactie definitief verwijderen?')) return;
+  try {
+    await TNL.deleteInteractie(id);
+    await laadDatabase();
+    dbStatus('Interactie verwijderd.', 'ok');
+  } catch (e) { dbStatus('Verwijderen mislukt: ' + (e.message || e), 'err'); }
+}
+async function dbBewaarInteractie(oid) {
+  const b = dbFind(oid); if (!b || !b.id) return;
+  const typeEl = document.getElementById('ia-type-' + oid);
+  const datumEl = document.getElementById('ia-datum-' + oid);
+  const ta = document.getElementById('ia-tekst-' + oid);
+  const tekst = (ta && ta.value || '').trim();
+  if (!tekst) { dbStatus('Plak eerst tekst in het interactie-veld.', 'err'); return; }
+  const type = (typeEl && typeEl.value) || 'mail';
+  const datum = (datumEl && datumEl.value) || new Date().toISOString().slice(0, 10);
+  let samenvatting = null;
+  const key = getClaudeKey();
+  if (key) {
+    dbStatus('<span class="spin"></span>AI vat samen…');
+    try { samenvatting = await aiSamenvatInteractie(tekst, b.naam, key); }
+    catch (e) { dbStatus('Samenvatten mislukt (' + (e.message || e) + '), tekst wordt zonder samenvatting bewaard.', 'err'); }
+  }
+  try {
+    await TNL.insertInteractie({ bedrijf_id: b.id, type, datum, ruwe_tekst: tekst, samenvatting, auteur: 'Dirk' });
+    dbOpen[b.id] = true;
+    await laadDatabase();
+    dbStatus(samenvatting ? '✨ Interactie samengevat en bewaard.' : 'Interactie bewaard.', 'ok');
+  } catch (e) { dbStatus('Bewaren mislukt: ' + (e.message || e), 'err'); }
+}
+async function aiSamenvatInteractie(tekst, bedrijfsnaam, key) {
+  const sys = 'Je bent een sales-assistent voor een consultancybedrijf. Je krijgt geplakte tekst van een mail, telefoongesprek of ' +
+    'meeting-notitie met een (prospect-)bedrijf. Vat dit samen in maximaal 3 bondige zinnen NL: wat werd besproken, welke ' +
+    'afspraken/vervolgstappen er zijn, en eventuele belangrijke signalen (interesse, bezwaren, timing, budget). ' +
+    'Geen inleidende zin, geen markdown, enkel de samenvatting als lopende tekst.';
+  const usr = 'Bedrijf: ' + (bedrijfsnaam || 'onbekend') + '\n\nTekst:\n' + tekst;
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-opus-4-8', max_tokens: 400, system: sys, messages: [{ role: 'user', content: usr }] })
+  });
+  if (!resp.ok) {
+    const t = await resp.text();
+    if (resp.status === 401) localStorage.removeItem('tnl_claude_key');
+    throw new Error('API ' + resp.status + ', ' + t.slice(0, 160));
+  }
+  const data = await resp.json();
+  return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('').trim();
+}
+async function dbMaakBriefing(oid) {
+  const b = dbFind(oid); if (!b || !b.id) return;
+  const key = getClaudeKey(); if (!key) return;
+  const interacties = (dbData.interactiesPer && dbData.interactiesPer[b.id]) || [];
+  if (!interacties.length && !String(b.notities || '').trim()) { dbStatus('Nog geen interacties of notities om een briefing van te maken.', 'err'); return; }
+  dbStatus('<span class="spin"></span>Briefing maken…');
+  try {
+    dbBriefing[b.id] = await aiMaakBriefing(b, interacties, key);
+    dbOpen[b.id] = true;
+    renderDatabase();
+    dbStatus('📋 Briefing klaar.', 'ok');
+  } catch (e) { dbStatus('Briefing mislukt: ' + (e.message || e), 'err'); }
+}
+async function aiMaakBriefing(b, interacties, key) {
+  const geschiedenis = interacties.slice().reverse().map(i =>
+    '[' + (i.datum || '') + ' · ' + (i.type || '') + '] ' + (i.samenvatting || i.ruwe_tekst || '')
+  ).join('\n');
+  const sys = 'Je bent een sales-assistent die een consultant voorbereidt op een volgend contactmoment met een prospect. ' +
+    'Je krijgt de historiek van eerdere interacties (mail/call/meeting) en eventuele notities. Maak een korte briefing NL ' +
+    '(max. 6 bondige zinnen, elk op een nieuwe regel) met: waar staat dit dossier, wat is er al besproken/beloofd, wat zijn ' +
+    'signalen (interesse/bezwaren/timing/budget), en een concreet voorstel voor de insteek van het volgende contact. ' +
+    'Geen markdown-opmaak (geen ** of #), gewone lopende zinnen.';
+  const usr = 'Bedrijf: ' + (b.naam || 'onbekend') + (b.sector ? ' (' + b.sector + ')' : '') +
+    (b.notities ? '\n\nAlgemene notitie:\n' + b.notities : '') +
+    (geschiedenis ? '\n\nHistoriek interacties (oud → nieuw):\n' + geschiedenis : '\n\n(nog geen eerdere interacties)');
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-opus-4-8', max_tokens: 600, system: sys, messages: [{ role: 'user', content: usr }] })
+  });
+  if (!resp.ok) {
+    const t = await resp.text();
+    if (resp.status === 401) localStorage.removeItem('tnl_claude_key');
+    throw new Error('API ' + resp.status + ', ' + t.slice(0, 160));
+  }
+  const data = await resp.json();
+  return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('').trim();
+}
+
 // Toon de scores van een scan in de Gespreksvoorbereiding-weergave (die hangt aan dossierData).
 function dbBekijkScores(scanId) {
   const btn = document.querySelector('nav button[data-tab="gesprek"]');
@@ -2272,6 +2424,22 @@ function dbInput(obj, key, label, isB, w, listId) {
   const listAttr = listId ? ` list="${listId}"` : '';
   return `<input class="db-f"${style}${listAttr} value="${escAttr(v)}" placeholder="${escAttr(label)}" title="${escAttr(label)}" ` +
     `oninput="dbSet('${oid}','${key}',this.value)" onchange="dbSaveField('${oid}',${isB})">`;
+}
+// Website = tekstvak + knopje dat de ingevulde URL in een nieuw tabblad opent (https:// wordt aangevuld indien nodig).
+function dbWebsiteVeld(b) {
+  const oid = b.__oid;
+  const id = 'website-' + oid;
+  return `<div class="db-weblink">
+    ${dbInput(b, 'website', 'Website', true, '190px').replace('<input ', `<input id="${id}" `)}
+    <button type="button" class="db-note-btn" title="Website openen in nieuw tabblad" onclick="dbOpenWebsite('${id}')">🌐</button>
+  </div>`;
+}
+function dbOpenWebsite(inputId) {
+  const inp = document.getElementById(inputId);
+  let url = (inp && inp.value || '').trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  window.open(url, '_blank', 'noopener');
 }
 // Notitie als klein 📝-icoon dat inline een tekstvak openklikt (gele markering = er staat iets in).
 function dbNotitie(obj, key, label, isB) {
@@ -2413,6 +2581,7 @@ function dbKaart(b) {
       ${dbInput(b, 'land', 'Land', true, '80px')}
       ${dbInput(b, 'telefoon', 'Telefoon', true, '130px')}
       ${dbInput(b, 'email', 'E-mail', true, '190px')}
+      ${dbWebsiteVeld(b)}
       ${dbInput(b, 'btw_nummer', 'BTW', true, '135px')}
       ${dbNotitie(b, 'notities', 'Notitie', true)}
       ${b.id ? `<button class="db-btn del" onclick="verwijderDbBedrijf('${b.__oid}')">Verwijder bedrijf</button>`
@@ -2435,17 +2604,21 @@ function dbKaart(b) {
     const scans = dbData.scansPer && dbData.scansPer[b.id] || [];
     const scanSectie = scans.length ? `<div class="db-sectie">Quickscans (${scans.length})</div>${dbScanTabel(scans, { verwijder: true })}` : '';
     const dubbelContacten = b.id ? dbDubbelContactenBlok(contacten) : '';
+    const interactieSectie = b.id ? dbInteractieSectie(b) : '';
     body = `<div class="db-body">
       ${aiBlok}
       <div class="db-sectie">Bedrijfsgegevens</div>${bedrijfVelden}
       ${contactSectie}
       ${dubbelContacten}
       ${scanSectie}
+      ${interactieSectie}
     </div>`;
   }
   const key = b.id || b.__oid;
   const nScans = (dbData.scansPer && dbData.scansPer[b.id] || []).length;
   const scanBadge = nScans ? `<span class="db-badge" style="background:#e6f2ec;color:#1f7a4d">📊 ${nScans} scan${nScans !== 1 ? 's' : ''}</span>` : '';
+  const nInteracties = (dbData.interactiesPer && dbData.interactiesPer[b.id] || []).length;
+  const interactieBadge = nInteracties ? `<span class="db-badge" style="background:#eef2fb;color:#2a4f8a">🗂 ${nInteracties} interactie${nInteracties !== 1 ? 's' : ''}</span>` : '';
   return `<div class="db-kaart">
     <div class="db-kop" onclick="toggleDbBedrijf('${escAttr(key)}')">
       <span class="db-caret">${open ? '▾' : '▸'}</span>
@@ -2453,6 +2626,7 @@ function dbKaart(b) {
       <span class="db-kop-rechts">
         ${statusBadge}
         ${scanBadge}
+        ${interactieBadge}
         <span class="db-badge">${contacten.length} contact${contacten.length !== 1 ? 'en' : ''}</span>
       </span>
     </div>${body}</div>`;
@@ -2505,7 +2679,7 @@ async function dbOntkoppelBedrijf(oid) {
 }
 function toggleDbBedrijf(key) { dbOpen[key] = !dbOpen[key]; renderDatabase(); }
 
-const BEDRIJF_VELDEN = ['naam', 'status', 'sector', 'aantal_medewerkers', 'straat', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land', 'telefoon', 'email', 'btw_nummer', 'notities'];
+const BEDRIJF_VELDEN = ['naam', 'status', 'sector', 'aantal_medewerkers', 'straat', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land', 'telefoon', 'email', 'website', 'btw_nummer', 'notities'];
 const CONTACT_VELDEN = ['aanspreektitel', 'voornaam', 'achternaam', 'functie', 'email', 'gsm', 'linkedin_url', 'taal', 'cat1', 'cat2',
   'volgende_stap', 'volgende_stap_datum', 'verloop', 'samenvatting', 'notities', 'quickscan_ingevuld', 'nog_te_contacteren'];
 function plukVelden(obj, velden) {
@@ -2584,7 +2758,7 @@ function getClaudeKey() {
   }
   return k;
 }
-const AI_BEDRIJF_VELDEN = ['straat', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land', 'telefoon', 'email', 'btw_nummer', 'sector', 'aantal_medewerkers'];
+const AI_BEDRIJF_VELDEN = ['straat', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land', 'telefoon', 'email', 'website', 'btw_nummer', 'sector', 'aantal_medewerkers'];
 // Schermafbeelding (knipsel) → base64 voor Claude vision. Per bedrijf-oid bewaard.
 const aiBedrijfImg = {};
 function blobToClaudeImage(blob, maxDim) {
@@ -2631,9 +2805,10 @@ function aiClearImg(oid) {
 async function aiExtractBedrijf(tekst, naam, key, image) {
   const sys = 'Je haalt uit geplakte webtekst OF een schermafbeelding de bedrijfsgegevens van een (meestal Belgisch) bedrijf. ' +
     'Antwoord UITSLUITEND met geldige JSON met exact deze sleutels: ' +
-    'straat, huisnummer, bus, postcode, gemeente, land, telefoon, email, btw_nummer, sector, aantal_medewerkers. ' +
+    'straat, huisnummer, bus, postcode, gemeente, land, telefoon, email, website, btw_nummer, sector, aantal_medewerkers. ' +
     'Gebruik null wanneer een waarde niet te vinden is. Splits het adres correct (huisnummer en bus apart). ' +
-    'btw_nummer indien mogelijk in het formaat "BE 0xxx.xxx.xxx". telefoon = algemeen bedrijfsnummer, email = algemeen bedrijfsadres. ' +
+    'btw_nummer indien mogelijk in het formaat "BE 0xxx.xxx.xxx". telefoon = algemeen bedrijfsnummer, email = algemeen bedrijfsadres, ' +
+    'website = het hoofddomein van de bedrijfswebsite (zonder https://, bv. "voorbeeld.be"). ' +
     'aantal_medewerkers als getal-als-tekst. Geen uitleg, geen markdown, enkel het JSON-object.';
   const usrText = 'Bedrijf: ' + (naam || 'onbekend') + (tekst ? '\n\nGeplakte tekst:\n' + tekst : '\n\n(lees de gegevens uit de bijgevoegde afbeelding)');
   const content = image

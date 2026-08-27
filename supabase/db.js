@@ -313,6 +313,24 @@ const TNL = (() => {
       .insert({ contact_id, auteur, tekst }).select().single());
   }
 
+  // ---------- interacties-tijdlijn per bedrijf (migratie 0035, mail/call-log) ----------
+  async function getInteractiesVanBedrijf(bedrijfId) {
+    return check(await client().from('bedrijf_interactie')
+      .select('*').eq('bedrijf_id', bedrijfId).order('datum', { ascending: false }));
+  }
+  // Alle interacties in één keer (voor het dossier-overzicht; groeperen gebeurt in de UI).
+  async function getAlleInteracties() {
+    return check(await client().from('bedrijf_interactie')
+      .select('*').order('datum', { ascending: false }));
+  }
+  async function insertInteractie({ bedrijf_id, type, datum, ruwe_tekst, samenvatting, auteur }) {
+    return check(await client().from('bedrijf_interactie')
+      .insert({ bedrijf_id, type, datum, ruwe_tekst, samenvatting, auteur }).select().single());
+  }
+  async function deleteInteractie(id) {
+    return check(await client().from('bedrijf_interactie').delete().eq('id', id));
+  }
+
   // ---------- fuzzy bedrijf-match (migratie 0025) ----------
   async function zoekGelijkaardigeBedrijven(naam, drempel = 0.4) {
     return check(await client().rpc('zoek_gelijkaardige_bedrijven', { p_naam: naam, p_drempel: drempel }));
@@ -533,6 +551,7 @@ const TNL = (() => {
     getBedrijven, getContacten, updateBedrijf, updateContact, insertBedrijf, insertContact,
     deleteBedrijf, deleteContact, voegContactenSamen, zetScansBedrijf, updateQuickscan, deleteQuickscan,
     getContactNotities, getAlleContactNotities, insertContactNotitie,
+    getInteractiesVanBedrijf, getAlleInteracties, insertInteractie, deleteInteractie,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,
     getTemplates, upsertTemplate, deleteTemplate,

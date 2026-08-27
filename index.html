@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.63</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.64</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -645,9 +645,6 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
   <!-- TAB PROSPECTEN (fase 1 van de app-merge; native op bedrijf+contact) -->
   <section class="panel" id="tab-prospecten">
     <style>
-      .pr-stats{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
-      .pr-chip{background:#fff;border:1px solid var(--lijn,#e2e8f0);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--navy,#1B3A6B);font-weight:600;display:flex;align-items:center;gap:6px}
-      .pr-chip .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
       /* Prospecten-tab gebruikt de VOLLE schermbreedte (rest van de app blijft 1000px). */
       main:has(#tab-prospecten.actief){max-width:none;}
       .pr-tabelwrap{overflow-x:auto;border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff}
@@ -727,7 +724,6 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <button class="db-btn" onclick="laadProspecten()">↻ Vernieuwen</button>
       </span>
     </div>
-    <div id="pr-stats" class="pr-stats"></div>
     <div id="pr-status" class="status"></div>
     <div class="pr-tabelwrap">
       <table class="pr-tabel">
@@ -4740,7 +4736,7 @@ async function laadProspecten() {
       scans: (scanPerContact[c.id] || []).map(s => s.id)
     }));
     prosGeladen = true; st.textContent = '';
-    prosRender(); prosStats();
+    prosRender();
   } catch (e) {
     st.textContent = '✗ Laden mislukt: ' + (e.message || e); console.error(e);
   }
@@ -4952,28 +4948,9 @@ async function prosUpdate(id, field, value) {
     await TNL.updateContact(id, { [field]: v || null });
     st.textContent = '✓ bewaard';
     setTimeout(() => { if (st.textContent === '✓ bewaard') st.textContent = ''; }, 1400);
-    if (field === 'cat1' || field === 'status' || field === 'eigenaar') prosStats();
   } catch (e) {
     st.textContent = '✗ opslaan mislukt: ' + (e.message || e); console.error(e);
   }
-}
-
-
-function prosStats() {
-  const bar = document.getElementById('pr-stats'); if (!bar) return;
-  const cats = {}, eigenaars = {};
-  prosData.forEach(p => {
-    if (p.cat1) cats[p.cat1] = (cats[p.cat1] || 0) + 1;
-    const e = p.eigenaar || 'Dirk'; eigenaars[e] = (eigenaars[e] || 0) + 1;
-  });
-  let html = `<div class="pr-chip"><span class="dot" style="background:var(--navy,#1B3A6B)"></span>${prosData.length} contacten</div>`;
-  const nogTe = prosData.filter(p => p.status === 'Nog te contacteren').length;
-  if (nogTe) html += `<div class="pr-chip"><span class="dot" style="background:var(--orange,#E8812A)"></span>${nogTe} nog te contacteren</div>`;
-  Object.entries(eigenaars).sort((a, b) => b[1] - a[1])
-    .forEach(([k, v]) => html += `<div class="pr-chip"><span class="dot" style="background:var(--blue,#4A7CB5)"></span>${prAttr(k)}: ${v}</div>`);
-  Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 8)
-    .forEach(([k, v]) => html += `<div class="pr-chip"><span class="dot" style="background:#8aa0bd"></span>${prAttr(k)}: ${v}</div>`);
-  bar.innerHTML = html;
 }
 
 async function prosVoegToe() {
@@ -5022,7 +4999,7 @@ async function prosVoegToe() {
       cat1: c.cat1, functie: c.functie, cat2: c.cat2, status: c.status, eigenaar: c.eigenaar,
       samenvatting: '', heeftNotities: false, volgende_stap: '', volgende_stap_datum: ''
     });
-    prosRender(); prosStats();
+    prosRender();
     st.textContent = '✓ ' + (((c.voornaam + ' ' + c.achternaam).trim()) || c.email) + (bedrijfDef ? ' toegevoegd bij ' + bedrijfDef : ' toegevoegd (zonder bedrijf)');
     ['pra-voornaam', 'pra-naam', 'pra-bedrijf', 'pra-email', 'pra-tel', 'pra-functie', 'pra-cat2'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('pra-voornaam').focus();
@@ -5443,7 +5420,7 @@ async function prosVerwerkRijen(rows, st) {
       toegevoegd++;
     } catch (e) { fouten++; console.error('rij-fout', e); }
   }
-  prosRender(); prosStats();
+  prosRender();
   st.textContent = '✅ ' + toegevoegd + ' toegevoegd' + (dubbel ? ', ' + dubbel + ' dubbel overgeslagen' : '') + (leeg ? ', ' + leeg + ' leeg' : '') + (fouten ? ', ' + fouten + ' fout' : '');
 }
 

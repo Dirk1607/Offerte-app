@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.51</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.52</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -678,6 +678,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       .pr-in{border:1px solid var(--lijn,#cdd7e3);border-radius:5px;padding:3px 5px;font-size:12px;font-family:inherit;color:#111;background:#fff}
       .pr-filter th{padding-top:4px;padding-bottom:6px}
       .pr-filter input,.pr-filter select{width:100%;box-sizing:border-box;border:1px solid var(--lijn,#dbe3ec);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit}
+      .pr-filter-wrap{display:flex;gap:3px;align-items:center}
+      .pr-filter-wrap input{flex:1 1 auto;min-width:0}
+      .pr-leeg-btn{flex:0 0 auto;border:1px solid var(--lijn,#dbe3ec);border-radius:5px;background:#fff;color:var(--muted);cursor:pointer;font-size:11px;line-height:1;padding:3px 5px}
+      .pr-leeg-btn:hover{background:var(--light,#F4F7FB);color:var(--navy,#1B3A6B)}
+      .pr-leeg-btn.actief{background:var(--navy,#1B3A6B);color:#fff;border-color:var(--navy,#1B3A6B)}
       #combo-menu{position:fixed;z-index:200;background:#fff;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:220px;overflow-y:auto;display:none}
       #combo-menu div{padding:6px 6px 6px 10px;font-size:13px;cursor:pointer;white-space:nowrap;color:#111;display:flex;align-items:center;justify-content:space-between;gap:10px}
       #combo-menu div:hover{background:var(--light,#F4F7FB)}
@@ -740,13 +745,13 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
           </tr>
           <tr class="pr-filter">
             <th></th>
-            <th><input id="prf-naam" oninput="prosRender()" placeholder="filter…"></th>
-            <th><input id="prf-bedrijf" oninput="prosRender()" placeholder="filter…"></th>
-            <th><input id="prf-email" oninput="prosRender()" placeholder="filter…"></th>
+            <th><div class="pr-filter-wrap"><input id="prf-naam" oninput="prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-naam')" title="Toon enkel contacten zonder naam">∅</button></div></th>
+            <th><div class="pr-filter-wrap"><input id="prf-bedrijf" oninput="prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-bedrijf')" title="Toon enkel zonder bedrijf">∅</button></div></th>
+            <th><div class="pr-filter-wrap"><input id="prf-email" oninput="prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-email')" title="Toon enkel zonder e-mail">∅</button></div></th>
             <th></th>
-            <th><input id="prf-status" onfocus="comboOpen(this,'status')" oninput="comboFilter(this);prosRender()" placeholder="filter…"></th>
-            <th><input id="prf-cat1" onfocus="comboOpen(this,'cat1')" oninput="comboFilter(this);prosRender()" placeholder="filter…"></th>
-            <th><input id="prf-cat2" onfocus="comboOpen(this,'cat2')" oninput="comboFilter(this);prosRender()" placeholder="filter…"></th>
+            <th><div class="pr-filter-wrap"><input id="prf-status" onfocus="comboOpen(this,'status')" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-status')" title="Toon enkel zonder status">∅</button></div></th>
+            <th><div class="pr-filter-wrap"><input id="prf-cat1" onfocus="comboOpen(this,'cat1')" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-cat1')" title="Toon enkel zonder CAT 1">∅</button></div></th>
+            <th><div class="pr-filter-wrap"><input id="prf-cat2" onfocus="comboOpen(this,'cat2')" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-cat2')" title="Toon enkel zonder CAT 2">∅</button></div></th>
             <th><select id="prf-eigenaar" onchange="prosRender()"><option value="">alle</option><option>Dirk</option><option>Ilse</option></select></th>
             <th></th><th></th>
           </tr>
@@ -4842,20 +4847,36 @@ function prosSortIndic() {
   });
 }
 
+// "(leeg)" is een speciale filterwaarde (via het ∅-knopje naast elk filtervak) die enkel
+// rijen toont waar dat veld helemaal leeg is, i.p.v. een gewone tekst-bevat-filter.
+function prosToggleLeegFilter(id) {
+  const el = document.getElementById(id);
+  el.value = el.value === '(leeg)' ? '' : '(leeg)';
+  prosRender();
+}
+function prosMatchFilter(waarde, filter) {
+  if (filter === '(leeg)') return !String(waarde || '').trim();
+  return !filter || String(waarde || '').toLowerCase().includes(filter);
+}
 function prosRender() {
   if (!prosGeladen) return;
   buildProsCatLists();
   const f = id => (document.getElementById(id).value || '').toLowerCase();
   const fN = f('prf-naam'), fB = f('prf-bedrijf'), fE = f('prf-email'), fC1 = f('prf-cat1'), fC2 = f('prf-cat2'), fS = f('prf-status');
   const fEig = document.getElementById('prf-eigenaar').value;
+  // ∅-knopje visueel "actief" tonen zolang het filtervak effectief op "(leeg)" staat
+  // (ook als dat via de dropdown of getypte tekst veranderd is, niet enkel via de knop zelf).
+  ['prf-naam', 'prf-bedrijf', 'prf-email', 'prf-status', 'prf-cat1', 'prf-cat2'].forEach(id => {
+    const inp = document.getElementById(id), btn = inp && inp.nextElementSibling;
+    if (btn) btn.classList.toggle('actief', inp.value === '(leeg)');
+  });
   let rows = prosData.filter(p => {
-    const naam = ((p.voornaam || '') + ' ' + (p.achternaam || '')).toLowerCase();
-    if (fN && !naam.includes(fN)) return false;
-    if (fB && !(p.bedrijf || '').toLowerCase().includes(fB)) return false;
-    if (fE && !(p.email || '').toLowerCase().includes(fE)) return false;
-    if (fC1 && !(p.cat1 || '').toLowerCase().includes(fC1)) return false;
-    if (fC2 && !(p.cat2 || '').toLowerCase().includes(fC2)) return false;
-    if (fS && !(p.status || '').toLowerCase().includes(fS)) return false;
+    if (!prosMatchFilter((p.voornaam || '') + ' ' + (p.achternaam || ''), fN)) return false;
+    if (!prosMatchFilter(p.bedrijf, fB)) return false;
+    if (!prosMatchFilter(p.email, fE)) return false;
+    if (!prosMatchFilter(p.cat1, fC1)) return false;
+    if (!prosMatchFilter(p.cat2, fC2)) return false;
+    if (!prosMatchFilter(p.status, fS)) return false;
     if (fEig && p.eigenaar !== fEig) return false;
     return true;
   });

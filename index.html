@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.64</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.65</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -4774,11 +4774,13 @@ function comboMenuEl() {
   if (!m) {
     m = document.createElement('div'); m.id = 'combo-menu'; m.className = 'combo-menu';
     m.addEventListener('mousedown', (e) => {
-      e.preventDefault();   // voorkomt dat het invoerveld de focus/blur al verliest vóór onze click-afhandeling
+      // Enkel preventDefault op een echte rij/knop (voorkomt dat het veld al focus/blur
+      // verliest vóór onze click-afhandeling) — NIET op elke mousedown in het menu, anders
+      // kan de scrollbalk van de lijst niet meer gesleept worden.
       const delBtn = e.target.closest('.combo-del');
-      if (delBtn) { comboVerwijderSuggestie(delBtn.dataset.del); return; }
+      if (delBtn) { e.preventDefault(); comboVerwijderSuggestie(delBtn.dataset.del); return; }
       const rij = e.target.closest('div[data-v]');
-      if (rij) comboPick(rij.dataset.v);
+      if (rij) { e.preventDefault(); comboPick(rij.dataset.v); }
     });
     document.body.appendChild(m);
   }

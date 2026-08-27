@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.56</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.57</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -829,7 +829,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       #tab-mails .mail-hint{font-size:12px;color:#8a6d3b;background:#fcf8e3;border:1px solid #f5e7b2;border-radius:7px;padding:7px 10px;margin-top:10px}
     </style>
     <h2>Mails <small style="font-weight:400;color:var(--muted);font-size:14px">· voor de aangevinkte contacten</small></h2>
-    <p class="sub">Vink contacten aan in de <em>Prospecten</em>-tab, kies hier een sjabloon en bekijk/pas de mail per contact aan. Velden als <code>[VOORNAAM]</code>, <code>[NAAM]</code>, <code>[BEDRIJF]</code>, <code>[TITEL_FORMEEL]</code> worden automatisch ingevuld.</p>
+    <p class="sub">Vink contacten aan in de <em>Prospecten</em>-tab, kies hier een sjabloon en bekijk/pas de mail per contact aan. Velden als <code>[VOORNAAM]</code>, <code>[NAAM]</code>/<code>[ACHTERNAAM]</code>, <code>[BEDRIJF]</code>, <code>[TITEL_FORMEEL]</code> worden automatisch ingevuld (hoofdletters maken niet uit).</p>
     <div id="mail-leeg" style="color:var(--muted);padding:14px 0">Nog geen contacten geselecteerd. Ga naar <strong>Prospecten</strong>, vink contacten aan en klik <strong>✉ Mails</strong>.</div>
     <div id="mail-workspace" class="mail-ws" style="display:none">
       <div class="mail-lijst" id="mail-lijst"></div>
@@ -874,7 +874,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       #tab-sjablonen .sjb-acties{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
     </style>
     <h2>Sjablonen <small style="font-weight:400;color:var(--muted);font-size:14px">· mailsjablonen per categorie</small></h2>
-    <p class="sub">Beheer hier alle mailsjablonen. Velden als <code>[VOORNAAM]</code>, <code>[NAAM]</code>, <code>[BEDRIJF]</code>, <code>[TITEL_FORMEEL]</code>, <code>[QUICKSCAN_URL]</code> worden bij het versturen (tabblad Mails) automatisch ingevuld.</p>
+    <p class="sub">Beheer hier alle mailsjablonen. Velden als <code>[VOORNAAM]</code>, <code>[NAAM]</code>/<code>[ACHTERNAAM]</code> (beide = achternaam), <code>[BEDRIJF]</code>, <code>[TITEL_FORMEEL]</code>, <code>[QUICKSCAN_URL]</code> worden bij het versturen (tabblad Mails) automatisch ingevuld — hoofdletters maken niet uit.</p>
     <button class="btn btn-ghost mini" onclick="nieuwSjabloon()" style="margin-bottom:12px">+ Nieuw sjabloon</button>
     <div class="sjb-ws">
       <div class="sjb-lijst" id="sjb-lijst"></div>
@@ -5174,14 +5174,21 @@ function laadMailContact(i) {
   mailApply(p, document.getElementById('mail-cat').value);
 }
 
+// Hoofdletterongevoelig en met [ACHTERNAAM] als alias voor [NAAM] — een sjabloon met
+// "[achternaam]" of "[Naam]" (kleine letters) werkt zo ook, i.p.v. onvervangen te blijven staan.
 function mailSubst(s, p) {
   const tf = p.aanspreektitel === 'Dhr.' ? 'heer' : p.aanspreektitel === 'Mevr.' ? 'mevrouw' : '';
-  return String(s || '')
-    .split('[TITEL_FORMEEL]').join(tf)
-    .split('[VOORNAAM]').join(p.voornaam || '')
-    .split('[NAAM]').join(p.achternaam || '')
-    .split('[BEDRIJF]').join(p.bedrijf || '')
-    .split('[QUICKSCAN_URL]').join('https://quickscan.thenextlevel.consulting');
+  const velden = {
+    TITEL_FORMEEL: tf,
+    VOORNAAM: p.voornaam || '',
+    NAAM: p.achternaam || '',
+    ACHTERNAAM: p.achternaam || '',
+    BEDRIJF: p.bedrijf || '',
+    QUICKSCAN_URL: 'https://quickscan.thenextlevel.consulting'
+  };
+  let out = String(s || '');
+  for (const token in velden) out = out.replace(new RegExp('\\[' + token + '\\]', 'gi'), velden[token]);
+  return out;
 }
 
 function mailApply(p, cat) {

@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.49</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.50</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -4756,12 +4756,9 @@ function comboMenuEl() {
   }
   return m;
 }
-function comboRenderMenu() {
+function comboRenderMenu(matches) {
   if (!comboEl) return;
   const menu = comboMenuEl();
-  const alle = PROS_COMBO_OPTIONS[comboKind] || [];
-  const f = (comboEl.value || '').toLowerCase();
-  const matches = f ? alle.filter(v => v.toLowerCase().includes(f)) : alle;
   menu.innerHTML = matches.length
     ? matches.map(v => `<div data-v="${escAttr(v)}">${esc(v)}</div>`).join('')
     : '<div class="leeg">Geen suggesties — typ een nieuwe waarde</div>';
@@ -4771,8 +4768,16 @@ function comboRenderMenu() {
   menu.style.width = Math.max(r.width, 150) + 'px';
   menu.style.display = 'block';
 }
-function comboOpen(el, kind) { comboEl = el; comboKind = kind; comboRenderMenu(); }
-function comboFilter(el) { if (comboEl === el) comboRenderMenu(); }
+// Bij openen (klik/focus) altijd de VOLLEDIGE lijst tonen, ook als het veld al een waarde
+// bevat — zo kun je meteen naar een andere waarde "switchen". Pas zodra je zelf begint te
+// typen (comboFilter, via oninput) wordt er op de ingetypte tekst gefilterd.
+function comboOpen(el, kind) { comboEl = el; comboKind = kind; comboRenderMenu(PROS_COMBO_OPTIONS[kind] || []); }
+function comboFilter(el) {
+  if (comboEl !== el) return;
+  const alle = PROS_COMBO_OPTIONS[comboKind] || [];
+  const f = (el.value || '').toLowerCase();
+  comboRenderMenu(f ? alle.filter(v => v.toLowerCase().includes(f)) : alle);
+}
 function comboClose() {
   const menu = document.getElementById('combo-menu');
   if (menu) menu.style.display = 'none';

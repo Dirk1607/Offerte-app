@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.66</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.67</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -4709,6 +4709,36 @@ const PROS_CAT1_SEED = ['Kennissen', 'Klant', 'Netwerk', 'Vrienden'];
 const PROS_FUNCTIE_SEED = ['Eigenaar', 'Zaakvoerder', 'Bestuurder', 'CEO', 'HR Manager'];
 const prAttr = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const TEL_CC_LEN = { '1': 1, '32': 2, '31': 2, '33': 2, '49': 2, '44': 2, '41': 2, '39': 2, '34': 2, '43': 2, '48': 2, '351': 3, '352': 3, '420': 3 };
+function formatTel(raw) {
+  if (!raw || !/\d/.test(raw)) return raw || '';
+  let digits = String(raw).trim().replace(/[^\d+]/g, '');
+  if (digits.startsWith('00')) digits = '+' + digits.slice(2);
+  let cc = null, national;
+  if (digits.startsWith('+')) {
+    const d = digits.slice(1);
+    const len = TEL_CC_LEN[d.slice(0, 3)] ? 3 : TEL_CC_LEN[d.slice(0, 2)] ? 2 : TEL_CC_LEN[d.slice(0, 1)] ? 1 : 2;
+    cc = d.slice(0, len);
+    national = d.slice(len);
+  } else if (digits.startsWith('0') && digits.length >= 9) {
+    cc = '32';
+    national = digits.slice(1);
+  } else {
+    national = digits;
+  }
+  if (!national) return raw;
+  const groups = [];
+  let rest = national;
+  const first = Math.min(3, rest.length);
+  groups.push(rest.slice(0, first));
+  rest = rest.slice(first);
+  while (rest.length > 0) {
+    if (rest.length === 1) groups[groups.length - 1] += rest;
+    else groups.push(rest.slice(0, 2));
+    rest = rest.length <= 2 ? '' : rest.slice(2);
+  }
+  return (cc ? '+' + cc + ' ' : '') + groups.join(' ');
+}
 
 async function laadProspecten() {
   const st = document.getElementById('pr-status');
@@ -4929,7 +4959,7 @@ function prosRender() {
     </div></td>
     <td>${prAttr(p.bedrijf) || '<span style="color:#bbb">-</span>'}</td>
     <td><input class="pr-in" style="width:150px;color:var(--blue,#4A7CB5)" value="${prAttr(p.email)}" onchange="prosUpdate('${p.id}','email',this.value)"></td>
-    <td><input class="pr-in" style="width:95px" value="${prAttr(p.gsm)}" onchange="prosUpdate('${p.id}','gsm',this.value)" placeholder="telefoon…"></td>
+    <td><input class="pr-in" style="width:95px" value="${prAttr(formatTel(p.gsm))}" onchange="prosUpdate('${p.id}','gsm',this.value)" placeholder="telefoon…"></td>
     <td><input class="pr-in" onfocus="comboOpen(this,'status')" autocomplete="off" onblur="comboClose()" oninput="comboFilter(this)" style="width:110px" value="${prAttr(p.status)}" onchange="prosUpdate('${p.id}','status',this.value)" placeholder="status…"></td>
     <td><input class="pr-in" onfocus="comboOpen(this,'cat1')" autocomplete="off" onblur="comboClose()" oninput="comboFilter(this)" style="width:95px" value="${prAttr(p.cat1)}" onchange="prosUpdate('${p.id}','cat1',this.value)" placeholder="contact…"></td>
     <td><input class="pr-in" onfocus="comboOpen(this,'functie')" autocomplete="off" onblur="comboClose()" oninput="comboFilter(this)" style="width:105px" value="${prAttr(p.functie)}" onchange="prosUpdate('${p.id}','functie',this.value)" placeholder="functie…"></td>

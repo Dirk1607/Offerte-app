@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.61</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.62</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -850,10 +850,11 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <div id="mail-hint" class="mail-hint" style="display:none"></div>
         <div class="mail-acties">
           <button class="db-btn prim" onclick="mailOutlook()">✉ Openen in Outlook + markeren als verstuurd</button>
+          <button class="db-btn" id="mail-alle-btn" onclick="mailOutlookAlles()">📨 Open alle (0) in Outlook</button>
           <button class="db-btn" onclick="mailKopieer()">📋 Kopieer</button>
           <span id="mail-copyok" style="font-size:12px;color:var(--green,#2E7D52);display:none">✓ gekopieerd</span>
         </div>
-        <p class="sub" style="margin-top:14px">Sjablonen bewerk je in het tabblad <strong>Sjablonen</strong>.</p>
+        <p class="sub" style="margin-top:14px">Sjablonen bewerk je in het tabblad <strong>Sjablonen</strong>. "Open alle" gebruikt het gekozen sjabloon voor élk geselecteerd contact (niet je handmatige aanpassingen hierboven) en opent ze na elkaar — je browser kan vragen om dat toe te staan.</p>
       </div>
     </div>
   </section>
@@ -5160,6 +5161,8 @@ function renderMailLijst() {
     <div class="nm">${prAttr(((p.voornaam || '') + ' ' + (p.achternaam || '')).trim()) || '(naamloos)'}</div>
     <div class="mt">${prAttr(p.bedrijf || p.email || '')} ${p.status === 'Quickscan verstuurd' ? '✅' : ''}</div>
   </div>`).join('');
+  const alleBtn = document.getElementById('mail-alle-btn');
+  if (alleBtn) alleBtn.textContent = '📨 Open alle (' + mailLijst.length + ') in Outlook';
 }
 
 // Het gekozen sjabloon geldt voor de hele geselecteerde groep: bij ◀/▶ tussen contacten
@@ -5225,6 +5228,35 @@ async function mailOutlook() {
     await TNL.updateContact(p.id, { status: 'Quickscan verstuurd' });
     p.status = 'Quickscan verstuurd';
     const d = prosData.find(x => x.id === p.id); if (d) d.status = 'Quickscan verstuurd';
+    renderMailLijst(); prosRender();
+  } catch (e) { console.error(e); }
+}
+
+// Opent na elkaar (met een korte vertraging, anders blokkeert de browser vaak alles na de
+// eerste) een mailto: per geselecteerd contact, telkens met het GEKOZEN sjabloon opnieuw
+// ingevuld voor dat contact — handmatige aanpassingen aan het huidige, zichtbare concept
+// tellen hier niet mee. Markeert nadien iedereen met een e-mailadres als verstuurd.
+async function mailOutlookAlles() {
+  const cat = document.getElementById('mail-cat').value;
+  if (!cat) { alert('Kies eerst een sjabloon.'); return; }
+  const lijst = mailLijst.filter(p => p.email);
+  if (!lijst.length) { alert('Geen van de geselecteerde contacten heeft een e-mailadres.'); return; }
+  if (!confirm('Dit opent ' + lijst.length + ' e-mail' + (lijst.length !== 1 ? 's' : '') + ' na elkaar in je mailprogramma en markeert ze als verstuurd. Doorgaan?')) return;
+  const t = TEMPL[cat] || { subject: '', body: '' };
+  lijst.forEach((p, i) => {
+    setTimeout(() => {
+      const to = encodeURIComponent(p.email);
+      const subj = encodeURIComponent(mailSubst(t.subject, p));
+      const body = encodeURIComponent(mailSubst(t.body, p));
+      window.location.href = 'mailto:' + to + '?subject=' + subj + '&body=' + body;
+    }, i * 600);
+  });
+  try {
+    for (const p of lijst) {
+      await TNL.updateContact(p.id, { status: 'Quickscan verstuurd' });
+      p.status = 'Quickscan verstuurd';
+      const d = prosData.find(x => x.id === p.id); if (d) d.status = 'Quickscan verstuurd';
+    }
     renderMailLijst(); prosRender();
   } catch (e) { console.error(e); }
 }

@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.53</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.54</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -703,10 +703,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <input id="pra-bedrijf" class="pr-in" placeholder="Bedrijf (optioneel)" style="width:150px">
         <input id="pra-email" class="pr-in" placeholder="E-mail" style="width:180px">
         <input id="pra-tel" class="pr-in" placeholder="Telefoon" style="width:120px">
-        <input id="pra-status" class="pr-in" onfocus="comboOpen(this,'status')" oninput="comboFilter(this)" placeholder="Status" style="width:130px">
-        <input id="pra-cat1" class="pr-in" onfocus="comboOpen(this,'cat1')" oninput="comboFilter(this)" placeholder="Contact" style="width:110px">
-        <input id="pra-functie" class="pr-in" onfocus="comboOpen(this,'functie')" oninput="comboFilter(this)" placeholder="Functie" style="width:120px">
-        <input id="pra-cat2" class="pr-in" onfocus="comboOpen(this,'cat2')" oninput="comboFilter(this)" placeholder="Referentie" style="width:110px">
+        <input id="pra-status" class="pr-in" onfocus="comboOpen(this,'status')" onblur="comboClose()" oninput="comboFilter(this)" placeholder="Status" style="width:130px">
+        <input id="pra-cat1" class="pr-in" onfocus="comboOpen(this,'cat1')" onblur="comboClose()" oninput="comboFilter(this)" placeholder="Contact" style="width:110px">
+        <input id="pra-functie" class="pr-in" onfocus="comboOpen(this,'functie')" onblur="comboClose()" oninput="comboFilter(this)" placeholder="Functie" style="width:120px">
+        <input id="pra-cat2" class="pr-in" onfocus="comboOpen(this,'cat2')" onblur="comboClose()" oninput="comboFilter(this)" placeholder="Referentie" style="width:110px">
         <button class="db-btn prim" onclick="prosVoegToe()">Toevoegen</button>
       </div>
       <div id="pr-add-status" class="db-mini" style="margin-top:6px"></div>
@@ -751,10 +751,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
             <th><div class="pr-filter-wrap"><input id="prf-bedrijf" oninput="prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-bedrijf')" title="Toon enkel zonder bedrijf">∅</button></div></th>
             <th><div class="pr-filter-wrap"><input id="prf-email" oninput="prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-email')" title="Toon enkel zonder e-mail">∅</button></div></th>
             <th></th>
-            <th><div class="pr-filter-wrap"><input id="prf-status" onfocus="comboOpen(this,'status')" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-status')" title="Toon enkel zonder status">∅</button></div></th>
-            <th><div class="pr-filter-wrap"><input id="prf-cat1" onfocus="comboOpen(this,'cat1')" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-cat1')" title="Toon enkel zonder Contact">∅</button></div></th>
-            <th><div class="pr-filter-wrap"><input id="prf-functie" onfocus="comboOpen(this,'functie')" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-functie')" title="Toon enkel zonder functie">∅</button></div></th>
-            <th><div class="pr-filter-wrap"><input id="prf-cat2" onfocus="comboOpen(this,'cat2')" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-cat2')" title="Toon enkel zonder Referentie">∅</button></div></th>
+            <th><div class="pr-filter-wrap"><input id="prf-status" onfocus="comboOpen(this,'status')" onblur="comboClose()" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-status')" title="Toon enkel zonder status">∅</button></div></th>
+            <th><div class="pr-filter-wrap"><input id="prf-cat1" onfocus="comboOpen(this,'cat1')" onblur="comboClose()" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-cat1')" title="Toon enkel zonder Contact">∅</button></div></th>
+            <th><div class="pr-filter-wrap"><input id="prf-functie" onfocus="comboOpen(this,'functie')" onblur="comboClose()" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-functie')" title="Toon enkel zonder functie">∅</button></div></th>
+            <th><div class="pr-filter-wrap"><input id="prf-cat2" onfocus="comboOpen(this,'cat2')" onblur="comboClose()" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-cat2')" title="Toon enkel zonder Referentie">∅</button></div></th>
             <th><select id="prf-eigenaar" onchange="prosRender()"><option value="">alle</option><option>Dirk</option><option>Ilse</option></select></th>
             <th></th><th></th>
           </tr>
@@ -4843,6 +4843,10 @@ async function comboVerwijderSuggestie(value) {
 document.addEventListener('click', (e) => {
   if (comboEl && e.target !== comboEl && !e.target.closest('#combo-menu')) comboClose();
 });
+// Sluit de dropdown bij elke scroll (bv. horizontaal scrollen in de brede tabel) i.p.v. hem
+// op zijn oude, dan foute schermpositie te laten hangen — anders kon een volgende klik per
+// ongeluk een verkeerde (vaak de eerste) suggestie treffen op die losgeraakte plek.
+window.addEventListener('scroll', () => { if (comboEl) comboClose(); }, true);
 
 function prosSort(f) { if (prosSortField === f) prosSortDir = -prosSortDir; else { prosSortField = f; prosSortDir = 1; } prosRender(); }
 function prosSortIndic() {
@@ -4916,10 +4920,10 @@ function prosRender() {
     <td>${prAttr(p.bedrijf) || '<span style="color:#bbb">-</span>'}</td>
     <td><input class="pr-in" style="width:170px;color:var(--blue,#4A7CB5)" value="${prAttr(p.email)}" onchange="prosUpdate('${p.id}','email',this.value)"></td>
     <td><input class="pr-in" style="width:110px" value="${prAttr(p.gsm)}" onchange="prosUpdate('${p.id}','gsm',this.value)" placeholder="telefoon…"></td>
-    <td><input class="pr-in" onfocus="comboOpen(this,'status')" oninput="comboFilter(this)" style="width:130px" value="${prAttr(p.status)}" onchange="prosUpdate('${p.id}','status',this.value)" placeholder="status…"></td>
-    <td><input class="pr-in" onfocus="comboOpen(this,'cat1')" oninput="comboFilter(this)" style="width:110px" value="${prAttr(p.cat1)}" onchange="prosUpdate('${p.id}','cat1',this.value)" placeholder="contact…"></td>
-    <td><input class="pr-in" onfocus="comboOpen(this,'functie')" oninput="comboFilter(this)" style="width:120px" value="${prAttr(p.functie)}" onchange="prosUpdate('${p.id}','functie',this.value)" placeholder="functie…"></td>
-    <td><input class="pr-in" onfocus="comboOpen(this,'cat2')" oninput="comboFilter(this)" style="width:120px;color:var(--muted)" value="${prAttr(p.cat2)}" onchange="prosUpdate('${p.id}','cat2',this.value)" placeholder="referentie…"></td>
+    <td><input class="pr-in" onfocus="comboOpen(this,'status')" onblur="comboClose()" oninput="comboFilter(this)" style="width:130px" value="${prAttr(p.status)}" onchange="prosUpdate('${p.id}','status',this.value)" placeholder="status…"></td>
+    <td><input class="pr-in" onfocus="comboOpen(this,'cat1')" onblur="comboClose()" oninput="comboFilter(this)" style="width:110px" value="${prAttr(p.cat1)}" onchange="prosUpdate('${p.id}','cat1',this.value)" placeholder="contact…"></td>
+    <td><input class="pr-in" onfocus="comboOpen(this,'functie')" onblur="comboClose()" oninput="comboFilter(this)" style="width:120px" value="${prAttr(p.functie)}" onchange="prosUpdate('${p.id}','functie',this.value)" placeholder="functie…"></td>
+    <td><input class="pr-in" onfocus="comboOpen(this,'cat2')" onblur="comboClose()" oninput="comboFilter(this)" style="width:120px;color:var(--muted)" value="${prAttr(p.cat2)}" onchange="prosUpdate('${p.id}','cat2',this.value)" placeholder="referentie…"></td>
     <td><select class="pr-in" style="width:70px" onchange="prosUpdate('${p.id}','eigenaar',this.value)" title="Eigenaar van deze prospect">
       ${['Dirk', 'Ilse'].map(n => `<option ${p.eigenaar === n ? 'selected' : ''}>${n}</option>`).join('')}
     </select></td>

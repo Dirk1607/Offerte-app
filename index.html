@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.62</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.63</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -652,23 +652,24 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       main:has(#tab-prospecten.actief){max-width:none;}
       .pr-tabelwrap{overflow-x:auto;border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff}
       table.pr-tabel{border-collapse:collapse;width:100%;font-size:12px;table-layout:fixed}
-      /* Kolombreedtes (%), samen 100%. Kolom 1 = selectievakje. */
+      /* Kolombreedtes (%), samen 100%. Kolom 1 = selectievakje, kolom 2 = Prio. */
       table.pr-tabel th:nth-child(1),table.pr-tabel td:nth-child(1){width:3%;text-align:center}
-      table.pr-tabel th:nth-child(2),table.pr-tabel td:nth-child(2){width:18%}
-      table.pr-tabel th:nth-child(3),table.pr-tabel td:nth-child(3){width:12%}
-      table.pr-tabel th:nth-child(4),table.pr-tabel td:nth-child(4){width:14%}
-      table.pr-tabel th:nth-child(5),table.pr-tabel td:nth-child(5){width:9%}
-      table.pr-tabel th:nth-child(6),table.pr-tabel td:nth-child(6){width:10%}
-      table.pr-tabel th:nth-child(7),table.pr-tabel td:nth-child(7){width:9%}
+      table.pr-tabel th:nth-child(2),table.pr-tabel td:nth-child(2){width:4%;text-align:center}
+      table.pr-tabel th:nth-child(3),table.pr-tabel td:nth-child(3){width:16%}
+      table.pr-tabel th:nth-child(4),table.pr-tabel td:nth-child(4){width:11%}
+      table.pr-tabel th:nth-child(5),table.pr-tabel td:nth-child(5){width:13%}
+      table.pr-tabel th:nth-child(6),table.pr-tabel td:nth-child(6){width:9%}
+      table.pr-tabel th:nth-child(7),table.pr-tabel td:nth-child(7){width:10%}
       table.pr-tabel th:nth-child(8),table.pr-tabel td:nth-child(8){width:9%}
-      table.pr-tabel th:nth-child(9),table.pr-tabel td:nth-child(9){width:8%}
-      table.pr-tabel th:nth-child(10),table.pr-tabel td:nth-child(10){width:4%;text-align:center}
+      table.pr-tabel th:nth-child(9),table.pr-tabel td:nth-child(9){width:9%}
+      table.pr-tabel th:nth-child(10),table.pr-tabel td:nth-child(10){width:8%}
       table.pr-tabel th:nth-child(11),table.pr-tabel td:nth-child(11){width:4%;text-align:center}
+      table.pr-tabel th:nth-child(12),table.pr-tabel td:nth-child(12){width:4%;text-align:center}
       /* Velden in de TABEL vullen hun kolom (overschrijft de inline pixel-breedtes). */
       #tab-prospecten table.pr-tabel .pr-in{width:100%!important;box-sizing:border-box}
-      #tab-prospecten td:nth-child(2) input.pr-in{flex:1 1 0;min-width:0;width:auto!important}
-      #tab-prospecten td:nth-child(2) select.pr-in{flex:0 0 44px;width:auto!important}
-      #tab-prospecten td:nth-child(3){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      #tab-prospecten td:nth-child(3) input.pr-in{flex:1 1 0;min-width:0;width:auto!important}
+      #tab-prospecten td:nth-child(3) select.pr-in{flex:0 0 44px;width:auto!important}
+      #tab-prospecten td:nth-child(4){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       table.pr-tabel th{position:sticky;top:0;background:#f5f8fc;text-align:left;padding:8px 9px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--lijn,#e2e8f0);white-space:nowrap}
       table.pr-tabel th.sort-h{cursor:pointer;user-select:none}
       table.pr-tabel th .arr{color:#b7c2d0;font-size:10px}
@@ -733,6 +734,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <thead>
           <tr>
             <th><input type="checkbox" onclick="prosSelAll(this.checked)" title="Alle gefilterde selecteren"></th>
+            <th class="sort-h" data-sf="prio" onclick="prosSort('prio')" title="Prioriteit: 1 = hoogst, 9 = laagst/standaard">Prio <span class="arr">↕</span></th>
             <th class="sort-h" data-sf="naam" onclick="prosSort('naam')">Naam <span class="arr">↕</span></th>
             <th class="sort-h" data-sf="bedrijf" onclick="prosSort('bedrijf')">Bedrijf <span class="arr">↕</span></th>
             <th class="sort-h" data-sf="email" onclick="prosSort('email')">E-mail <span class="arr">↕</span></th>
@@ -746,6 +748,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
           </tr>
           <tr class="pr-filter">
             <th></th>
+            <th><select id="prf-prio" onchange="prosRender()"><option value="">alle</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></th>
             <th><div class="pr-filter-wrap"><input id="prf-naam" oninput="prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-naam')" title="Toon enkel contacten zonder naam">∅</button></div></th>
             <th><div class="pr-filter-wrap"><input id="prf-bedrijf" oninput="prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-bedrijf')" title="Toon enkel zonder bedrijf">∅</button></div></th>
             <th><div class="pr-filter-wrap"><input id="prf-email" oninput="prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-email')" title="Toon enkel zonder e-mail">∅</button></div></th>
@@ -758,7 +761,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
             <th></th>
           </tr>
         </thead>
-        <tbody id="pr-body"><tr><td colspan="11" style="padding:16px;color:var(--muted)">Nog niet geladen, open dit tabblad of klik ↻ Vernieuwen.</td></tr></tbody>
+        <tbody id="pr-body"><tr><td colspan="12" style="padding:16px;color:var(--muted)">Nog niet geladen, open dit tabblad of klik ↻ Vernieuwen.</td></tr></tbody>
       </table>
     </div>
 
@@ -4696,6 +4699,7 @@ async function prosVerwijderGeselecteerd() {
   st.textContent = '✓ ' + ok + ' verwijderd' + (fout ? ', ' + fout + ' mislukt' : '');
 }
 const PROS_SORT = {
+  prio:    p => String(p.prio == null ? 9 : p.prio),
   naam:    p => (p.achternaam || '') + ' ' + (p.voornaam || ''),
   bedrijf: p => p.bedrijf || '',
   email:   p => p.email || '',
@@ -4730,7 +4734,7 @@ async function laadProspecten() {
       aanspreektitel: c.aanspreektitel || '', voornaam: c.voornaam || '', achternaam: c.achternaam || '',
       email: c.email || '', gsm: c.gsm || '',
       bedrijf_id: c.bedrijf_id, bedrijf: bMap[c.bedrijf_id] || '',
-      cat1: c.cat1 || '', functie: c.functie || '', cat2: c.cat2 || '', status: c.status || '', eigenaar: c.eigenaar || 'Dirk',
+      prio: c.prio == null ? 9 : c.prio, cat1: c.cat1 || '', functie: c.functie || '', cat2: c.cat2 || '', status: c.status || '', eigenaar: c.eigenaar || 'Dirk',
       samenvatting: c.samenvatting || '', heeftNotities: !!notitieAantalPerContact[c.id],
       volgende_stap: c.volgende_stap || '', volgende_stap_datum: c.volgende_stap_datum || '',
       scans: (scanPerContact[c.id] || []).map(s => s.id)
@@ -4874,6 +4878,7 @@ function prosRender() {
   const f = id => (document.getElementById(id).value || '').toLowerCase();
   const fN = f('prf-naam'), fB = f('prf-bedrijf'), fE = f('prf-email'), fC1 = f('prf-cat1'), fF = f('prf-functie'), fC2 = f('prf-cat2'), fS = f('prf-status');
   const fEig = document.getElementById('prf-eigenaar').value;
+  const fPrio = document.getElementById('prf-prio').value;
   // ∅-knopje visueel "actief" tonen zolang het filtervak effectief op "(leeg)" staat
   // (ook als dat via de dropdown of getypte tekst veranderd is, niet enkel via de knop zelf).
   ['prf-naam', 'prf-bedrijf', 'prf-email', 'prf-status', 'prf-cat1', 'prf-functie', 'prf-cat2'].forEach(id => {
@@ -4881,6 +4886,7 @@ function prosRender() {
     if (btn) btn.classList.toggle('actief', inp.value === '(leeg)');
   });
   let rows = prosData.filter(p => {
+    if (fPrio && String(p.prio == null ? 9 : p.prio) !== fPrio) return false;
     if (!prosMatchFilter((p.voornaam || '') + ' ' + (p.achternaam || ''), fN)) return false;
     if (!prosMatchFilter(p.bedrijf, fB)) return false;
     if (!prosMatchFilter(p.email, fE)) return false;
@@ -4904,10 +4910,13 @@ function prosRender() {
   document.getElementById('pr-telling').textContent = rows.length + ' van ' + prosData.length + ' contacten';
   const tb = document.getElementById('pr-body');
   prosUpdMailBtn();
-  if (!rows.length) { tb.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--muted)">Geen contacten gevonden.</td></tr>'; return; }
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="12" style="padding:16px;color:var(--muted)">Geen contacten gevonden.</td></tr>'; return; }
   const opv = p => (p.heeftNotities || p.volgende_stap || p.samenvatting);
   tb.innerHTML = rows.map(p => `<tr>
     <td><input type="checkbox" ${prosSel.has(p.id) ? 'checked' : ''} onclick="prosToggleSel('${p.id}',this.checked)"></td>
+    <td><select class="pr-in" onchange="prosUpdate('${p.id}','prio',this.value)" title="Prioriteit: 1 = hoogst, 9 = laagst/standaard">
+      ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<option ${Number(p.prio == null ? 9 : p.prio) === n ? 'selected' : ''}>${n}</option>`).join('')}
+    </select></td>
     <td><div style="display:flex;gap:4px;align-items:center">
       <select class="pr-in" style="width:52px;color:var(--muted)" onchange="prosUpdate('${p.id}','aanspreektitel',this.value)" title="Aanspreektitel">
         <option value="" ${!p.aanspreektitel ? 'selected' : ''}>?</option>
@@ -5009,7 +5018,7 @@ async function prosVoegToe() {
     });
     prosData.unshift({
       id: nc.id, aanspreektitel: c.aanspreektitel, voornaam: c.voornaam, achternaam: c.achternaam,
-      email: c.email, gsm: c.gsm, bedrijf_id: bedrijfId, bedrijf: bedrijfDef,
+      email: c.email, gsm: c.gsm, bedrijf_id: bedrijfId, bedrijf: bedrijfDef, prio: 9,
       cat1: c.cat1, functie: c.functie, cat2: c.cat2, status: c.status, eigenaar: c.eigenaar,
       samenvatting: '', heeftNotities: false, volgende_stap: '', volgende_stap_datum: ''
     });
@@ -5427,7 +5436,7 @@ async function prosVerwerkRijen(rows, st) {
       const nc = await TNL.insertContact(contactPatch);
       prosData.unshift({
         id: nc.id, aanspreektitel: p.titel, voornaam: p.voornaam, achternaam: p.naam, email: p.email, gsm: p.telefoon,
-        bedrijf_id: bedrijfId, bedrijf: bedrijfNaam, cat1: p.cat1, functie: p.functie, cat2: p.cat2, status: p.status, eigenaar: p.eigenaar || 'Dirk',
+        bedrijf_id: bedrijfId, bedrijf: bedrijfNaam, prio: 9, cat1: p.cat1, functie: p.functie, cat2: p.cat2, status: p.status, eigenaar: p.eigenaar || 'Dirk',
         verloop: '', samenvatting: '', volgende_stap: '', volgende_stap_datum: ''
       });
       if (p.email) bestaand.set(p.email.toLowerCase(), p);

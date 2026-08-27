@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.46</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.47</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -690,9 +690,9 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <input id="pra-bedrijf" class="pr-in" placeholder="Bedrijf (optioneel)" style="width:150px">
         <input id="pra-email" class="pr-in" placeholder="E-mail" style="width:180px">
         <input id="pra-tel" class="pr-in" placeholder="Telefoon" style="width:120px">
-        <input id="pra-status" class="pr-in" list="pr-status-list" placeholder="Status" style="width:130px">
-        <input id="pra-cat1" class="pr-in" list="prc1-list" placeholder="CAT 1" style="width:110px">
-        <input id="pra-cat2" class="pr-in" list="prc2-list" placeholder="CAT 2" style="width:110px">
+        <input id="pra-status" class="pr-in" list="pr-status-list" onfocus="prosOpenList(this)" placeholder="Status" style="width:130px">
+        <input id="pra-cat1" class="pr-in" list="prc1-list" onfocus="prosOpenList(this)" placeholder="CAT 1" style="width:110px">
+        <input id="pra-cat2" class="pr-in" list="prc2-list" onfocus="prosOpenList(this)" placeholder="CAT 2" style="width:110px">
         <button class="db-btn prim" onclick="prosVoegToe()">Toevoegen</button>
       </div>
       <div id="pr-add-status" class="db-mini" style="margin-top:6px"></div>
@@ -736,7 +736,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
             <th><input id="prf-bedrijf" oninput="prosRender()" placeholder="filter…"></th>
             <th><input id="prf-email" oninput="prosRender()" placeholder="filter…"></th>
             <th></th>
-            <th><input id="prf-status" list="pr-status-list" oninput="prosRender()" placeholder="filter…"></th>
+            <th><input id="prf-status" list="pr-status-list" onfocus="prosOpenList(this)" oninput="prosRender()" placeholder="filter…"></th>
             <th><input id="prf-cat1" oninput="prosRender()" placeholder="filter…"></th>
             <th><input id="prf-cat2" oninput="prosRender()" placeholder="filter…"></th>
             <th><select id="prf-eigenaar" onchange="prosRender()"><option value="">alle</option><option>Dirk</option><option>Ilse</option></select></th>
@@ -4727,6 +4727,8 @@ async function laadProspecten() {
   }
 }
 
+// Toont bij focus/klik meteen de volledige datalist-dropdown i.p.v. te wachten tot je begint te typen.
+function prosOpenList(el) { try { el.showPicker && el.showPicker(); } catch (e) {} }
 const PROS_STATUS_SEED = ['Nog te contacteren', 'Quickscan verstuurd', 'Quickscan ingevuld'];
 function buildProsCatLists() {
   const s1 = new Set(PROS_CAT1_SEED), s2 = new Set(), sSt = new Set(PROS_STATUS_SEED);
@@ -4792,9 +4794,9 @@ function prosRender() {
     <td>${prAttr(p.bedrijf) || '<span style="color:#bbb">-</span>'}</td>
     <td><input class="pr-in" style="width:170px;color:var(--blue,#4A7CB5)" value="${prAttr(p.email)}" onchange="prosUpdate('${p.id}','email',this.value)"></td>
     <td><input class="pr-in" style="width:110px" value="${prAttr(p.gsm)}" onchange="prosUpdate('${p.id}','gsm',this.value)" placeholder="telefoon…"></td>
-    <td><input class="pr-in" list="pr-status-list" style="width:130px" value="${prAttr(p.status)}" onchange="prosUpdate('${p.id}','status',this.value)" placeholder="status…"></td>
-    <td><input class="pr-in" list="prc1-list" style="width:110px" value="${prAttr(p.cat1)}" onchange="prosUpdate('${p.id}','cat1',this.value)" placeholder="cat 1…"></td>
-    <td><input class="pr-in" list="prc2-list" style="width:120px;color:var(--muted)" value="${prAttr(p.cat2)}" onchange="prosUpdate('${p.id}','cat2',this.value)" placeholder="cat 2…"></td>
+    <td><input class="pr-in" list="pr-status-list" onfocus="prosOpenList(this)" style="width:130px" value="${prAttr(p.status)}" onchange="prosUpdate('${p.id}','status',this.value)" placeholder="status…"></td>
+    <td><input class="pr-in" list="prc1-list" onfocus="prosOpenList(this)" style="width:110px" value="${prAttr(p.cat1)}" onchange="prosUpdate('${p.id}','cat1',this.value)" placeholder="cat 1…"></td>
+    <td><input class="pr-in" list="prc2-list" onfocus="prosOpenList(this)" style="width:120px;color:var(--muted)" value="${prAttr(p.cat2)}" onchange="prosUpdate('${p.id}','cat2',this.value)" placeholder="cat 2…"></td>
     <td><select class="pr-in" style="width:70px" onchange="prosUpdate('${p.id}','eigenaar',this.value)" title="Eigenaar van deze prospect">
       ${['Dirk', 'Ilse'].map(n => `<option ${p.eigenaar === n ? 'selected' : ''}>${n}</option>`).join('')}
     </select></td>

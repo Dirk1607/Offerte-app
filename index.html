@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v3.68</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v3.69</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -711,8 +711,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     </div>
     <div id="pr-imp" tabindex="0" style="border:2px dashed var(--blue,#4A7CB5);border-radius:10px;background:#fff;padding:10px 14px;margin-bottom:12px;cursor:pointer;font-size:13px;color:var(--muted);outline:none">
       📷 <strong style="color:var(--navy,#1B3A6B)">Screenshot importeren</strong>, klik hier en druk <kbd>Ctrl</kbd>+<kbd>V</kbd> om een screenshot van een prospectenlijst te plakken (Claude leest 'm uit),
-      <a href="#" onclick="document.getElementById('pr-imp-file').click();return false" style="color:var(--blue,#4A7CB5)">of kies een afbeelding</a>.
+      <a href="#" onclick="document.getElementById('pr-imp-file').click();return false" style="color:var(--blue,#4A7CB5)">of kies een afbeelding</a>
+      · <a href="#" onclick="event.stopPropagation();document.getElementById('pr-imp-csv').click();return false" style="color:var(--blue,#4A7CB5)">📄 of importeer een CSV-bestand</a>.
       <input type="file" id="pr-imp-file" accept="image/*" style="display:none" onchange="if(this.files[0]) prosImportImage(this.files[0])">
+      <input type="file" id="pr-imp-csv" accept=".csv,text/csv" style="display:none" onchange="if(this.files[0]) prosImportCSV(this.files[0])">
       <span id="pr-imp-status" style="margin-left:8px;color:var(--navy,#1B3A6B)"></span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
@@ -5414,6 +5416,70 @@ async function prosImportImage(file) {
     st.textContent = '❌ ' + (e.message || e); console.error(e);
   } finally {
     const fi = document.getElementById('pr-imp-file'); if (fi) fi.value = '';
+  }
+}
+
+// ===== CSV-import (hergebruikt prosVerwerkRijen, geen AI nodig) =====
+const CSV_HEADER_MAP = {
+  'aanspr': 'titel', 'titel': 'titel', 'aanspreektitel': 'titel',
+  'voornaam': 'voornaam',
+  'achternaam': 'naam', 'naam': 'naam',
+  'bedrijf': 'bedrijf', 'bedrijfsnaam': 'bedrijf',
+  'email': 'email', 'e-mail': 'email', 'mail': 'email',
+  'telefoon': 'telefoon', 'tel': 'telefoon', 'gsm': 'telefoon', 'phone': 'telefoon',
+  'status': 'status',
+  'contact': 'cat1', 'cat1': 'cat1', 'categorie': 'cat1',
+  'functie': 'functie',
+  'referentie': 'cat2', 'cat2': 'cat2',
+  'eigenaar': 'eigenaar',
+  'website': 'website', 'url': 'website'
+};
+function csvNormHeader(h) {
+  return String(h || '').toLowerCase().trim().replace(/[.:]/g, '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function csvParse(text, delim) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+      else field += c;
+    } else if (c === '"') inQuotes = true;
+    else if (c === delim) { row.push(field); field = ''; }
+    else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+    else if (c === '\r') { /* skip */ }
+    else field += c;
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.length > 1 || r[0] !== '');
+}
+async function prosImportCSV(file) {
+  const st = document.getElementById('pr-imp-status');
+  st.textContent = '📄 CSV inlezen…';
+  try {
+    const text = (await file.text()).replace(/^\uFEFF/, '');
+    const firstLine = text.split(/\r?\n/, 1)[0] || '';
+    const delim = (firstLine.match(/;/g) || []).length >= (firstLine.match(/,/g) || []).length ? ';' : ',';
+    const table = csvParse(text, delim);
+    if (!table.length) throw new Error('Leeg bestand.');
+    const headers = table[0].map(csvNormHeader);
+    const fieldIdx = {};
+    headers.forEach((h, i) => { const f = CSV_HEADER_MAP[h]; if (f && !(f in fieldIdx)) fieldIdx[f] = i; });
+    if (fieldIdx.voornaam === undefined && fieldIdx.naam === undefined && fieldIdx.email === undefined) {
+      throw new Error('Geen herkenbare kolommen gevonden (Voornaam/Achternaam/E-mail).');
+    }
+    const rows = table.slice(1).map(r => {
+      const o = {};
+      for (const f in fieldIdx) o[f] = (r[fieldIdx[f]] || '').trim();
+      return o;
+    });
+    await prosVerwerkRijen(rows, st);
+  } catch (e) {
+    st.textContent = '❌ ' + (e.message || e); console.error(e);
+  } finally {
+    const fi = document.getElementById('pr-imp-csv'); if (fi) fi.value = '';
   }
 }
 

@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v4.3</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v4.4</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -910,7 +910,17 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <p class="sub">Beheer hier alle mailsjablonen. Beschikbare velden (hoofdletters maken niet uit): <code>[VOORNAAM]</code> (enkel voornaam), <code>[NAAM]</code>/<code>[ACHTERNAAM]</code> (enkel achternaam — allebei hetzelfde veld), <code>[TITEL_FORMEEL]</code> (Dhr./Mevr. wordt "heer"/"mevrouw"), <code>[BEDRIJF]</code>, <code>[QUICKSCAN_URL]</code>. Bijvoorbeeld: <code>Geachte [TITEL_FORMEEL] [ACHTERNAAM],</code> → "Geachte heer Janssens," — of informeel: <code>Beste [VOORNAAM],</code> → "Beste Jan,".</p>
     <button class="btn btn-ghost mini" onclick="nieuwSjabloon()" style="margin-bottom:12px">+ Nieuw sjabloon</button>
     <button class="btn btn-ghost mini" onclick="sjabExporteer()" style="margin-bottom:12px;margin-left:8px">📋 Exporteer alle sjablonen</button>
+    <button class="btn btn-ghost mini" onclick="sjabToonImport()" style="margin-bottom:12px;margin-left:8px">📥 Importeer sjablonen</button>
     <span id="sjb-export-status" class="db-mini" style="margin-left:8px"></span>
+    <div id="sjb-import-zone" style="display:none;border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff;padding:12px 14px;margin-bottom:12px">
+      <p class="sub" style="margin-top:0">Plak hier de (eventueel door Claude nagelezen) tekst terug, in hetzelfde formaat als de export — <code>=== naam ===</code> gevolgd door <code>Onderwerp:</code>, optioneel <code>Hint:</code>, en de berichttekst. Een sjabloon met een bestaande naam wordt overschreven; een nieuwe naam wordt aangemaakt.</p>
+      <textarea id="sjb-import-tekst" style="width:100%;box-sizing:border-box;min-height:180px;padding:8px;border:1px solid var(--lijn,#cdd7e3);border-radius:7px;font-family:inherit;font-size:13px;resize:vertical" placeholder="=== App Tester ===&#10;Onderwerp: ...&#10;&#10;Beste [VOORNAAM],&#10;..."></textarea>
+      <div style="margin-top:8px;display:flex;gap:10px;align-items:center">
+        <button class="btn" onclick="sjabImporteer()">Verwerken</button>
+        <button class="btn btn-ghost mini" onclick="sjabToonImport()">Annuleren</button>
+        <span id="sjb-import-status" class="db-mini"></span>
+      </div>
+    </div>
     <div class="sjb-ws">
       <div class="sjb-lijst" id="sjb-lijst"></div>
       <div>
@@ -5473,6 +5483,65 @@ function sjabExporteer() {
     st.textContent = '✓ ' + cats.length + ' sjablonen gekopieerd naar klembord';
     setTimeout(() => { if (st.textContent.startsWith('✓')) st.textContent = ''; }, 3000);
   }).catch(e => { if (st) st.textContent = '✗ kopiëren mislukt: ' + (e.message || e); });
+}
+function sjabToonImport() {
+  const z = document.getElementById('sjb-import-zone');
+  const open = z.style.display !== 'none';
+  z.style.display = open ? 'none' : 'block';
+  if (!open) { document.getElementById('sjb-import-tekst').value = ''; document.getElementById('sjb-import-status').textContent = ''; }
+}
+// Ontleedt exact het formaat dat sjabExporteer() produceert: "=== naam ===" als
+// blok-scheiding (niet de decoratieve "---" — die kan ook in een handtekening
+// binnen de berichttekst voorkomen, dus mag nooit als splitspunt dienen).
+function sjabParseExport(tekst) {
+  const re = /^===\s*(.+?)\s*===\s*$/gm;
+  const koppen = [];
+  let m;
+  while ((m = re.exec(tekst))) koppen.push({ naam: m[1].trim(), start: m.index, headerEnd: re.lastIndex });
+  const result = [];
+  for (let i = 0; i < koppen.length; i++) {
+    const start = koppen[i].headerEnd;
+    const end = i + 1 < koppen.length ? koppen[i + 1].start : tekst.length;
+    let blok = tekst.slice(start, end).replace(/\n-{3,}\s*$/, '').trim();
+    const lines = blok.split('\n');
+    let idx = 0, subject = '', hints = '';
+    if (lines[idx] && /^onderwerp\s*:/i.test(lines[idx])) { subject = lines[idx].slice(lines[idx].indexOf(':') + 1).trim(); idx++; }
+    if (lines[idx] && /^hint\s*:/i.test(lines[idx])) { hints = lines[idx].slice(lines[idx].indexOf(':') + 1).trim(); idx++; }
+    while (lines[idx] === '') idx++;
+    let body = lines.slice(idx).join('\n').trim();
+    if (subject === '(geen onderwerp)') subject = '';
+    if (body === '(geen tekst)') body = '';
+    if (!koppen[i].naam) continue;
+    result.push({ naam: koppen[i].naam, subject, hints, body });
+  }
+  return result;
+}
+async function sjabImporteer() {
+  const tekst = document.getElementById('sjb-import-tekst').value;
+  const st = document.getElementById('sjb-import-status');
+  const items = sjabParseExport(tekst);
+  if (!items.length) { st.textContent = '❌ Geen enkel "=== naam ==="-blok herkend.'; return; }
+  // Herken bestaande categorieën ongeacht hoofdlettergebruik, zodat een lichte
+  // schrijfwijzigingn ("App tester" i.p.v. "App Tester") geen dubbel aanmaakt.
+  const bestaandeKeys = Object.keys(TEMPL);
+  const nieuw = items.filter(it => !bestaandeKeys.some(k => k.toLowerCase() === it.naam.toLowerCase())).length;
+  const bijgewerkt = items.length - nieuw;
+  if (!confirm('Dit werkt ' + bijgewerkt + ' bestaand sjabloon' + (bijgewerkt !== 1 ? 'en' : '') + ' bij en maakt ' + nieuw + ' nieuw' + (nieuw !== 1 ? 'e' : '') + ' aan. Doorgaan?')) return;
+  st.textContent = 'Bezig…';
+  let ok = 0, fout = 0;
+  for (const it of items) {
+    const bestaandeKey = bestaandeKeys.find(k => k.toLowerCase() === it.naam.toLowerCase());
+    const cat = bestaandeKey || it.naam;
+    try {
+      await TNL.upsertTemplate({ categorie: cat, subject: it.subject, body: it.body, hints: it.hints });
+      TEMPL[cat] = { subject: it.subject, body: it.body, hints: it.hints };
+      ok++;
+    } catch (e) { fout++; console.error('sjabloon-import-fout', it.naam, e); }
+  }
+  renderSjabLijst();
+  if (sjabActief && TEMPL[sjabActief]) vulSjabForm();
+  st.textContent = '✓ ' + ok + ' verwerkt' + (fout ? ', ' + fout + ' mislukt' : '');
+  if (!fout) setTimeout(() => sjabToonImport(), 1800);
 }
 function nieuwSjabloon() {
   const naam = prompt('Naam van de nieuwe sjabloon-categorie (bv. Nieuwsbrief):');

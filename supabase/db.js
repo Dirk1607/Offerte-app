@@ -278,9 +278,11 @@ const TNL = (() => {
     const weg = check(await client().from('contact').select('*').eq('id', verwijderId).single());
     const patch = {};
     ['aanspreektitel', 'voornaam', 'achternaam', 'functie', 'email', 'gsm', 'linkedin_url', 'taal',
-     'cat1', 'cat2', 'volgende_stap', 'volgende_stap_datum', 'verloop', 'samenvatting', 'notities'
+     'cat1', 'cat2', 'volgende_stap', 'volgende_stap_datum', 'volgende_stap_toelichting', 'verloop', 'samenvatting', 'notities',
+     'bron_zakelijk', 'doelgroep', 'template_gebruikt', 'verwezen_door'
     ].forEach(f => { const bv = beh[f]; if ((bv == null || bv === '') && weg[f] != null && weg[f] !== '') patch[f] = weg[f]; });
     if (weg.quickscan_ingevuld) patch.quickscan_ingevuld = true;
+    if (weg.hoofdcontact_bedrijf && !beh.hoofdcontact_bedrijf) patch.hoofdcontact_bedrijf = true;
     if (Object.keys(patch).length) check(await client().from('contact').update(patch).eq('id', behoudId));
     // scans overzetten (naar het behouden contact + zijn bedrijf)
     const scans = check(await client().from('quickscan').select('id').eq('contact_id', verwijderId));

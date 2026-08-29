@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v4.1</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v4.2</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -770,7 +770,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
               <option value="">alle</option><option value="A_prospect">A. Prospect</option><option value="B_lead_generator">B. Lead generator</option>
               <option value="C_tnl_expert">C. TNL-expert</option><option value="D_klant">D. Klant</option><option value="E_ex_klant">E. Ex-klant</option>
             </select></th>
-            <th><select id="prf-temperatuur" onchange="prosRender()"><option value="">alle</option><option value="warm">Warm</option><option value="lauw">Lauw</option><option value="koud">Koud</option></select></th>
+            <th><select id="prf-temperatuur" onchange="prosRender()"><option value="">alle</option><option value="warm">Warm</option><option value="koud">Koud</option></select></th>
             <th><select id="prf-status" onchange="prosRender()"><option value="">alle</option></select></th>
             <th><div class="pr-filter-wrap"><input id="prf-cat1" onfocus="comboOpen(this,'cat1')" autocomplete="off" onblur="comboClose()" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-cat1')" title="Toon enkel zonder Contact">∅</button></div></th>
             <th><div class="pr-filter-wrap"><input id="prf-functie" onfocus="comboOpen(this,'functie')" autocomplete="off" onblur="comboClose()" oninput="comboFilter(this);prosRender()" placeholder="filter…"><button type="button" class="pr-leeg-btn" onclick="prosToggleLeegFilter('prf-functie')" title="Toon enkel zonder functie">∅</button></div></th>
@@ -4751,7 +4751,7 @@ const SEGMENT_OPTS = [
   ['D_klant', 'D. Klant'], ['E_ex_klant', 'E. Ex-klant']
 ];
 const SEGMENT_LABEL = Object.fromEntries(SEGMENT_OPTS);
-const TEMP_OPTS = [['warm', 'Warm'], ['lauw', 'Lauw'], ['koud', 'Koud']];
+const TEMP_OPTS = [['warm', 'Warm'], ['koud', 'Koud']];
 const STATUS_OPTS = {
   A_prospect: [
     ['s01_nieuw', 'Nieuw'], ['s02_gecontacteerd', 'Gecontacteerd'], ['s03_opvolging_verstuurd', 'Opvolging verstuurd'],
@@ -4850,7 +4850,7 @@ async function laadProspecten() {
       email: c.email || '', gsm: c.gsm || '',
       bedrijf_id: c.bedrijf_id, bedrijf: bMap[c.bedrijf_id] || '',
       prio: c.prio == null ? 9 : c.prio, cat1: c.cat1 || '', functie: c.functie || '', cat2: c.cat2 || '', status: c.status || '', eigenaar: c.eigenaar || 'Dirk',
-      segment: c.segment || 'A_prospect', temperatuur: c.temperatuur || 'lauw',
+      segment: c.segment || 'A_prospect', temperatuur: c.temperatuur || 'koud',
       samenvatting: c.samenvatting || '', heeftNotities: !!notitieAantalPerContact[c.id],
       volgende_stap: c.volgende_stap || '', volgende_stap_datum: c.volgende_stap_datum || '', volgende_stap_toelichting: c.volgende_stap_toelichting || '',
       scans: (scanPerContact[c.id] || []).map(s => s.id)
@@ -5170,7 +5170,7 @@ async function prosVoegToe() {
     prosData.unshift({
       id: nc.id, aanspreektitel: c.aanspreektitel, voornaam: c.voornaam, achternaam: c.achternaam,
       email: c.email, gsm: c.gsm, bedrijf_id: bedrijfId, bedrijf: bedrijfDef, prio: 9,
-      cat1: c.cat1, functie: c.functie, cat2: c.cat2, segment: c.segment, temperatuur: 'lauw', status: c.status, eigenaar: c.eigenaar,
+      cat1: c.cat1, functie: c.functie, cat2: c.cat2, segment: c.segment, temperatuur: 'koud', status: c.status, eigenaar: c.eigenaar,
       samenvatting: '', heeftNotities: false, volgende_stap: '', volgende_stap_datum: '', volgende_stap_toelichting: ''
     });
     prosRender();
@@ -5664,7 +5664,7 @@ async function prosVerwerkRijen(rows, st) {
       prosData.unshift({
         id: nc.id, aanspreektitel: p.titel, voornaam: p.voornaam, achternaam: p.naam, email: p.email, gsm: p.telefoon,
         bedrijf_id: bedrijfId, bedrijf: bedrijfNaam, prio: 9, cat1: p.cat1, functie: p.functie, cat2: p.cat2,
-        segment: 'A_prospect', temperatuur: 'lauw', status: p.status, eigenaar: p.eigenaar || 'Dirk',
+        segment: 'A_prospect', temperatuur: 'koud', status: p.status, eigenaar: p.eigenaar || 'Dirk',
         verloop: '', samenvatting: '', volgende_stap: '', volgende_stap_datum: '', volgende_stap_toelichting: ''
       });
       if (p.email) bestaand.set(p.email.toLowerCase(), p);

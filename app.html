@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v4.6</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v4.7</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -865,7 +865,12 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       Voeg een introducer toe, registreer een lead (maakt bedrijf + contact met <em>verwezen door</em>),
       of weiger met een interne reden. De introducer krijgt <strong>geen</strong> automatische mail —
       dat doe je persoonlijk. Opvolgmails naar de lead lopen via de Prospecten/Mails-tab.</p>
-    <div style="margin:6px 0 14px"><button class="db-btn" onclick="laadVerwijzers()">↻ Vernieuwen</button></div>
+    <div style="margin:6px 0 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="db-btn" onclick="laadVerwijzers()">↻ Vernieuwen</button>
+      <span style="margin-left:6px;font-size:12px;color:var(--muted)">Toon:</span>
+      <button class="db-btn prim" id="vw-f-open" onclick="vwZetFilter('open')">Te behandelen</button>
+      <button class="db-btn" id="vw-f-alles" onclick="vwZetFilter('alles')">Alles</button>
+    </div>
     <div id="vw-inhoud" class="vw-mini">Nog niet geladen.</div>
   </section>
 
@@ -5814,6 +5819,8 @@ document.querySelector('nav button[data-tab="prospecten"]').addEventListener('cl
 // ============================================================
 let vwGeladen = false;
 let vwVerwijzers = [], vwLeads = [];
+let vwFilter = 'open';   // 'open' = enkel te behandelen · 'alles'
+const VW_OPEN_STATUS = ['aangemeld', 'in_behandeling', 'dubbel'];
 
 const VW_RELATIE = { oud_collega:'oud-collega', klant_van_mij:'(vroegere) klant van de introducer', netwerkcontact:'netwerkcontact', vriend_familie:'vriend/familie', anders:'anders' };
 const VW_GESPROKEN = { nog_niet:'nog niet met contactpersoon gesproken', kort_vermeld:'kort vermeld aan contactpersoon', verwacht_contact:'contactpersoon verwacht contact van TNL' };
@@ -5831,19 +5838,39 @@ async function laadVerwijzers() {
     vwVerwijzers = res[0] || []; vwLeads = res[1] || [];
     vwGeladen = true;
     vwRender();
+    vwAutoBeoordeel();
   } catch (e) { box.innerHTML = '<span style="color:#c0392b">✗ Laden mislukt: ' + esc(e.message || e) + '</span>'; }
 }
+
+function vwZetFilter(f) {
+  vwFilter = f;
+  const bo = document.getElementById('vw-f-open'), ba = document.getElementById('vw-f-alles');
+  if (bo && ba) { bo.classList.toggle('prim', f === 'open'); ba.classList.toggle('prim', f === 'alles'); }
+  vwRender();
+}
+
+function vwIsOpen(l) { return VW_OPEN_STATUS.indexOf(l.status) >= 0; }
 
 function vwRender() {
   const box = document.getElementById('vw-inhoud');
   if (!vwVerwijzers.length) { box.innerHTML = '<p class="vw-mini">Nog geen aanmeldingen.</p>'; return; }
-  const openLeads = vwLeads.filter(l => l.status === 'aangemeld' || l.status === 'in_behandeling').length;
+  const openTot = vwLeads.filter(vwIsOpen).length;
+  const enkelOpen = vwFilter === 'open';
   let h = '<p class="vw-mini">' + vwVerwijzers.length + ' introducer(s) · ' + vwLeads.length + ' lead(s) · '
-        + openLeads + ' nog te behandelen</p>';
+        + openTot + ' nog te behandelen'
+        + (enkelOpen ? ' — <b>enkel te behandelen getoond</b>' : '') + '</p>';
 
+  let getoond = 0;
   vwVerwijzers.forEach(v => {
-    const leads = vwLeads.filter(l => l.verwijzer_id === v.id);
+    const alle = vwLeads.filter(l => l.verwijzer_id === v.id);
+    const open = alle.filter(vwIsOpen);
     const bevestigd = !!v.contact_id;
+    // In 'open'-modus: sla een introducer over die niets te doen geeft
+    // (al toegevoegd én geen open leads).
+    if (enkelOpen && bevestigd && v.status !== 'nieuw' && open.length === 0) return;
+    getoond++;
+    const leads = enkelOpen ? open : alle;
+    const verborgen = alle.length - leads.length;
     h += '<div class="vw-kaart">';
     h += '<div class="vw-rij"><strong style="font-size:14px">' + esc(vwNaam(v)) + '</strong>'
       + (v.bedrijf ? ' <span class="vw-mini">' + esc(v.bedrijf) + '</span>' : '')
@@ -5863,10 +5890,12 @@ function vwRender() {
       : '⚠ geen akkoord voorwaarden geregistreerd') + '</div>';
     if (v.opmerking_intern) h += '<div class="vw-rij vw-mini">📝 ' + esc(v.opmerking_intern) + '</div>';
 
-    if (!leads.length) h += '<p class="vw-mini" style="margin-top:6px">(geen leads)</p>';
+    if (!leads.length) h += '<p class="vw-mini" style="margin-top:6px">(geen ' + (enkelOpen ? 'openstaande ' : '') + 'leads)</p>';
     leads.forEach(l => { h += vwLeadHtml(l, bevestigd); });
+    if (verborgen > 0) h += '<p class="vw-mini" style="margin-top:6px">+ ' + verborgen + ' afgehandelde lead(s) verborgen — zet de filter op "Alles"</p>';
     h += '</div>';
   });
+  if (!getoond) h += '<p class="vw-mini" style="margin-top:10px">✓ Niets te behandelen.</p>';
   box.innerHTML = h;
 }
 
@@ -6059,17 +6088,17 @@ const VW_RUBRIC = 'Je bent de intake-assistent van consultancybureau The Next Le
   + '"ontbrekend": [korte concrete aanvulvragen die de score zouden verhogen; leeg als warm], '
   + '"advies": "<één korte zin feedback>"}';
 
-async function vwAiBeoordeel(leadId) {
+async function vwAiBeoordeel(leadId, stil) {
   const l = vwLeads.find(x => x.id === leadId); if (!l) return;
   const key = (typeof getClaudeKey === 'function') ? getClaudeKey() : null;
-  if (!key) { alert('Geen Claude API-sleutel ingesteld. Stel ze in via de Prospecten-tab (knop 🔑 API-sleutel).'); return; }
+  if (!key) { if (!stil) alert('Geen Claude API-sleutel ingesteld. Stel ze in via de Prospecten-tab (knop 🔑 API-sleutel).'); return; }
   const invoer = {
-    bedrijf: l.bedrijf,
+    bedrijf: l.bedrijf, sector: l.sector || null, aantal_werknemers: l.aantal_werknemers || null,
     contactpersoon: [vwLeadNaam(l), l.functietitel, l.email].filter(Boolean).join(' · ') || null,
     kwalificatienota: l.kwalificatienota || null,
     signaal: l.signaal || null,
     ingeschatte_uitdaging: l.ingeschatte_uitdaging || null,
-    relatie_verwijzer_tot_contact: l.relatie_tot_contact || null,
+    relatie_introducer_tot_contact: l.relatie_tot_contact || null,
     al_gesproken_met_contact: l.al_gesproken || null,
     urgentie: l.urgentie || null
   };
@@ -6097,8 +6126,27 @@ async function vwAiBeoordeel(leadId) {
     await TNL.updateVerwijzerLead(leadId, {
       ai_score: score, ai_niveau: niveau, ai_beoordeling: bo, ai_advies: bo.advies || null
     });
-    await laadVerwijzers();
-  } catch (e) { alert('AI-beoordeling mislukt: ' + (e.message || e)); console.error(e); }
+    Object.assign(l, { ai_score: score, ai_niveau: niveau, ai_beoordeling: bo, ai_advies: bo.advies || null });
+    vwRender();
+  } catch (e) { if (!stil) alert('AI-beoordeling mislukt: ' + (e.message || e)); console.error(e); }
+}
+
+// Nieuwe (nog niet beoordeelde) leads meteen laten scoren door de AI bij het openen
+// van de tab. Sequentieel, stil; de "Opnieuw beoordelen"-knop blijft.
+let vwAutoBezig = false;
+async function vwAutoBeoordeel() {
+  if (vwAutoBezig) return;
+  if (typeof getClaudeKey !== 'function' || !getClaudeKey()) return;
+  const teDoen = vwLeads.filter(l => l.ai_score == null && VW_OPEN_STATUS.indexOf(l.status) >= 0);
+  if (!teDoen.length) return;
+  vwAutoBezig = true;
+  const box = document.getElementById('vw-inhoud');
+  const mel = document.createElement('div'); mel.className = 'vw-mini';
+  mel.style.cssText = 'margin:4px 0'; mel.textContent = '🤖 AI beoordeelt ' + teDoen.length + ' nieuwe lead(s)…';
+  if (box) box.prepend(mel);
+  for (const l of teDoen) { await vwAiBeoordeel(l.id, true); }
+  vwAutoBezig = false;
+  vwRender();
 }
 
 // ---- Mailtje naar de introducer om meer info te vragen (persoonlijk, geen bot-tekst) ----

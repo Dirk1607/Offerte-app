@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v4.4</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v4.5</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -276,6 +276,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <button data-tab="tools">Tools</button>
     <button data-tab="consultants">Consultants</button>
     <button data-tab="prospecten">Prospecten</button>
+    <button data-tab="verwijzers">Verwijzers</button>
     <button data-tab="mails">Mails</button>
     <button data-tab="sjablonen">Sjablonen</button>
     <button data-tab="database">Database</button>
@@ -840,6 +841,32 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <div style="text-align:right;margin-top:6px"><button class="db-btn prim" onclick="prosApiSave()">Opslaan</button></div>
       </div>
     </div>
+  </section>
+
+  <!-- TAB VERWIJZERS (Finder's Fee), aangemelde leads opvolgen -->
+  <section class="panel" id="tab-verwijzers">
+    <style>
+      #tab-verwijzers .vw-kaart{border:1px solid var(--lijn,#e2e8f0);border-radius:10px;background:#fff;padding:14px 16px;margin-bottom:12px}
+      #tab-verwijzers .vw-rij{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;padding:7px 0;border-bottom:1px solid #eef2f7}
+      #tab-verwijzers .vw-rij:last-child{border-bottom:none}
+      #tab-verwijzers .vw-lead{border:1px solid var(--lijn,#e2e8f0);border-radius:9px;padding:11px 13px;margin:8px 0;background:#fbfdff}
+      #tab-verwijzers .vw-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
+      #tab-verwijzers .vw-badge.warm{background:#D4F7E0;color:#006B2B}
+      #tab-verwijzers .vw-badge.lauw{background:#FFE8CC;color:#8C3A00}
+      #tab-verwijzers .vw-badge.koud{background:#E2E8F0;color:#475569}
+      #tab-verwijzers .vw-status{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+      #tab-verwijzers .vw-veld{font-size:12.5px;margin:3px 0}
+      #tab-verwijzers .vw-veld b{color:var(--navy,#1B3A6B)}
+      #tab-verwijzers h3{font-size:15px;color:var(--navy,#1B3A6B);margin:18px 0 6px}
+      #tab-verwijzers .vw-mini{font-size:11.5px;color:var(--muted)}
+    </style>
+    <h2>Verwijzers <small style="font-weight:400;color:var(--muted);font-size:14px">· Finder's Fee — aangemelde leads</small></h2>
+    <p class="sub">Bedrijven die verwijzers aanmeldden via <code>aanmelden.thenextlevel.consulting</code>.
+      Bevestig een verwijzer, registreer een lead (maakt bedrijf + contact met <em>verwezen door</em>),
+      of weiger met een interne reden. De verwijzer krijgt <strong>geen</strong> automatische mail —
+      dat doe je persoonlijk. Opvolgmails naar de lead lopen via de Prospecten/Mails-tab.</p>
+    <div style="margin:6px 0 14px"><button class="db-btn" onclick="laadVerwijzers()">↻ Vernieuwen</button></div>
+    <div id="vw-inhoud" class="vw-mini">Nog niet geladen.</div>
   </section>
 
   <!-- TAB MAILS (fase 2c), mails opstellen voor de geselecteerde contacten -->
@@ -5781,6 +5808,271 @@ async function prosVerwerkRijen(rows, st) {
 
 document.querySelector('nav button[data-tab="mails"]').addEventListener('click', loadMails);
 document.querySelector('nav button[data-tab="prospecten"]').addEventListener('click', () => { if (!prosGeladen) laadProspecten(); });
+
+// ============================================================
+// TAB VERWIJZERS (Finder's Fee, migratie 0042)
+// ============================================================
+let vwGeladen = false;
+let vwVerwijzers = [], vwLeads = [];
+
+const VW_RELATIE = { oud_collega:'oud-collega', klant_van_mij:'(vroegere) klant van de verwijzer', netwerkcontact:'netwerkcontact', vriend_familie:'vriend/familie', anders:'anders' };
+const VW_GESPROKEN = { nog_niet:'nog niet met contactpersoon gesproken', kort_vermeld:'kort vermeld aan contactpersoon', verwacht_contact:'contactpersoon verwacht contact van TNL' };
+const VW_URGENTIE = { nu:'speelt nu', zes_maanden:'komende 6 maanden', geen_timing:'geen concrete timing' };
+const VW_LEADSTATUS = { aangemeld:'aangemeld', in_behandeling:'in behandeling', geregistreerd:'geregistreerd', geweigerd:'geweigerd', dubbel:'dubbel' };
+
+function vwNaam(v) { return ((v.voornaam || '') + ' ' + (v.achternaam || '')).trim() || v.email || '(naamloos)'; }
+function vwLeadNaam(l) { return ((l.voornaam || '') + ' ' + (l.achternaam || '')).trim(); }
+
+async function laadVerwijzers() {
+  const box = document.getElementById('vw-inhoud');
+  box.innerHTML = 'Laden…';
+  try {
+    const res = await Promise.all([TNL.getVerwijzers(), TNL.getVerwijzerLeads()]);
+    vwVerwijzers = res[0] || []; vwLeads = res[1] || [];
+    vwGeladen = true;
+    vwRender();
+  } catch (e) { box.innerHTML = '<span style="color:#c0392b">✗ Laden mislukt: ' + esc(e.message || e) + '</span>'; }
+}
+
+function vwRender() {
+  const box = document.getElementById('vw-inhoud');
+  if (!vwVerwijzers.length) { box.innerHTML = '<p class="vw-mini">Nog geen aanmeldingen.</p>'; return; }
+  const openLeads = vwLeads.filter(l => l.status === 'aangemeld' || l.status === 'in_behandeling').length;
+  let h = '<p class="vw-mini">' + vwVerwijzers.length + ' verwijzer(s) · ' + vwLeads.length + ' lead(s) · '
+        + openLeads + ' nog te behandelen</p>';
+
+  vwVerwijzers.forEach(v => {
+    const leads = vwLeads.filter(l => l.verwijzer_id === v.id);
+    const bevestigd = !!v.contact_id;
+    h += '<div class="vw-kaart">';
+    h += '<div class="vw-rij"><strong style="font-size:14px">' + esc(vwNaam(v)) + '</strong>'
+      + (v.bedrijf ? ' <span class="vw-mini">' + esc(v.bedrijf) + '</span>' : '')
+      + ' <span class="vw-status">' + esc(v.status) + '</span>';
+    h += '<span style="margin-left:auto;display:flex;gap:6px">';
+    if (!bevestigd) h += '<button class="db-btn prim" onclick="vwBevestig(\'' + v.id + '\')">Verwijzer bevestigen</button>';
+    else h += '<span class="vw-mini">✓ gekoppeld aan CRM</span>';
+    if (v.status !== 'gestopt') h += '<button class="db-btn" onclick="vwStopVerwijzer(\'' + v.id + '\')">Stopzetten</button>';
+    h += '</span></div>';
+    h += '<div class="vw-rij vw-mini">' + esc(v.email || '') + (v.telefoon ? ' · ' + esc(v.telefoon) : '')
+      + ' · factureren: ' + (v.kan_factureren === true ? 'ja' : v.kan_factureren === false ? 'nee' : '?')
+      + (v.ondernemingsnummer ? ' · ' + esc(v.ondernemingsnummer) : '') + '</div>';
+    if (v.opmerking_intern) h += '<div class="vw-rij vw-mini">📝 ' + esc(v.opmerking_intern) + '</div>';
+
+    if (!leads.length) h += '<p class="vw-mini" style="margin-top:6px">(geen leads)</p>';
+    leads.forEach(l => { h += vwLeadHtml(l, bevestigd); });
+    h += '</div>';
+  });
+  box.innerHTML = h;
+}
+
+function vwLeadHtml(l, verwijzerBevestigd) {
+  const niv = l.ai_niveau || 'koud';
+  let h = '<div class="vw-lead">';
+  h += '<div class="vw-rij" style="border-bottom:none;padding-bottom:2px">';
+  h += '<strong>' + esc(l.bedrijf) + '</strong>';
+  if (l.ai_score != null) h += ' <span class="vw-badge ' + niv + '">' + niv.toUpperCase() + ' · ' + l.ai_score + '/100</span>';
+  h += ' <span class="vw-status">' + esc(VW_LEADSTATUS[l.status] || l.status) + '</span>';
+  h += '</div>';
+
+  const cp = vwLeadNaam(l);
+  if (cp || l.functietitel || l.email) h += '<div class="vw-veld"><b>Contactpersoon:</b> ' + esc([cp, l.functietitel, l.email].filter(Boolean).join(' · ')) + '</div>';
+  h += '<div class="vw-veld"><b>Kwalificatienota:</b> ' + esc(l.kwalificatienota || '') + '</div>';
+  if (l.signaal) h += '<div class="vw-veld"><b>Signaal:</b> ' + esc(l.signaal) + '</div>';
+  if (l.ingeschatte_uitdaging) h += '<div class="vw-veld"><b>Uitdaging:</b> ' + esc(l.ingeschatte_uitdaging) + '</div>';
+  const meta = [];
+  if (l.relatie_tot_contact) meta.push(VW_RELATIE[l.relatie_tot_contact] || l.relatie_tot_contact);
+  if (l.al_gesproken) meta.push(VW_GESPROKEN[l.al_gesproken] || l.al_gesproken);
+  if (l.urgentie) meta.push(VW_URGENTIE[l.urgentie] || l.urgentie);
+  if (l.naam_noemen === false) meta.push('naam verwijzer NIET noemen');
+  if (meta.length) h += '<div class="vw-veld vw-mini">' + esc(meta.join(' · ')) + '</div>';
+  if (l.ai_advies) h += '<div class="vw-veld vw-mini">🤖 ' + esc(l.ai_advies) + '</div>';
+  if (l.ai_beoordeling && Array.isArray(l.ai_beoordeling.ontbrekend) && l.ai_beoordeling.ontbrekend.length)
+    h += '<div class="vw-veld vw-mini">nog nodig: ' + esc(l.ai_beoordeling.ontbrekend.join(' · ')) + '</div>';
+  if (l.reden_weigering) h += '<div class="vw-veld vw-mini">✗ ' + esc(l.reden_weigering) + '</div>';
+
+  if (l.status === 'aangemeld' || l.status === 'in_behandeling' || l.status === 'dubbel') {
+    h += '<div class="vw-rij" style="border-bottom:none;padding-top:8px">';
+    h += '<button class="db-btn prim" onclick="vwRegistreer(\'' + l.id + '\')"' + (verwijzerBevestigd ? '' : ' title="Bevestig eerst de verwijzer"') + '>Registreren</button>';
+    h += '<button class="db-btn" onclick="vwWeiger(\'' + l.id + '\')">Weigeren</button>';
+    h += '<button class="db-btn" onclick="vwAiBeoordeel(\'' + l.id + '\')" title="Beoordeelt met jouw Claude-sleutel">🤖 ' + (l.ai_score == null ? 'AI beoordelen' : 'Opnieuw beoordelen') + '</button>';
+    h += '<button class="db-btn" onclick="vwMailVerwijzer(\'' + l.verwijzer_id + '\',\'' + l.id + '\')">✉ Vraag verwijzer om meer info</button>';
+    h += '</div>';
+  } else if (l.status === 'geregistreerd' && l.contact_id) {
+    h += '<div class="vw-veld vw-mini">→ staat in Prospecten als contact</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+async function vwBevestig(verwijzerId) {
+  const v = vwVerwijzers.find(x => x.id === verwijzerId); if (!v) return;
+  if (!confirm('Verwijzer "' + vwNaam(v) + '" bevestigen? Dit maakt een contact aan in Prospecten (segment B, lead generator).')) return;
+  try {
+    const titel = v.aanspreking === 'Mevr' ? 'Mevr.' : v.aanspreking === 'Dhr' ? 'Dhr.' : null;
+    const nc = await TNL.insertContact({
+      bedrijf_id: null,
+      aanspreektitel: titel, voornaam: v.voornaam || null, achternaam: v.achternaam || null,
+      email: v.email || null, gsm: v.telefoon || null, functie: v.functie || null,
+      segment: 'B_lead_generator', status: 'lg0_nog_aan_te_schrijven', temperatuur: 'warm',
+      bron: 'verwijzer', bron_zakelijk: 'eigen_netwerk', eigenaar: HUIDIGE_GEBRUIKER
+    });
+    await TNL.updateVerwijzer(verwijzerId, { contact_id: nc.id, status: 'actief' });
+    await laadVerwijzers();
+  } catch (e) { alert('Bevestigen mislukt: ' + (e.message || e)); console.error(e); }
+}
+
+async function vwStopVerwijzer(verwijzerId) {
+  const reden = prompt('Verwijzer stopzetten. Interne notitie (optioneel):', '');
+  if (reden === null) return;
+  try {
+    const patch = { status: 'gestopt' };
+    if (reden.trim()) patch.opmerking_intern = reden.trim();
+    await TNL.updateVerwijzer(verwijzerId, patch);
+    await laadVerwijzers();
+  } catch (e) { alert('Mislukt: ' + (e.message || e)); }
+}
+
+async function vwRegistreer(leadId) {
+  const l = vwLeads.find(x => x.id === leadId); if (!l) return;
+  const v = vwVerwijzers.find(x => x.id === l.verwijzer_id);
+  if (!v || !v.contact_id) { alert('Bevestig eerst de verwijzer (knop "Verwijzer bevestigen").'); return; }
+
+  try {
+    // Bedrijf zoeken/koppelen/aanmaken (fuzzy dubbel-check, zoals prosVoegToe).
+    let bedrijfId = null, bedrijfDef = '';
+    const matches = await TNL.zoekGelijkaardigeBedrijven(l.bedrijf, 0.4).catch(() => []);
+    const exact = (matches || []).find(m => m.gelijkenis >= 0.999);
+    if (exact) {
+      if (!confirm('"' + l.bedrijf + '" bestaat al als "' + exact.naam + '".\n\nOK = koppel de aanmelding hieraan (mogelijk was iemand anders eerder).\nAnnuleren = markeer de lead als DUBBEL en stop.')) {
+        await TNL.updateVerwijzerLead(leadId, { status: 'dubbel', behandeld_at: new Date().toISOString() });
+        await laadVerwijzers(); return;
+      }
+      bedrijfId = exact.id; bedrijfDef = exact.naam;
+    } else if (matches && matches.length) {
+      const top = matches[0];
+      if (confirm('"' + l.bedrijf + '" lijkt op "' + top.naam + '" (' + Math.round(top.gelijkenis * 100) + '%).\n\nOK = koppel aan het bestaande bedrijf.\nAnnuleren = nieuw bedrijf aanmaken.')) {
+        bedrijfId = top.id; bedrijfDef = top.naam;
+      }
+    }
+    if (!bedrijfId) {
+      const nb = await TNL.insertBedrijf({ naam: l.bedrijf, adres: l.adres || null, status: 'prospect', bron: 'verwijzer' });
+      bedrijfId = nb.id; bedrijfDef = nb.naam;
+    }
+
+    const titel = l.aanspreking === 'Mevr' ? 'Mevr.' : l.aanspreking === 'Dhr' ? 'Dhr.' : null;
+    const nc = await TNL.insertContact({
+      bedrijf_id: bedrijfId,
+      aanspreektitel: titel, voornaam: l.voornaam || null, achternaam: l.achternaam || null,
+      email: l.email || null, functie: l.functietitel || null,
+      segment: 'A_prospect', status: 's01_nieuw', temperatuur: (l.ai_niveau === 'warm' ? 'warm' : 'koud'),
+      nog_te_contacteren: true, bron: 'verwijzer', bron_zakelijk: 'doorverwezen',
+      verwezen_door: v.contact_id, eigenaar: HUIDIGE_GEBRUIKER
+    });
+
+    // Kwalificatie-info als eerste opvolgnotitie, zodat ze zichtbaar is in Prospecten.
+    const notitie = [
+      'Aangemeld door verwijzer ' + vwNaam(v) + ' (' + (v.email || '') + ').',
+      'Kwalificatienota: ' + (l.kwalificatienota || '-'),
+      l.signaal ? 'Signaal: ' + l.signaal : '',
+      l.ingeschatte_uitdaging ? 'Uitdaging: ' + l.ingeschatte_uitdaging : '',
+      l.relatie_tot_contact ? 'Relatie verwijzer↔contact: ' + (VW_RELATIE[l.relatie_tot_contact] || l.relatie_tot_contact) : '',
+      l.al_gesproken ? (VW_GESPROKEN[l.al_gesproken] || l.al_gesproken) : '',
+      l.ai_score != null ? 'AI-inschatting: ' + (l.ai_niveau || '') + ' (' + l.ai_score + '/100)' : '',
+      l.naam_noemen === false ? 'LET OP: verwijzer wil niet vermeld worden bij contactname.' : ''
+    ].filter(Boolean).join('\n');
+    try { await TNL.insertContactNotitie({ contact_id: nc.id, auteur: HUIDIGE_GEBRUIKER, tekst: notitie }); } catch (_) {}
+
+    await TNL.updateVerwijzerLead(leadId, {
+      status: 'geregistreerd', behandeld_at: new Date().toISOString(),
+      bedrijf_id: bedrijfId, contact_id: nc.id
+    });
+    prosGeladen = false;   // Prospecten-tab herlaadt met het nieuwe contact
+    await laadVerwijzers();
+    alert('✓ Geregistreerd bij ' + bedrijfDef + '. Staat nu in Prospecten — vergeet de verwijzer niet persoonlijk te bevestigen.');
+  } catch (e) { alert('Registreren mislukt: ' + (e.message || e)); console.error(e); }
+}
+
+async function vwWeiger(leadId) {
+  const reden = prompt('Lead weigeren. Interne reden (niet naar de verwijzer):', '');
+  if (reden === null) return;
+  try {
+    await TNL.updateVerwijzerLead(leadId, {
+      status: 'geweigerd', reden_weigering: reden.trim() || null, behandeld_at: new Date().toISOString()
+    });
+    await laadVerwijzers();
+  } catch (e) { alert('Mislukt: ' + (e.message || e)); }
+}
+
+// ---- AI-beoordeling van een aangemelde lead (met Dirk's eigen Claude-sleutel,
+//      zelfde patroon als de interactie-samenvatting elders in deze app) ----
+const VW_RUBRIC = 'Je bent de intake-assistent van consultancybureau The Next Level (Ariadne BV). '
+  + 'Freelance "verwijzers" melden bedrijven aan als lead. The Next Level helpt kmo\'s en familiebedrijven '
+  + 'met organisatie, structuur, HR, PMO, leiderschap en groei. Beoordeel hoe warm en bruikbaar deze lead is '
+  + 'voor een eerste contactname — of de verwijzer genoeg concreet en warm materiaal aanlevert.\n\n'
+  + 'Criteria (samen 100): signaal/aanleiding (0-30, concrete trigger vs. vage indruk), '
+  + 'relatie + al gesproken met contactpersoon (0-25), herkenbare uitdaging die bij het aanbod past (0-20), '
+  + 'urgentie/timing (0-15), bruikbaarheid contactgegevens (0-10).\n\n'
+  + 'Antwoord met UITSLUITEND een JSON-object, geen tekst errond: '
+  + '{"score": <geheel 0-100>, "niveau": "koud"|"lauw"|"warm" (koud <40, lauw 40-69, warm >=70), '
+  + '"ontbrekend": [korte concrete aanvulvragen die de score zouden verhogen; leeg als warm], '
+  + '"advies": "<één korte zin feedback>"}';
+
+async function vwAiBeoordeel(leadId) {
+  const l = vwLeads.find(x => x.id === leadId); if (!l) return;
+  const key = (typeof getClaudeKey === 'function') ? getClaudeKey() : null;
+  if (!key) { alert('Geen Claude API-sleutel ingesteld. Stel ze in via de Prospecten-tab (knop 🔑 API-sleutel).'); return; }
+  const invoer = {
+    bedrijf: l.bedrijf,
+    contactpersoon: [vwLeadNaam(l), l.functietitel, l.email].filter(Boolean).join(' · ') || null,
+    kwalificatienota: l.kwalificatienota || null,
+    signaal: l.signaal || null,
+    ingeschatte_uitdaging: l.ingeschatte_uitdaging || null,
+    relatie_verwijzer_tot_contact: l.relatie_tot_contact || null,
+    al_gesproken_met_contact: l.al_gesproken || null,
+    urgentie: l.urgentie || null
+  };
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-opus-4-8', max_tokens: 700, system: VW_RUBRIC,
+        messages: [{ role: 'user', content: 'Beoordeel deze lead:\n\n' + JSON.stringify(invoer, null, 1) }] })
+    });
+    if (!resp.ok) {
+      const t = await resp.text();
+      if (resp.status === 401) localStorage.removeItem('tnl_claude_key');
+      throw new Error('API ' + resp.status + ' — ' + t.slice(0, 150));
+    }
+    const data = await resp.json();
+    const tekst = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
+    let bo;
+    try { bo = JSON.parse(tekst); }
+    catch (e) { const m = tekst.match(/\{[\s\S]*\}/); bo = m ? JSON.parse(m[0]) : null; }
+    if (!bo || typeof bo.score !== 'number') throw new Error('geen bruikbare score in het antwoord');
+    const score = Math.max(0, Math.min(100, Math.round(bo.score)));
+    const niveau = ['koud', 'lauw', 'warm'].includes(bo.niveau) ? bo.niveau : (score >= 70 ? 'warm' : score >= 40 ? 'lauw' : 'koud');
+    if (!Array.isArray(bo.ontbrekend)) bo.ontbrekend = [];
+    await TNL.updateVerwijzerLead(leadId, {
+      ai_score: score, ai_niveau: niveau, ai_beoordeling: bo, ai_advies: bo.advies || null
+    });
+    await laadVerwijzers();
+  } catch (e) { alert('AI-beoordeling mislukt: ' + (e.message || e)); console.error(e); }
+}
+
+// ---- Mailtje naar de verwijzer om meer info te vragen (persoonlijk, geen bot-tekst) ----
+function vwMailVerwijzer(verwijzerId, leadId) {
+  const v = vwVerwijzers.find(x => x.id === verwijzerId);
+  if (!v || !v.email) { alert('Geen e-mailadres van deze verwijzer bekend.'); return; }
+  const l = vwLeads.find(x => x.id === leadId) || {};
+  const ond = 'Je aanmelding van ' + (l.bedrijf || 'een bedrijf');
+  const body = 'Dag ' + (v.voornaam || '') + ',\n\n'
+    + 'Bedankt om ' + (l.bedrijf || 'dit bedrijf') + ' aan te melden. Om er goed mee verder te kunnen, '
+    + 'zou ik graag nog wat meer weten:\n\n- \n- \n\nAlvast bedankt,\nDirk';
+  window.location.href = 'mailto:' + encodeURIComponent(v.email)
+    + '?subject=' + encodeURIComponent(ond) + '&body=' + encodeURIComponent(body);
+}
+
+document.querySelector('nav button[data-tab="verwijzers"]').addEventListener('click', () => { if (!vwGeladen) laadVerwijzers(); });
 </script>
 </body>
 </html>

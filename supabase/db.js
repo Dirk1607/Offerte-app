@@ -315,6 +315,27 @@ const TNL = (() => {
       .insert({ contact_id, auteur, tekst }).select().single());
   }
 
+  // ---------- verwijzers / Finder's Fee (migratie 0042) ----------
+  // Aanmeldingen komen binnen via het publieke appje (edge function
+  // verwijzer-intake -> RPC registreer_verwijzer_aanmelding). Hier enkel lezen
+  // en de opvolgstatus bijwerken; RLS laat dit enkel toe voor ingelogde users.
+  async function getVerwijzers() {
+    return check(await client().from('verwijzer')
+      .select('*').order('aangemeld_at', { ascending: false }));
+  }
+  async function updateVerwijzer(id, patch) {
+    return check(await client().from('verwijzer')
+      .update(patch).eq('id', id).select().single());
+  }
+  async function getVerwijzerLeads() {
+    return check(await client().from('verwijzer_lead')
+      .select('*').order('aangemeld_at', { ascending: false }));
+  }
+  async function updateVerwijzerLead(id, patch) {
+    return check(await client().from('verwijzer_lead')
+      .update(patch).eq('id', id).select().single());
+  }
+
   // ---------- interacties-tijdlijn per bedrijf (migratie 0035, mail/call-log) ----------
   async function getInteractiesVanBedrijf(bedrijfId) {
     return check(await client().from('bedrijf_interactie')
@@ -553,6 +574,7 @@ const TNL = (() => {
     getBedrijven, getContacten, updateBedrijf, updateContact, insertBedrijf, insertContact,
     deleteBedrijf, deleteContact, voegContactenSamen, zetScansBedrijf, updateQuickscan, deleteQuickscan,
     getContactNotities, getAlleContactNotities, insertContactNotitie,
+    getVerwijzers, updateVerwijzer, getVerwijzerLeads, updateVerwijzerLead,
     getInteractiesVanBedrijf, getAlleInteracties, insertInteractie, deleteInteractie,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,

@@ -381,6 +381,20 @@ const TNL = (() => {
   async function deleteTemplate(categorie) {
     return check(await client().from('templates').delete().eq('categorie', categorie));
   }
+  // categorie is de primary key -> hernoemen = nieuwe rij + contacten verhangen + oude rij weg.
+  async function renameTemplate(oud, nieuw) {
+    oud = (oud || '').trim(); nieuw = (nieuw || '').trim();
+    if (!oud || !nieuw || oud === nieuw) return nieuw;
+    const bezet = check(await client().from('templates').select('categorie').eq('categorie', nieuw));
+    if (bezet && bezet.length) throw new Error('Er bestaat al een sjabloon met de naam "' + nieuw + '".');
+    const rows = check(await client().from('templates').select('*').eq('categorie', oud));
+    if (!rows || !rows.length) throw new Error('Sjabloon "' + oud + '" niet gevonden.');
+    const t = rows[0];
+    check(await client().from('templates').insert({ categorie: nieuw, subject: t.subject, body: t.body, hints: t.hints }).select().single());
+    await client().from('contact').update({ template_gebruikt: nieuw }).eq('template_gebruikt', oud);
+    check(await client().from('templates').delete().eq('categorie', oud));
+    return nieuw;
+  }
 
   // ---------- goedkeurings-queue (voorgestelde wijzigingen) ----------
   async function getVoorstellen(status = 'open') {
@@ -584,7 +598,7 @@ const TNL = (() => {
     getInteractiesVanBedrijf, getAlleInteracties, insertInteractie, deleteInteractie,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,
-    getTemplates, upsertTemplate, deleteTemplate,
+    getTemplates, upsertTemplate, deleteTemplate, renameTemplate,
     getProspects,
     saveOfferte, getOffertes, getOfferte
   };

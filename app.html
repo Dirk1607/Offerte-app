@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v4.7</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v4.8</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -957,10 +957,14 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       <div class="sjb-lijst" id="sjb-lijst"></div>
       <div>
         <div class="sjb-editor" id="sjb-editor" style="display:none">
-          <div class="sjb-rij"><label>Categorie</label><input type="text" id="sjb-cat" disabled></div>
+          <div class="sjb-rij"><label>Naam</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="sjb-cat" disabled style="flex:1">
+              <button class="btn btn-ghost mini" type="button" onclick="sjabHernoem()">✏ Naam wijzigen</button>
+            </div>
+          </div>
           <div class="sjb-rij"><label>Onderwerp</label><input type="text" id="sjb-subject"></div>
           <div class="sjb-rij"><label>Bericht</label><textarea id="sjb-body"></textarea></div>
-          <div class="sjb-rij"><label>Hint (optioneel, tip die getoond wordt bij het opstellen)</label><input type="text" id="sjb-hints"></div>
           <div class="sjb-acties">
             <button class="btn" onclick="sjabOpslaan()">Bewaren</button>
             <button class="btn btn-ghost mini-danger" style="color:var(--red);border-color:#f3c0bb" onclick="sjabVerwijderen()">Verwijderen</button>
@@ -1288,7 +1292,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase/config.js?v=8"></script>
-<script src="supabase/db.js?v=29"></script>
+<script src="supabase/db.js?v=30"></script>
 <script>
 // ============================================================
 // STATE
@@ -5434,6 +5438,7 @@ async function mailOutlook() {
     await TNL.updateContact(p.id, { status: nieuweStatus });
     p.status = nieuweStatus;
     const d = prosData.find(x => x.id === p.id); if (d) d.status = nieuweStatus;
+    prosSel.delete(p.id); prosUpdMailBtn();   // vinkje in Prospecten weer uit — de mail is gemaakt
     renderMailLijst(); prosRender();
   } catch (e) { console.error(e); }
 }
@@ -5463,7 +5468,9 @@ async function mailOutlookAlles() {
       await TNL.updateContact(p.id, { status: nieuweStatus });
       p.status = nieuweStatus;
       const d = prosData.find(x => x.id === p.id); if (d) d.status = nieuweStatus;
+      prosSel.delete(p.id);   // vinkje in Prospecten weer uit — de mail is gemaakt
     }
+    prosUpdMailBtn();
     renderMailLijst(); prosRender();
   } catch (e) { console.error(e); }
 }
@@ -5489,7 +5496,6 @@ function vulSjabForm() {
   document.getElementById('sjb-cat').value = sjabActief;
   document.getElementById('sjb-subject').value = t.subject;
   document.getElementById('sjb-body').value = t.body;
-  document.getElementById('sjb-hints').value = t.hints;
   document.getElementById('sjb-status').textContent = '';
   document.getElementById('sjb-editor').style.display = 'block';
   document.getElementById('sjb-leeg').style.display = 'none';
@@ -5586,13 +5592,44 @@ function nieuwSjabloon() {
 async function sjabOpslaan() {
   if (!sjabActief) return;
   const st = document.getElementById('sjb-status');
-  const t = { categorie: sjabActief, subject: document.getElementById('sjb-subject').value, body: document.getElementById('sjb-body').value, hints: document.getElementById('sjb-hints').value };
+  const hints = (TEMPL[sjabActief] || {}).hints || '';   // hint-veld is uit de UI; bestaande waarde blijft behouden
+  const t = { categorie: sjabActief, subject: document.getElementById('sjb-subject').value, body: document.getElementById('sjb-body').value, hints };
   try {
     await TNL.upsertTemplate(t);
-    TEMPL[sjabActief] = { subject: t.subject, body: t.body, hints: t.hints };
+    TEMPL[sjabActief] = { subject: t.subject, body: t.body, hints };
     st.textContent = '✓ bewaard'; setTimeout(() => st.textContent = '', 1500);
     renderSjabLijst();
   } catch (e) { st.textContent = '✗ ' + (e.message || e); }
+}
+async function sjabHernoem() {
+  if (!sjabActief) return;
+  const inv = prompt('Nieuwe naam voor sjabloon "' + sjabActief + '":', sjabActief);
+  if (inv === null) return;
+  const n = inv.trim();
+  if (!n || n === sjabActief) return;
+  if (TEMPL[n]) { alert('Er bestaat al een sjabloon met de naam "' + n + '".'); return; }
+  const st = document.getElementById('sjb-status');
+  st.textContent = 'Bezig…';
+  const oud = sjabActief;
+  const huidig = {
+    subject: document.getElementById('sjb-subject').value,
+    body: document.getElementById('sjb-body').value,
+    hints: (TEMPL[oud] || {}).hints || ''
+  };
+  try {
+    await TNL.upsertTemplate({ categorie: oud, ...huidig });   // eerst eventuele niet-bewaarde tekstwijzigingen vastleggen
+    await TNL.renameTemplate(oud, n);
+    delete TEMPL[oud];
+    TEMPL[n] = huidig;
+    sjabActief = n;
+    renderSjabLijst();
+    vulSjabForm();
+    st.textContent = '✓ hernoemd naar "' + n + '"';
+    setTimeout(() => { if (st.textContent.startsWith('✓')) st.textContent = ''; }, 2000);
+  } catch (e) {
+    st.textContent = '✗ ' + (e.message || e);
+    await laadTemplates(); renderSjabLijst();   // toestand terug in lijn met de database
+  }
 }
 async function sjabVerwijderen() {
   if (!sjabActief) return;

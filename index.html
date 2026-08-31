@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v4.5</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v4.6</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -276,7 +276,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
     <button data-tab="tools">Tools</button>
     <button data-tab="consultants">Consultants</button>
     <button data-tab="prospecten">Prospecten</button>
-    <button data-tab="verwijzers">Verwijzers</button>
+    <button data-tab="verwijzers">Introducers</button>
     <button data-tab="mails">Mails</button>
     <button data-tab="sjablonen">Sjablonen</button>
     <button data-tab="database">Database</button>
@@ -860,10 +860,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
       #tab-verwijzers h3{font-size:15px;color:var(--navy,#1B3A6B);margin:18px 0 6px}
       #tab-verwijzers .vw-mini{font-size:11.5px;color:var(--muted)}
     </style>
-    <h2>Verwijzers <small style="font-weight:400;color:var(--muted);font-size:14px">· Finder's Fee — aangemelde leads</small></h2>
-    <p class="sub">Bedrijven die verwijzers aanmeldden via <code>aanmelden.thenextlevel.consulting</code>.
-      Bevestig een verwijzer, registreer een lead (maakt bedrijf + contact met <em>verwezen door</em>),
-      of weiger met een interne reden. De verwijzer krijgt <strong>geen</strong> automatische mail —
+    <h2>Introducers <small style="font-weight:400;color:var(--muted);font-size:14px">· Finder's Fee — aangemelde leads</small></h2>
+    <p class="sub">Bedrijven die introducers aanmeldden via <code>aanmelden.thenextlevel.consulting</code>.
+      Voeg een introducer toe, registreer een lead (maakt bedrijf + contact met <em>verwezen door</em>),
+      of weiger met een interne reden. De introducer krijgt <strong>geen</strong> automatische mail —
       dat doe je persoonlijk. Opvolgmails naar de lead lopen via de Prospecten/Mails-tab.</p>
     <div style="margin:6px 0 14px"><button class="db-btn" onclick="laadVerwijzers()">↻ Vernieuwen</button></div>
     <div id="vw-inhoud" class="vw-mini">Nog niet geladen.</div>
@@ -4800,7 +4800,7 @@ const STATUS_OPTS = {
   ],
   B_lead_generator: [
     ['lg0_nog_aan_te_schrijven', 'Nog aan te schrijven'], ['lg1_test_mail', 'Eerste mail verstuurd'], ['lg2_reminder', 'Reminder verstuurd'], ['lg3_gereageerd', 'Gereageerd'],
-    ['lg4_fee_uitnodiging', 'Fee-uitnodiging verstuurd'], ['lg5_actief_verwijzer', 'Actief verwijzer'],
+    ['lg4_fee_uitnodiging', 'Fee-uitnodiging verstuurd'], ['lg5_actief_verwijzer', 'Actief introducer'],
     ['x1_nee_nu_niet', 'Nee, nu niet'], ['x2_geen_interesse', 'Geen interesse'], ['x3_slapend', 'Slapend']
   ],
   C_tnl_expert: [
@@ -5815,7 +5815,7 @@ document.querySelector('nav button[data-tab="prospecten"]').addEventListener('cl
 let vwGeladen = false;
 let vwVerwijzers = [], vwLeads = [];
 
-const VW_RELATIE = { oud_collega:'oud-collega', klant_van_mij:'(vroegere) klant van de verwijzer', netwerkcontact:'netwerkcontact', vriend_familie:'vriend/familie', anders:'anders' };
+const VW_RELATIE = { oud_collega:'oud-collega', klant_van_mij:'(vroegere) klant van de introducer', netwerkcontact:'netwerkcontact', vriend_familie:'vriend/familie', anders:'anders' };
 const VW_GESPROKEN = { nog_niet:'nog niet met contactpersoon gesproken', kort_vermeld:'kort vermeld aan contactpersoon', verwacht_contact:'contactpersoon verwacht contact van TNL' };
 const VW_URGENTIE = { nu:'speelt nu', zes_maanden:'komende 6 maanden', geen_timing:'geen concrete timing' };
 const VW_LEADSTATUS = { aangemeld:'aangemeld', in_behandeling:'in behandeling', geregistreerd:'geregistreerd', geweigerd:'geweigerd', dubbel:'dubbel' };
@@ -5838,7 +5838,7 @@ function vwRender() {
   const box = document.getElementById('vw-inhoud');
   if (!vwVerwijzers.length) { box.innerHTML = '<p class="vw-mini">Nog geen aanmeldingen.</p>'; return; }
   const openLeads = vwLeads.filter(l => l.status === 'aangemeld' || l.status === 'in_behandeling').length;
-  let h = '<p class="vw-mini">' + vwVerwijzers.length + ' verwijzer(s) · ' + vwLeads.length + ' lead(s) · '
+  let h = '<p class="vw-mini">' + vwVerwijzers.length + ' introducer(s) · ' + vwLeads.length + ' lead(s) · '
         + openLeads + ' nog te behandelen</p>';
 
   vwVerwijzers.forEach(v => {
@@ -5849,13 +5849,18 @@ function vwRender() {
       + (v.bedrijf ? ' <span class="vw-mini">' + esc(v.bedrijf) + '</span>' : '')
       + ' <span class="vw-status">' + esc(v.status) + '</span>';
     h += '<span style="margin-left:auto;display:flex;gap:6px">';
-    if (!bevestigd) h += '<button class="db-btn prim" onclick="vwBevestig(\'' + v.id + '\')">Verwijzer bevestigen</button>';
+    if (!bevestigd) h += '<button class="db-btn prim" onclick="vwBevestig(\'' + v.id + '\')">Introducer toevoegen</button>';
     else h += '<span class="vw-mini">✓ gekoppeld aan CRM</span>';
-    if (v.status !== 'gestopt') h += '<button class="db-btn" onclick="vwStopVerwijzer(\'' + v.id + '\')">Stopzetten</button>';
+    if (v.status !== 'gestopt') h += '<button class="db-btn" onclick="vwStopVerwijzer(\'' + v.id + '\')">Introducer stopzetten</button>';
+    h += '<button class="db-btn" style="color:#c0392b;border-color:#e6b9b3" onclick="vwVerwijderVerwijzer(\'' + v.id + '\')" title="Introducer + al zijn leads definitief uit de databank verwijderen">🗑</button>';
     h += '</span></div>';
     h += '<div class="vw-rij vw-mini">' + esc(v.email || '') + (v.telefoon ? ' · ' + esc(v.telefoon) : '')
       + ' · factureren: ' + (v.kan_factureren === true ? 'ja' : v.kan_factureren === false ? 'nee' : '?')
       + (v.ondernemingsnummer ? ' · ' + esc(v.ondernemingsnummer) : '') + '</div>';
+    h += '<div class="vw-rij vw-mini">' + (v.akkoord_voorwaarden_op
+      ? '✓ akkoord voorwaarden op ' + new Date(v.akkoord_voorwaarden_op).toLocaleDateString('nl-BE')
+        + (v.akkoord_voorwaarden_versie ? ' (versie ' + esc(v.akkoord_voorwaarden_versie) + ')' : '')
+      : '⚠ geen akkoord voorwaarden geregistreerd') + '</div>';
     if (v.opmerking_intern) h += '<div class="vw-rij vw-mini">📝 ' + esc(v.opmerking_intern) + '</div>';
 
     if (!leads.length) h += '<p class="vw-mini" style="margin-top:6px">(geen leads)</p>';
@@ -5874,8 +5879,13 @@ function vwLeadHtml(l, verwijzerBevestigd) {
   h += ' <span class="vw-status">' + esc(VW_LEADSTATUS[l.status] || l.status) + '</span>';
   h += '</div>';
 
+  const bmeta = [];
+  if (l.sector) bmeta.push(esc(l.sector));
+  if (l.aantal_werknemers) bmeta.push(esc(l.aantal_werknemers) + ' werknemers');
+  if (bmeta.length) h += '<div class="vw-veld vw-mini">' + bmeta.join(' · ') + '</div>';
   const cp = vwLeadNaam(l);
-  if (cp || l.functietitel || l.email) h += '<div class="vw-veld"><b>Contactpersoon:</b> ' + esc([cp, l.functietitel, l.email].filter(Boolean).join(' · ')) + '</div>';
+  const cpd = [cp, l.functietitel, l.email, l.telefoon].filter(Boolean).join(' · ');
+  if (cpd) h += '<div class="vw-veld"><b>Contactpersoon:</b> ' + esc(cpd) + '</div>';
   h += '<div class="vw-veld"><b>Kwalificatienota:</b> ' + esc(l.kwalificatienota || '') + '</div>';
   if (l.signaal) h += '<div class="vw-veld"><b>Signaal:</b> ' + esc(l.signaal) + '</div>';
   if (l.ingeschatte_uitdaging) h += '<div class="vw-veld"><b>Uitdaging:</b> ' + esc(l.ingeschatte_uitdaging) + '</div>';
@@ -5883,30 +5893,32 @@ function vwLeadHtml(l, verwijzerBevestigd) {
   if (l.relatie_tot_contact) meta.push(VW_RELATIE[l.relatie_tot_contact] || l.relatie_tot_contact);
   if (l.al_gesproken) meta.push(VW_GESPROKEN[l.al_gesproken] || l.al_gesproken);
   if (l.urgentie) meta.push(VW_URGENTIE[l.urgentie] || l.urgentie);
-  if (l.naam_noemen === false) meta.push('naam verwijzer NIET noemen');
+  if (l.naam_noemen === false) meta.push('naam introducer NIET noemen');
   if (meta.length) h += '<div class="vw-veld vw-mini">' + esc(meta.join(' · ')) + '</div>';
   if (l.ai_advies) h += '<div class="vw-veld vw-mini">🤖 ' + esc(l.ai_advies) + '</div>';
   if (l.ai_beoordeling && Array.isArray(l.ai_beoordeling.ontbrekend) && l.ai_beoordeling.ontbrekend.length)
     h += '<div class="vw-veld vw-mini">nog nodig: ' + esc(l.ai_beoordeling.ontbrekend.join(' · ')) + '</div>';
   if (l.reden_weigering) h += '<div class="vw-veld vw-mini">✗ ' + esc(l.reden_weigering) + '</div>';
 
+  if (l.status === 'geregistreerd' && l.contact_id)
+    h += '<div class="vw-veld vw-mini">→ staat in Prospecten als contact</div>';
+
+  h += '<div class="vw-rij" style="border-bottom:none;padding-top:8px">';
   if (l.status === 'aangemeld' || l.status === 'in_behandeling' || l.status === 'dubbel') {
-    h += '<div class="vw-rij" style="border-bottom:none;padding-top:8px">';
-    h += '<button class="db-btn prim" onclick="vwRegistreer(\'' + l.id + '\')"' + (verwijzerBevestigd ? '' : ' title="Bevestig eerst de verwijzer"') + '>Registreren</button>';
+    h += '<button class="db-btn prim" onclick="vwRegistreer(\'' + l.id + '\')"' + (verwijzerBevestigd ? '' : ' title="Voeg eerst de introducer toe"') + '>Registreren</button>';
     h += '<button class="db-btn" onclick="vwWeiger(\'' + l.id + '\')">Weigeren</button>';
     h += '<button class="db-btn" onclick="vwAiBeoordeel(\'' + l.id + '\')" title="Beoordeelt met jouw Claude-sleutel">🤖 ' + (l.ai_score == null ? 'AI beoordelen' : 'Opnieuw beoordelen') + '</button>';
-    h += '<button class="db-btn" onclick="vwMailVerwijzer(\'' + l.verwijzer_id + '\',\'' + l.id + '\')">✉ Vraag verwijzer om meer info</button>';
-    h += '</div>';
-  } else if (l.status === 'geregistreerd' && l.contact_id) {
-    h += '<div class="vw-veld vw-mini">→ staat in Prospecten als contact</div>';
+    h += '<button class="db-btn" onclick="vwMailVerwijzer(\'' + l.verwijzer_id + '\',\'' + l.id + '\')">✉ Vraag introducer om meer info</button>';
   }
+  h += '<button class="db-btn" style="color:#c0392b;border-color:#e6b9b3" onclick="vwVerwijderLead(\'' + l.id + '\')" title="Lead verwijderen">🗑</button>';
+  h += '</div>';
   h += '</div>';
   return h;
 }
 
 async function vwBevestig(verwijzerId) {
   const v = vwVerwijzers.find(x => x.id === verwijzerId); if (!v) return;
-  if (!confirm('Verwijzer "' + vwNaam(v) + '" bevestigen? Dit maakt een contact aan in Prospecten (segment B, lead generator).')) return;
+  if (!confirm('Introducer "' + vwNaam(v) + '" toevoegen aan de CRM? Dit maakt een contact aan in Prospecten (segment B, lead generator).')) return;
   try {
     const titel = v.aanspreking === 'Mevr' ? 'Mevr.' : v.aanspreking === 'Dhr' ? 'Dhr.' : null;
     const nc = await TNL.insertContact({
@@ -5922,7 +5934,7 @@ async function vwBevestig(verwijzerId) {
 }
 
 async function vwStopVerwijzer(verwijzerId) {
-  const reden = prompt('Verwijzer stopzetten. Interne notitie (optioneel):', '');
+  const reden = prompt('Introducer stopzetten. Interne notitie (optioneel):', '');
   if (reden === null) return;
   try {
     const patch = { status: 'gestopt' };
@@ -5935,7 +5947,8 @@ async function vwStopVerwijzer(verwijzerId) {
 async function vwRegistreer(leadId) {
   const l = vwLeads.find(x => x.id === leadId); if (!l) return;
   const v = vwVerwijzers.find(x => x.id === l.verwijzer_id);
-  if (!v || !v.contact_id) { alert('Bevestig eerst de verwijzer (knop "Verwijzer bevestigen").'); return; }
+  if (!v || !v.contact_id) { alert('Voeg de introducer eerst toe (knop "Introducer toevoegen").'); return; }
+  const introNaam = vwNaam(v);
 
   try {
     // Bedrijf zoeken/koppelen/aanmaken (fuzzy dubbel-check, zoals prosVoegToe).
@@ -5955,7 +5968,10 @@ async function vwRegistreer(leadId) {
       }
     }
     if (!bedrijfId) {
-      const nb = await TNL.insertBedrijf({ naam: l.bedrijf, adres: l.adres || null, status: 'prospect', bron: 'verwijzer' });
+      const nb = await TNL.insertBedrijf({
+        naam: l.bedrijf, sector: l.sector || null, aantal_medewerkers: l.aantal_werknemers || null,
+        status: 'prospect', bron: 'verwijzer'
+      });
       bedrijfId = nb.id; bedrijfDef = nb.naam;
     }
 
@@ -5963,23 +5979,31 @@ async function vwRegistreer(leadId) {
     const nc = await TNL.insertContact({
       bedrijf_id: bedrijfId,
       aanspreektitel: titel, voornaam: l.voornaam || null, achternaam: l.achternaam || null,
-      email: l.email || null, functie: l.functietitel || null,
+      email: l.email || null, gsm: l.telefoon || null, functie: l.functietitel || null,
+      cat1: 'Via ' + introNaam,
       segment: 'A_prospect', status: 's01_nieuw', temperatuur: (l.ai_niveau === 'warm' ? 'warm' : 'koud'),
       nog_te_contacteren: true, bron: 'verwijzer', bron_zakelijk: 'doorverwezen',
       verwezen_door: v.contact_id, eigenaar: HUIDIGE_GEBRUIKER
     });
 
-    // Kwalificatie-info als eerste opvolgnotitie, zodat ze zichtbaar is in Prospecten.
+    // Volledige kwalificatie-info als eerste opvolgnotitie — alles bij de hand bij het contacteren.
+    const dt = l.aangemeld_at ? new Date(l.aangemeld_at).toLocaleString('nl-BE') : '?';
     const notitie = [
-      'Aangemeld door verwijzer ' + vwNaam(v) + ' (' + (v.email || '') + ').',
+      'AANGEMELD VIA INTRODUCER — ' + introNaam + (v.email ? ' (' + v.email + ')' : '') + (v.telefoon ? ', ' + v.telefoon : ''),
+      'Aanmelddatum: ' + dt,
+      'Bedrijf: ' + l.bedrijf
+        + (l.sector ? ' · sector: ' + l.sector : '')
+        + (l.aantal_werknemers ? ' · ' + l.aantal_werknemers + ' werknemers' : ''),
+      'Contactpersoon: ' + [((l.voornaam || '') + ' ' + (l.achternaam || '')).trim(), l.functietitel, l.email, l.telefoon].filter(Boolean).join(' · '),
       'Kwalificatienota: ' + (l.kwalificatienota || '-'),
-      l.signaal ? 'Signaal: ' + l.signaal : '',
-      l.ingeschatte_uitdaging ? 'Uitdaging: ' + l.ingeschatte_uitdaging : '',
-      l.relatie_tot_contact ? 'Relatie verwijzer↔contact: ' + (VW_RELATIE[l.relatie_tot_contact] || l.relatie_tot_contact) : '',
-      l.al_gesproken ? (VW_GESPROKEN[l.al_gesproken] || l.al_gesproken) : '',
+      l.signaal ? 'Concreet signaal / aanleiding: ' + l.signaal : '',
+      l.ingeschatte_uitdaging ? 'Ingeschatte uitdaging: ' + l.ingeschatte_uitdaging : '',
+      l.relatie_tot_contact ? 'Band introducer <-> contactpersoon: ' + (VW_RELATIE[l.relatie_tot_contact] || l.relatie_tot_contact) : '',
+      l.al_gesproken ? 'Voorbereiding: ' + (VW_GESPROKEN[l.al_gesproken] || l.al_gesproken) : '',
+      l.urgentie ? 'Urgentie: ' + (VW_URGENTIE[l.urgentie] || l.urgentie) : '',
       l.ai_score != null ? 'AI-inschatting: ' + (l.ai_niveau || '') + ' (' + l.ai_score + '/100)' : '',
-      l.naam_noemen === false ? 'LET OP: verwijzer wil niet vermeld worden bij contactname.' : ''
-    ].filter(Boolean).join('\n');
+      l.naam_noemen === false ? 'LET OP: de introducer wil NIET vermeld worden bij contactname.' : 'Introducer mag vermeld worden bij contactname.'
+    ].filter(function (r) { return r !== ''; }).join('\n');
     try { await TNL.insertContactNotitie({ contact_id: nc.id, auteur: HUIDIGE_GEBRUIKER, tekst: notitie }); } catch (_) {}
 
     await TNL.updateVerwijzerLead(leadId, {
@@ -5988,12 +6012,12 @@ async function vwRegistreer(leadId) {
     });
     prosGeladen = false;   // Prospecten-tab herlaadt met het nieuwe contact
     await laadVerwijzers();
-    alert('✓ Geregistreerd bij ' + bedrijfDef + '. Staat nu in Prospecten — vergeet de verwijzer niet persoonlijk te bevestigen.');
+    alert('✓ Geregistreerd bij ' + bedrijfDef + '. Staat nu in Prospecten — vergeet de introducer niet persoonlijk te bevestigen.');
   } catch (e) { alert('Registreren mislukt: ' + (e.message || e)); console.error(e); }
 }
 
 async function vwWeiger(leadId) {
-  const reden = prompt('Lead weigeren. Interne reden (niet naar de verwijzer):', '');
+  const reden = prompt('Lead weigeren. Interne reden (niet naar de introducer):', '');
   if (reden === null) return;
   try {
     await TNL.updateVerwijzerLead(leadId, {
@@ -6003,12 +6027,30 @@ async function vwWeiger(leadId) {
   } catch (e) { alert('Mislukt: ' + (e.message || e)); }
 }
 
+// ---- Verwijderen (voorlopig, om te testen; RLS laat dit enkel toe voor ingelogde users) ----
+async function vwVerwijderLead(leadId) {
+  const l = vwLeads.find(x => x.id === leadId); if (!l) return;
+  if (!confirm('Lead "' + (l.bedrijf || '') + '" definitief verwijderen uit de aanmeldingen?\n'
+    + '(Een eventueel al aangemaakt bedrijf/contact in Prospecten blijft bestaan.)')) return;
+  try { await TNL.deleteVerwijzerLead(leadId); await laadVerwijzers(); }
+  catch (e) { alert('Verwijderen mislukt: ' + (e.message || e)); }
+}
+async function vwVerwijderVerwijzer(verwijzerId) {
+  const v = vwVerwijzers.find(x => x.id === verwijzerId); if (!v) return;
+  const n = vwLeads.filter(x => x.verwijzer_id === verwijzerId).length;
+  if (!confirm('Introducer "' + vwNaam(v) + '" definitief uit de databank verwijderen'
+    + (n ? ', samen met zijn ' + n + ' lead(s)' : '') + '?\n'
+    + '(Een eventueel gekoppeld contact in Prospecten blijft bestaan.)')) return;
+  try { await TNL.deleteVerwijzer(verwijzerId); await laadVerwijzers(); }
+  catch (e) { alert('Verwijderen mislukt: ' + (e.message || e)); }
+}
+
 // ---- AI-beoordeling van een aangemelde lead (met Dirk's eigen Claude-sleutel,
 //      zelfde patroon als de interactie-samenvatting elders in deze app) ----
 const VW_RUBRIC = 'Je bent de intake-assistent van consultancybureau The Next Level (Ariadne BV). '
-  + 'Freelance "verwijzers" melden bedrijven aan als lead. The Next Level helpt kmo\'s en familiebedrijven '
+  + 'Freelance "introducers" melden bedrijven aan als lead. The Next Level helpt kmo\'s en familiebedrijven '
   + 'met organisatie, structuur, HR, PMO, leiderschap en groei. Beoordeel hoe warm en bruikbaar deze lead is '
-  + 'voor een eerste contactname — of de verwijzer genoeg concreet en warm materiaal aanlevert.\n\n'
+  + 'voor een eerste contactname — of de introducer genoeg concreet en warm materiaal aanlevert.\n\n'
   + 'Criteria (samen 100): signaal/aanleiding (0-30, concrete trigger vs. vage indruk), '
   + 'relatie + al gesproken met contactpersoon (0-25), herkenbare uitdaging die bij het aanbod past (0-20), '
   + 'urgentie/timing (0-15), bruikbaarheid contactgegevens (0-10).\n\n'
@@ -6059,10 +6101,10 @@ async function vwAiBeoordeel(leadId) {
   } catch (e) { alert('AI-beoordeling mislukt: ' + (e.message || e)); console.error(e); }
 }
 
-// ---- Mailtje naar de verwijzer om meer info te vragen (persoonlijk, geen bot-tekst) ----
+// ---- Mailtje naar de introducer om meer info te vragen (persoonlijk, geen bot-tekst) ----
 function vwMailVerwijzer(verwijzerId, leadId) {
   const v = vwVerwijzers.find(x => x.id === verwijzerId);
-  if (!v || !v.email) { alert('Geen e-mailadres van deze verwijzer bekend.'); return; }
+  if (!v || !v.email) { alert('Geen e-mailadres van deze introducer bekend.'); return; }
   const l = vwLeads.find(x => x.id === leadId) || {};
   const ond = 'Je aanmelding van ' + (l.bedrijf || 'een bedrijf');
   const body = 'Dag ' + (v.voornaam || '') + ',\n\n'

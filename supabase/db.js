@@ -335,6 +335,12 @@ const TNL = (() => {
     return check(await client().from('verwijzer_lead')
       .update(patch).eq('id', id).select().single());
   }
+  async function deleteVerwijzer(id) {
+    return check(await client().from('verwijzer').delete().eq('id', id));
+  }
+  async function deleteVerwijzerLead(id) {
+    return check(await client().from('verwijzer_lead').delete().eq('id', id));
+  }
 
   // ---------- interacties-tijdlijn per bedrijf (migratie 0035, mail/call-log) ----------
   async function getInteractiesVanBedrijf(bedrijfId) {
@@ -574,7 +580,7 @@ const TNL = (() => {
     getBedrijven, getContacten, updateBedrijf, updateContact, insertBedrijf, insertContact,
     deleteBedrijf, deleteContact, voegContactenSamen, zetScansBedrijf, updateQuickscan, deleteQuickscan,
     getContactNotities, getAlleContactNotities, insertContactNotitie,
-    getVerwijzers, updateVerwijzer, getVerwijzerLeads, updateVerwijzerLead,
+    getVerwijzers, updateVerwijzer, getVerwijzerLeads, updateVerwijzerLead, deleteVerwijzer, deleteVerwijzerLead,
     getInteractiesVanBedrijf, getAlleInteracties, insertInteractie, deleteInteractie,
     zoekGelijkaardigeBedrijven, dubbeleBedrijven, voegBedrijvenSamen,
     getVoorstellen, updateVoorstel,

@@ -268,7 +268,7 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
 </div>
 <header>
   <div class="logo-badge"><img src="LogoNextLevel_FINAAL.jpg" alt="The Next Level"></div>
-  <div><h1>Offerte App <span class="ver">v4.8</span></h1></div>
+  <div><h1>Offerte App <span class="ver">v4.9</span></h1></div>
   <nav>
     <button class="actief" data-tab="catalogus">Metroperrons</button>
     <button data-tab="offerte">Offerte</button>
@@ -325,10 +325,10 @@ textarea { width:100%; min-height:180px; border:1px solid var(--border); border-
         <div id="scores-metro"></div>
         <div id="scores-versn"></div>
         <div class="legenda">
-          <span><span class="dot" style="background:var(--red)"></span>Kritisch (&le;1.5)</span>
-          <span><span class="dot" style="background:var(--amber)"></span>Aandachtspunt (&le;2.5)</span>
-          <span><span class="dot" style="background:var(--blue)"></span>Goed ontwikkeld (&le;3.5)</span>
-          <span><span class="dot" style="background:var(--green)"></span>Sterke troef (&gt;3.5)</span>
+          <span><span class="dot" style="background:var(--red)"></span>Kritisch (&lt;2.2)</span>
+          <span><span class="dot" style="background:var(--amber)"></span>Aandachtspunt (&lt;3.0)</span>
+          <span><span class="dot" style="background:var(--blue)"></span>Goed ontwikkeld (&lt;3.6)</span>
+          <span><span class="dot" style="background:var(--green)"></span>Sterke troef (&ge;3.6)</span>
         </div>
       </div>
     </div>
@@ -1412,10 +1412,28 @@ async function doeAfmelden() {
 // ZONES / KLEUREN
 // ============================================================
 function zone(score) {
-  if (score <= 1.5) return { kleur:'var(--red)',   bg:'var(--red-light)',   lbl:'Kritisch' };
-  if (score <= 2.5) return { kleur:'var(--amber)', bg:'var(--amber-light)', lbl:'Aandachtspunt' };
-  if (score <= 3.5) return { kleur:'var(--blue)',  bg:'#eaf1fa',            lbl:'Goed ontwikkeld' };
+  if (score < 2.2) return { kleur:'var(--red)',   bg:'var(--red-light)',   lbl:'Kritisch' };
+  if (score < 3.0) return { kleur:'var(--amber)', bg:'var(--amber-light)', lbl:'Aandachtspunt' };
+  if (score < 3.6) return { kleur:'var(--blue)',  bg:'#eaf1fa',            lbl:'Goed ontwikkeld' };
   return { kleur:'var(--green)', bg:'var(--green-light)', lbl:'Sterke troef' };
+}
+
+// Kleur afleiden uit een REEDS OPGESLAGEN labeltekst i.p.v. uit de score.
+// Nodig omdat quickscan's eigen zone-grenzen ooit zijn aangescherpt (juni 2026):
+// een oude, al opgeslagen scan kreeg zijn label onder de toenmalige (soepelere)
+// grenzen. Als we voor zo'n scan de kleur vers zouden herberekenen met de
+// HUIDIGE zone()-grenzen, zou de kleur niet meer bij het opgeslagen label passen
+// (dezelfde soort mismatch als de bug die we net gefixt hebben, nu via oude data
+// i.p.v. via twee losse functies). Door de kleur uit het label zelf af te leiden
+// blijven label en kleur van een scan altijd bij elkaar horen, ongeacht welke
+// grenzen er golden toen die scan werd ingevuld.
+function kleurVanLabel(lbl) {
+  const l = (lbl || '').toLowerCase();
+  if (l.indexOf('krit') >= 0) return { kleur:'var(--red)', bg:'var(--red-light)' };
+  if (l.indexOf('aandacht') >= 0) return { kleur:'var(--amber)', bg:'var(--amber-light)' };
+  if (l.indexOf('goed') >= 0) return { kleur:'var(--blue)', bg:'#eaf1fa' };
+  if (l.indexOf('troef') >= 0) return { kleur:'var(--green)', bg:'var(--green-light)' };
+  return null;
 }
 
 // ============================================================
@@ -1470,13 +1488,21 @@ function leesMail() {
 
   const gemMatch = (klant.score || '').match(/[\d.,]+/);
   const gemiddelde = gemMatch ? parseFloat(gemMatch[0].replace(',', '.')) : null;
-  gesprek = { klant, scores, labels, gemiddelde, ruweMail: tekst };
+  // Antwoorden per vraag: eerst de exacte bron van waarheid uit het "RUWE ANTWOORDEN"-blok
+  // proberen; enkel bij oudere mails (van vóór quickscan v2.16) terugvallen op afleiden
+  // uit het berekeningsblok, wat bij dubbelzinnige paren een gok met twee opties oplevert.
+  const exactAnt = parseRuweAntwoorden(tekst);
+  let antwoorden = exactAnt || {};
+  gesprek = { klant, scores, labels, gemiddelde, antwoorden, ruweMail: tekst };
   toonKlant();
   toonScores();
-  // Antwoorden per vraag meteen afleiden uit het berekeningsblok (indien meegeplakt).
-  const recIn = reconstructAntwoorden(tekst);
-  if (recIn) renderAntwoorden({ antwoorden: recIn.antwoorden }, recIn.onzeker, true);
-  else document.getElementById('antwoorden-blok').style.display = 'none';
+  if (exactAnt) {
+    renderAntwoorden({ antwoorden: exactAnt }, null, false);
+  } else {
+    const recIn = reconstructAntwoorden(tekst);
+    if (recIn) renderAntwoorden({ antwoorden: recIn.antwoorden }, recIn.onzeker, true);
+    else document.getElementById('antwoorden-blok').style.display = 'none';
+  }
   document.getElementById('btn-opslaan').style.display = (scoreCount || Object.keys(klant).length) ? 'inline-block' : 'none';
   const delen = [];
   if (scoreCount) delen.push(`${scoreCount} scores`);
@@ -1565,6 +1591,7 @@ async function opslaanGesprek() {
       gemiddelde: gesprek.gemiddelde ?? null,
       scores: gesprek.scores || {},
       labels: gesprek.labels || {},
+      antwoorden: gesprek.antwoorden || {},   // exact indien uit "RUWE ANTWOORDEN"-blok geparst, anders leeg
       ruwe_mail: gesprek.ruweMail || '',
       koppel: 'ja'   // manueel ingelezen + toegewezen → wél meteen aan bedrijf/contact koppelen
     };
@@ -1623,8 +1650,11 @@ function toonScores() {
   const rij = (l) => {
     const sc = scores[l.code];
     if (sc === undefined) return '';
-    const z = zone(sc);
-    const lbl = gesprek.labels[l.code] || z.lbl;
+    const opgeslagenLbl = gesprek.labels[l.code];
+    // Kleur volgt het label (niet vers de score), zodat een oude scan met een
+    // label van vóór de strengere zone-grenzen niet in een niet-passende kleur komt.
+    const z = (opgeslagenLbl && kleurVanLabel(opgeslagenLbl)) || zone(sc);
+    const lbl = opgeslagenLbl || z.lbl;
     const pct = Math.round(sc / 4 * 100);
     return `<div class="score-rij">
       <div class="naam">${l.naam} <small>(${l.code})</small></div>
@@ -1797,9 +1827,11 @@ function scanRij(s, bedrijfId) {
   const gem = s.gemiddelde_score;
   const z = gem != null ? zone(gem) : null;
   const heeftRuw = s.antwoorden && Object.keys(s.antwoorden).length;
-  const kanAfleiden = !heeftRuw && s.ruwe_mail && s.ruwe_mail.indexOf('BEREKENING PER DOMEIN') >= 0;
+  const heeftExactInMail = !heeftRuw && s.ruwe_mail && s.ruwe_mail.indexOf('RUWE ANTWOORDEN PER VRAAG') >= 0;
+  const kanAfleiden = !heeftRuw && !heeftExactInMail && s.ruwe_mail && s.ruwe_mail.indexOf('BEREKENING PER DOMEIN') >= 0;
   const ruwCel = heeftRuw ? '<span title="ruwe antwoorden aanwezig">✓ ruw</span>'
-    : kanAfleiden ? '<span style="color:var(--blue)" title="antwoorden afleidbaar uit de berekening in de mail">≈ afgeleid</span>'
+    : heeftExactInMail ? '<span title="exacte antwoorden in de bewaarde mail, nog niet in de antwoorden-kolom">✓ ruw (mail)</span>'
+    : kanAfleiden ? '<span style="color:var(--blue)" title="antwoorden afleidbaar uit de berekening in de mail, mogelijk niet eenduidig">≈ afgeleid</span>'
     : '<span style="color:var(--muted)" title="oude scan zonder losse antwoorden of berekening">-</span>';
   const contact = s.contact_id ? dossierData.contactById[s.contact_id] : null;
   const invNaam = contact ? contactNaam(contact) : (s.invuller || '-');
@@ -1916,13 +1948,20 @@ function toonScanDetail(scanId) {
   };
   toonKlant();
   toonScores();
-  // Antwoorden per vraag: echte ruwe antwoorden, anders afgeleid uit de berekening in de mail.
+  // Antwoorden per vraag: echte ruwe antwoorden uit de DB, anders het exacte
+  // "RUWE ANTWOORDEN"-blok uit de bewaarde mail, en pas als laatste terugval
+  // (oudere scan, van vóór quickscan v2.16) afgeleid uit de berekening in de mail.
   if (Object.keys(s.antwoorden || {}).length) {
     renderAntwoorden(s, null, false);
   } else {
-    const rec = reconstructAntwoorden(s.ruwe_mail || '');
-    if (rec) renderAntwoorden({ antwoorden: rec.antwoorden }, rec.onzeker, true);
-    else document.getElementById('antwoorden-blok').style.display = 'none';
+    const exact = parseRuweAntwoorden(s.ruwe_mail || '');
+    if (exact) {
+      renderAntwoorden({ antwoorden: exact }, null, false);
+    } else {
+      const rec = reconstructAntwoorden(s.ruwe_mail || '');
+      if (rec) renderAntwoorden({ antwoorden: rec.antwoorden }, rec.onzeker, true);
+      else document.getElementById('antwoorden-blok').style.display = 'none';
+    }
   }
   document.getElementById('klant-blok').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -1999,9 +2038,24 @@ function renderAntwoorden(scan, onzeker, afgeleid) {
   blok.style.display = 'block';
 }
 
+// Leest het "RUWE ANTWOORDEN PER VRAAG"-blok uit een geplakte mail (sinds quickscan
+// v2.16): elke regel "index=domeincode:rawwaarde" is de échte bron van waarheid,
+// geen afleiding nodig. Geeft {index:rawAns} of null als het blok ontbreekt (oudere mail).
+function parseRuweAntwoorden(ruweMail) {
+  if (!ruweMail || ruweMail.indexOf('RUWE ANTWOORDEN PER VRAAG') < 0) return null;
+  const antwoorden = {};
+  ruweMail.split('\n').forEach(regel => {
+    const m = regel.trim().match(/^(\d+)=([A-Z]+):([1-4])\b/);
+    if (m) antwoorden[parseInt(m[1], 10)] = parseInt(m[3], 10);
+  });
+  return Object.keys(antwoorden).length ? antwoorden : null;
+}
+
 // Reconstrueer de losse antwoorden uit het "BEREKENING PER DOMEIN"-blok van een
-// geplakte mail. Elke vraag is de hoofdvraag van precies één domein (het
-// "2×laagste+hoogste"-deel), de neven-waarden lossen de volgorde binnen een paar op.
+// geplakte mail (terugval voor mails van vóór quickscan v2.16, die het exacte
+// "RUWE ANTWOORDEN"-blok nog niet meesturen). Elke vraag is de hoofdvraag van
+// precies één domein (het "2×laagste+hoogste"-deel), de neven-waarden lossen de
+// volgorde binnen een paar op waar mogelijk.
 // Geeft { antwoorden:{i:rawAns}, onzeker:{i:[opties]} } of null als er geen blok is.
 function reconstructAntwoorden(ruweMail) {
   if (!ruweMail || ruweMail.indexOf('BEREKENING PER DOMEIN') < 0) return null;
@@ -2297,7 +2351,9 @@ function dbScanTabel(scans, opts) {
   const metActies = opts.koppel || opts.verwijder;
   const rijen = scans.map(s => {
     const g = s.gemiddelde_score != null ? Number(s.gemiddelde_score) : null;
-    const ruw = Object.keys(s.antwoorden || {}).length ? '✓ ruw' : (s.ruwe_mail ? '≈ afgeleid' : '');
+    const ruw = Object.keys(s.antwoorden || {}).length ? '✓ ruw'
+      : (s.ruwe_mail && s.ruwe_mail.indexOf('RUWE ANTWOORDEN PER VRAAG') >= 0) ? '✓ ruw (mail)'
+      : (s.ruwe_mail ? '≈ afgeleid' : '');
     const koppelKnop = opts.koppel ? `<button class="db-btn" style="padding:3px 8px" onclick="dbKoppelScan('${escAttr(s.id)}')">Koppel aan contact</button> ` : '';
     const verwijderKnop = opts.verwijder ? `<button class="db-btn del" style="padding:3px 8px" onclick="dbVerwijderScan('${escAttr(s.id)}')">Verwijder</button>` : '';
     const acties = metActies ? `<td style="white-space:nowrap;text-align:right;width:100%">${koppelKnop}${verwijderKnop}</td>` : '<td style="width:100%"></td>';
